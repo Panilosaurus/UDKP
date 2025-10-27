@@ -2799,43 +2799,15 @@
     function updateSummaryCards(groupedData) {
         if (!Array.isArray(groupedData)) return;
 
-        // Hitung per kategori utama per grup (gabungkan REMED)
-        let countUpkp = 0;
-        let countUd1 = 0;
-        let countUd2 = 0;
+        // Ambil semua jenis ujian dari seluruh grup
+        const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
 
-        groupedData.forEach(group => {
-            let hasUPKP = false;
-            let hasUD1 = false;
-            let hasUD2 = false;
+        // Hitung kategori utama (termasuk REMED)
+        const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
+        const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
+        const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
 
-            group.rows.forEach(row => {
-                // Normalisasi string
-                const jenis = (row.jenis_ujian || "")
-                    .replace(/\./g, "")          // hapus titik
-                    .trim()
-                    .toUpperCase()
-                    .replace(/\s+/g, " ");
-
-                // Gabungkan semua REMED ke kategori utamanya
-                if (jenis.includes("UPKP")) {
-                    hasUPKP = true;                       // UPKP & REMED UPKP
-                } else if (jenis.includes("UD TK II")) {
-                    hasUD2 = true;                        // UD TK II & REMED UD TK II
-                } else if (jenis.includes("UD TK I")) {
-                    hasUD1 = true;                        // UD TK I & REMED UD TK I
-                }
-            });
-
-            if (hasUPKP) countUpkp++;
-            if (hasUD1) countUd1++;
-            if (hasUD2) countUd2++;
-        });
-
-        document.getElementById("cardUpkp").innerText = countUpkp;
-        document.getElementById("cardUd1").innerText = countUd1;
-        document.getElementById("cardUd2").innerText = countUd2;
-
+        // Tampilkan ke kartu
         document.getElementById("cardUpkp").innerText = countUpkp;
         document.getElementById("cardUd1").innerText = countUd1;
         document.getElementById("cardUd2").innerText = countUd2;
