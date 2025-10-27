@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>SB Admin 2 - Dashboard</title>
+
+    <!-- Fonts & Core CSS -->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="inspect.css">
+
+</head>
+
+<body id="page-top">
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <!-- Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-laugh-wink"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+            </a>
+
+            <hr class="sidebar-divider my-0">
+
+            <!-- Dashboard -->
+            <li class="nav-item active">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">Interface</div>
+
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-door-open"></i>
+                    <span>Kembali</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+
+
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown no-arrow d-sm-none">
+                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-search fa-fw"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                                aria-labelledby="searchDropdown">
+                                <form class="form-inline mr-auto w-100 navbar-search">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control bg-light border-0 small"
+                                            placeholder="Search for..." aria-label="Search"
+                                            aria-describedby="basic-addon2">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button">
+                                                <i class="fas fa-search fa-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- User -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#"><i
+                                        class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile</a>
+                                <a class="dropdown-item" href="#"><i
+                                        class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i> Activity Log</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Breadcrumb & Actions -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mb-1">
+                                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Detail Ujian</li>
+                                </ol>
+                            </nav>
+                            <h1 class="h3 mb-0 text-gray-800">Detail Ujian</h1>
+                        </div>
+                        <div>
+                            <a id="btnBack" href="index.html" class="btn btn-soft mr-2">
+                                <i class="fas fa-arrow-left mr-1"></i> Kembali
+                            </a>
+                            <a id="btnPrint" href="javascript:void(0)" class="btn btn-outline-secondary mr-2">
+                                <i class="fas fa-print mr-1"></i> Cetak
+                            </a>
+                            <a id="btnOpenDoc" href="#" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-link mr-1"></i> Buka Dokumen
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hero / Header Card -->
+                    <div class="card card-elev mb-4">
+                        <div class="card-header-hero d-md-flex align-items-center justify-content-between">
+                            <div class="mb-2 mb-md-0">
+                                <div class="hero-sub small">Nama Instansi</div>
+                                <div id="instansiTitle" class="hero-title h4 mb-0">—</div>
+                            </div>
+                            <div class="text-md-right">
+                                <span id="badgeJenis" class="badge badge-secondary badge-chip mr-2">—</span>
+                                <span id="badgeStatus" class="badge badge-secondary badge-chip">—</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+
+                                <!-- Ringkasan Kiri -->
+                                <div class="col-lg-8">
+                                    <div class="row">
+                                        <div class="col-md-4 kv">
+                                            <div class="label">Jenis Ujian</div>
+                                            <div id="jenisValue" class="value">—</div>
+                                        </div>
+                                        <div class="col-md-4 kv">
+                                            <div class="label">Jumlah Peserta</div>
+                                            <div id="jumlahValue" class="value">—</div>
+                                        </div>
+                                        <div class="col-md-4 kv">
+                                            <div class="label">Tanggal Pelaksanaan</div>
+                                            <div id="tanggalValue" class="value">—</div>
+                                        </div>
+
+                                        <div class="col-md-4 kv">
+                                            <div class="label">Status</div>
+                                            <div id="statusValue" class="value">—</div>
+                                        </div>
+                                        <div class="col-md-8 kv">
+                                            <div class="label">Dokumen</div>
+                                            <div class="value"><a id="dokumenLink" href="#" target="_blank"
+                                                    rel="noopener">—</a></div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="divider-dashed">
+
+                                    <!-- Petugas -->
+                                    <h6 class="text-primary font-weight-bold mb-3"><i class="fas fa-users mr-1"></i>
+                                        Petugas CAT</h6>
+                                    <div id="petugasList" class="d-flex flex-wrap"></div>
+
+                                    <!-- UPKP Section -->
+                                    <div id="sectionUPKP" class="mt-4" style="display:none;">
+                                        <h6 class="text-primary font-weight-bold mb-3"><i
+                                                class="fas fa-chart-line mr-1"></i> Nilai Ujian (UPKP)</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="label">Nilai Tertinggi</div>
+                                                <div id="nilaiTertinggi" class="value">—</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="label">Nilai Terendah</div>
+                                                <div id="nilaiTerendah" class="value">—</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- UD Section -->
+                                    <div id="sectionUD" class="mt-4" style="display:none;">
+                                        <h6 class="text-primary font-weight-bold mb-3"><i
+                                                class="fas fa-flag-checkered mr-1"></i> Passing Grade (UD TK. I & II)
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="label">Jumlah Lulus</div>
+                                                <div id="pgLulus" class="value">—</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="label">Tidak Lulus</div>
+                                                <div id="pgTidakLulus" class="value">—</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Panel Kanan -->
+                                <div class="col-lg-4">
+                                    <div class="card shadow-soft mb-3">
+                                        <div class="card-body d-flex align-items-center">
+                                            <div class="icon-pill bg-primary text-white mr-3"><i
+                                                    class="fas fa-building"></i></div>
+                                            <div>
+                                                <div class="small text-muted">Instansi</div>
+                                                <div id="instansiSmall" class="font-weight-bold">—</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card shadow-soft">
+                                        <div class="card-header py-2">
+                                            <strong class="text-primary">Rangkuman Cepat</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm table-min mb-2">
+                                                <tbody>
+                                                    <tr>
+                                                        <th class="text-muted">Jenis</th>
+                                                        <td id="rmJenis">—</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-muted">Status</th>
+                                                        <td id="rmStatus">—</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-muted">Peserta</th>
+                                                        <td id="rmPeserta">—</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-muted">Tanggal</th>
+                                                        <td id="rmTanggal">—</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <div class="text-right">
+                                                <a id="btnCopyLink" href="javascript:void(0)" class="small"><i
+                                                        class="fas fa-copy mr-1"></i> Salin tautan dokumen</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div> <!-- /row -->
+                        </div> <!-- /card-body -->
+                    </div> <!-- /card -->
+
+                </div>
+
+                <div class="row">
+                    <!-- Pie Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Sebaran Distribusi
+                                    Data</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-pie pt-4 pb-2">
+                                    <canvas id="myPieChart"></canvas>
+                                </div>
+                                <div class="mt-4 text-center small">
+                                    <span class="mr-2"><i class="fas fa-circle text-primary"></i>
+                                        Golongan</span>
+                                    <span class="mr-2"><i class="fas fa-circle text-success"></i>
+                                        Pendidikan</span>
+                                    <span class="mr-2"><i class="fas fa-circle text-danger"></i>
+                                        UNOR PPPK</span>
+                                    <span class="mr-2"><i class="fas fa-circle text-warning"></i>
+                                        Pendidikan
+                                        PPPK</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Sebaran Distribusi
+                                    Data(Batang)</h6>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="small font-weight-bold">Golongan<span class="float-right">20%</span></h4>
+                                <div class="progress mb-4">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 20%">
+                                    </div>
+                                </div>
+                                <h4 class="small font-weight-bold">Pendidikan <span class="float-right">40%</span>
+                                </h4>
+                                <div class="progress mb-4">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%">
+                                    </div>
+                                </div>
+                                <h4 class="small font-weight-bold">Unor PPPK <span class="float-right">60%</span>
+                                </h4>
+                                <div class="progress mb-4">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 60%">
+                                    </div>
+                                </div>
+                                <h4 class="small font-weight-bold">Pendidikan PPPK <span class="float-right">80%</span>
+                                </h4>
+                                <div class="progress mb-4">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 80%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <!-- /.container-fluid -->
+    </div>
+    <!-- End of Main Content -->
+    <!-- Modal: Input Data Baru -->
+    <div class="modal fade" id="inputDataModal" tabindex="-1" role="dialog" aria-labelledby="inputDataLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inputDataLabel">Input Data Baru</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+
+                <form id="formInputBaru" novalidate>
+                    <div class="modal-body">
+
+                        <!-- Baris 1 -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Nama Instansi</label>
+                                <input type="text" class="form-control" name="nama_instansi"
+                                    placeholder="contoh: BKD Prov. X" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Jenis Ujian</label>
+                                <select class="form-control" name="jenis_ujian" id="jenisUjian" required>
+                                    <option value="">-- Pilih --</option>
+                                    <option value="UPKP">UPKP</option>
+                                    <option value="UD TK. I">UD TK. I</option>
+                                    <option value="UD TK. II">UD TK. II</option>
+                                    <option value="REMED UPKP">REMED UPKP</option>
+                                    <option value="REMED UD TK. I">REMED UD TK. I</option>
+                                    <option value="REMED UD TK. II">REMED UD TK. II</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Baris 2 -->
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>Jumlah Peserta</label>
+                                <input type="number" min="0" class="form-control" name="jumlah_peserta" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Tanggal Pelaksanaan</label>
+                                <input type="date" class="form-control" name="tgl_pelaksanaan" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Status</label>
+                                <select class="form-control" name="status_pelaksanaan" required>
+                                    <option value="">-- Pilih --</option>
+                                    <option value="Persiapan Administrasi">Persiapan Administrasi
+                                    </option>
+                                    <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
+                                    <option value="Selesai">Selesai</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Baris 3 -->
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                                <label>Dokumen (Link Google Drive)</label>
+                                <input type="url" class="form-control" name="link_dokumen"
+                                    placeholder="https://drive.google.com/..." required>
+                                <small class="form-text text-muted">Tempelkan URL berbagi (share link)
+                                    Google
+                                    Drive.</small>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Petugas CAT</label>
+                                <div id="petugasCatGroup">
+                                    <!-- Kolom petugas dinamis akan diletakkan di sini -->
+                                </div>
+                                <div class="mt-2 d-flex">
+                                    <button class="btn btn-sm btn-outline-primary mr-2" type="button"
+                                        id="btnAddPetugas">+ Tambah</button>
+                                    <button class="btn btn-sm btn-outline-danger" type="button" id="btnRemovePetugas">–
+                                        Kurangi</button>
+                                </div>
+                                <small class="form-text text-muted">Mulai dari 1 nama. Gunakan +/– untuk
+                                    menyesuaikan.</small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Nilai untuk UPKP -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Nilai Tertinggi (UPKP)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control"
+                                    name="nilai_tertinggi_upkp" id="nilaiTertinggiUpkp" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Nilai Terendah (UPKP)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control"
+                                    name="nilai_terendah_upkp" id="nilaiTerendahUpkp" disabled>
+                            </div>
+                        </div>
+
+                        <!-- Passing Grade untuk UD TK. I & II -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Jumlah Lulus Passing Grade (UD TK. I & II)</label>
+                                <input type="number" min="0" class="form-control" name="jumlah_lulus_pg_ud"
+                                    id="jumlahLulusUd" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Jumlah Tidak Lulus Passing Grade (UD TK. I & II)</label>
+                                <input type="number" min="0" class="form-control" name="jumlah_tidak_lulus_pg_ud"
+                                    id="jumlahTidakLulusUd" disabled>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                        <button class="btn btn-primary" type="submit">Simpan</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+            <div class="copyright text-center my-auto">
+                <span>Universitas Lambung Mangkurat</span>
+            </div>
+        </div>
+    </footer>
+    </div>
+    <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+
+    <!-- Core JS -->
+
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="vendor/chart.js/Chart.min.js"></script>
+    <script src="js/demo/chart-pie-demo.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script>
+        // ===== Dummy data (fokus desain) =====
+        const dummy = {
+            id: 101,
+            instansi: 'BKD Provinsi X',
+            jenis: 'UPKP',                      // ganti ke: 'UD TK. I', 'UD TK. II', 'REMED UPKP', 'REMED UD TK. I', 'REMED UD TK. II'
+            jumlah: 120,
+            tgl: '16-09-2025',
+            status: 'Menunggu Pelaksanaan',     // 'Persiapan Administrasi' | 'Menunggu Pelaksanaan' | 'Selesai'
+            dok: 'https://drive.google.com/file/d/xxx/view',
+            petugas: ['Elia Azizah', 'Ishaq Yulyonto'],
+            nilaiTinggi: 92.50,
+            nilaiRendah: 61.00,
+            pgLulus: null,
+            pgTidak: null
+        };
+
+        // ===== Mappings badge =====
+        const jenisClass = {
+            'UPKP': 'badge-upkp',
+            'UD TK. I': 'badge-ud1',
+            'UD TK. II': 'badge-ud2',
+            'REMED UPKP': 'badge-remed-upkp',
+            'REMED UD TK. I': 'badge-remed-ud1',
+            'REMED UD TK. II': 'badge-remed-ud2'
+        };
+        const statusClass = {
+            'Persiapan Administrasi': 'badge-st-persiapan',
+            'Menunggu Pelaksanaan': 'badge-st-menunggu',
+            'Selesai': 'badge-st-selesai'
+        };
+
+        // ===== Helper =====
+        const $ = (id) => document.getElementById(id);
+
+        function renderDetail(d) {
+            // Header
+            $('instansiTitle').innerText = d.instansi;
+            $('instansiSmall').innerText = d.instansi;
+
+            // Badges
+            const bj = $('badgeJenis'); bj.className = `badge badge-chip ${jenisClass[d.jenis] || 'badge-secondary'}`; bj.innerText = d.jenis;
+            const bs = $('badgeStatus'); bs.className = `badge badge-chip ${statusClass[d.status] || 'badge-secondary'}`; bs.innerText = d.status || '—';
+
+            // Meta
+            $('jenisValue').innerText = d.jenis;
+            $('jumlahValue').innerText = d.jumlah ?? '—';
+            $('tanggalValue').innerText = d.tgl || '—';
+            $('statusValue').innerText = d.status || '—';
+            $('dokumenLink').href = d.dok || '#';
+            $('dokumenLink').innerText = d.dok ? 'Link Dokumen' : '—';
+            $('btnOpenDoc').href = d.dok || '#';
+
+            // Rangkuman kanan
+            $('rmJenis').innerText = d.jenis;
+            $('rmStatus').innerText = d.status || '—';
+            $('rmPeserta').innerText = d.jumlah ?? '—';
+            $('rmTanggal').innerText = d.tgl || '—';
+
+            // Petugas chips
+            const wrap = $('petugasList'); wrap.innerHTML = '';
+            (d.petugas || []).forEach(n => {
+                const span = document.createElement('span');
+                span.className = 'badge badge-primary badge-chip mr-2 mb-2';
+                span.innerText = n;
+                wrap.appendChild(span);
+            });
+            if (!d.petugas || !d.petugas.length) { wrap.innerHTML = '<span class="text-muted">—</span>'; }
+
+            // Toggle section sesuai jenis
+            const isUPKP = (d.jenis === 'UPKP' || d.jenis === 'REMED UPKP');
+            const isUD = ['UD TK. I', 'UD TK. II', 'REMED UD TK. I', 'REMED UD TK. II'].includes(d.jenis);
+
+            $('sectionUPKP').style.display = isUPKP ? 'block' : 'none';
+            $('sectionUD').style.display = isUD ? 'block' : 'none';
+
+            if (isUPKP) {
+                $('nilaiTertinggi').innerText = (d.nilaiTinggi ?? '—');
+                $('nilaiTerendah').innerText = (d.nilaiRendah ?? '—');
+            }
+            if (isUD) {
+                $('pgLulus').innerText = (d.pgLulus ?? '—');
+                $('pgTidakLulus').innerText = (d.pgTidak ?? '—');
+            }
+        }
+
+        // Actions
+        $('btnBack').addEventListener('click', function (e) {
+            if (history.length > 1) { e.preventDefault(); history.back(); }
+        });
+        $('btnPrint').addEventListener('click', () => window.print());
+        $('btnCopyLink').addEventListener('click', () => {
+            const link = $('dokumenLink').href;
+            if (!link || link === '#') return;
+            navigator.clipboard.writeText(link).then(() => {
+                $('btnCopyLink').innerHTML = '<i class="fas fa-check mr-1 text-success"></i> Tautan disalin';
+                setTimeout(() => { $('btnCopyLink').innerHTML = '<i class="fas fa-copy mr-1"></i> Salin tautan dokumen'; }, 1500);
+            });
+        });
+
+        // Render awal (dummy)
+        renderDetail(dummy);
+
+        /*
+         * Nanti kalau sudah ada database:
+         * - ambil id dari URL: const id = new URLSearchParams(location.search).get('id');
+         * - fetch detail by id → renderDetail(dataDariServer);
+         */
+    </script>
+
+</body>
+
+</html>

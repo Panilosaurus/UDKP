@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>SB Admin 2 - Login</title>
+
+    <!-- Fonts & Core CSS -->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+
+    <!-- Tuning tampilan login -->
+    <style>
+        .card.o-hidden {
+            border-radius: .75rem;
+            overflow: hidden
+        }
+
+        /* Kolom kiri (logo) */
+        .login-left {
+            min-height: 440px
+        }
+
+        .logo-login {
+            width: 80%;
+            max-width: 380px;
+            height: auto;
+            display: block
+        }
+
+        @media (min-width:1200px) {
+            .logo-login {
+                max-width: 440px
+            }
+
+            .login-left {
+                min-height: 500px
+            }
+        }
+
+        /* Mobile: sembunyikan kolom kiri, pakai logo kecil di atas form */
+        @media (max-width:991.98px) {
+            .login-left {
+                display: none !important
+            }
+        }
+
+        .btn-user {
+            border-radius: 30px
+        }
+        /* Modal login/register clean look */
+#authMessageModal .modal-content {
+  animation: popIn 0.25s ease-out;
+  max-width: 460px;
+  margin: auto;
+}
+
+/* Header icons */
+.auth-icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 42px;
+  color: #fff;
+}
+
+.auth-icon.error {
+  background: linear-gradient(135deg, #ff7b7b, #e74a3b);
+}
+
+.auth-icon.success {
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+/* Animation */
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+    </style>
+</head>
+
+<body class="bg-gradient-primary">
+    <div class="container">
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <!-- LEFT: Logo -->
+                            <div class="col-lg-5 login-left d-flex align-items-center justify-content-center bg-white">
+                                <img src="/img/logo-bkn.jpg" alt="Logo instansi" class="logo-login img-fluid">
+                            </div>
+
+                            <!-- RIGHT: Form -->
+                            <div class="col-lg-7">
+                                <div class="p-5">
+                                    <!-- Logo kecil untuk mobile -->
+                                    <div class="text-center d-lg-none mb-4">
+                                        <img src="img/logo-bkn.png" alt="Logo instansi" style="height:64px">
+                                    </div>
+
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                    </div>
+
+                                    <form class="user" action="/login" method="POST">
+                                        <div class="form-group">
+                                            <input type="text" name="username" class="form-control form-control-user" placeholder="Enter username "
+                                                required>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="password" class="form-control form-control-user" placeholder="Password" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">Login</button>
+                                    </form>
+
+
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="/register">Create an Account!</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END RIGHT -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pesan Login/Register -->
+    <div class="modal fade" id="authMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 rounded-lg shadow-lg text-center">
+                <div id="authModalHeader" class="py-4"></div>
+                <div class="modal-body px-4 py-3">
+                    <h5 id="authModalTitle" class="font-weight-bold mb-2">Title</h5>
+                    <p id="authModalMessage" class="text-muted mb-0">Pesan dari server...</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-primary px-4 rounded-pill" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- JS -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function showAuthModal(type, title, message) {
+            const header = document.getElementById('authModalHeader');
+            const titleEl = document.getElementById('authModalTitle');
+            const msgEl = document.getElementById('authModalMessage');
+
+            header.innerHTML = ''; // reset icon
+
+            if (type === 'error') {
+                header.innerHTML = '<div class="auth-icon error"><i class="fas fa-exclamation"></i></div>';
+            } else if (type === 'success') {
+                header.innerHTML = '<div class="auth-icon success"><i class="fas fa-check"></i></div>';
+            }
+
+            titleEl.textContent = title || '';
+            msgEl.textContent = message || '';
+
+            $('#authMessageModal').modal('show');
+        }
+    </script>
+<script>
+  <% if (typeof modal !== "undefined" && modal) { %>
+        document.addEventListener("DOMContentLoaded", function () {
+            showAuthModal("<%= modal.type %>", "<%= modal.title %>", "<%= modal.message %>");
+        });
+  <% } %>
+</script>
+
+
+</body>
+
+</html>
