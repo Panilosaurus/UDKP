@@ -1,0 +1,8 @@
+# secrets
+*.serviceaccount*.json
+*service*account*key*.json
+*gcloud*credentials*.json
+*.p12
+*.pem
+*.key
+.env
