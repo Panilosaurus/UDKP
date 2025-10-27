@@ -1174,6 +1174,8 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
     
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <script>
         $(document).ready(function () {
             const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
@@ -2100,22 +2102,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <script>
-        document.getElementById('btnExportPDF').addEventListener('click', () => {
+        document.getElementById('btnExportPDF').addEventListener('click', async () => {
             const table = document.querySelector('#dataTable');
-
-            // Cari index kolom "Aksi" (kolom terakhir) & "Dokumen" (dinamis dari header)
             const headerCells = Array.from(table.querySelectorAll('thead tr th'));
             const aksiIndex = headerCells.length - 1;
             const dokIndex = headerCells.findIndex(th =>
                 th.innerText.trim().toLowerCase().includes('dokumen')
             );
 
-            // Sembunyikan kolom Aksi sementara (biar gak ikut ke PDF)
+            // Sembunyikan kolom aksi sementara
             document.querySelectorAll('#dataTable tr').forEach(row => {
                 if (row.children[aksiIndex]) row.children[aksiIndex].style.display = 'none';
             });
 
-            // Kumpulkan semua URL dari kolom "Dokumen"
+            // Ambil daftar tanggal pelaksanaan
+            const tanggalIndex = headerCells.findIndex(th =>
+                th.innerText.trim().toLowerCase().includes('tanggal pelaksanaan')
+            );
+
+            const tanggalList = Array.from(document.querySelectorAll('#dataTable tbody tr'))
+                .map(row => {
+                    const cell = row.children[tanggalIndex];
+                    if (!cell) return null;
+                    const raw = cell.innerText.trim();
+                    const clean = raw.replace(/[^\d-]/g, '');
+                    const parts = clean.split('-');
+                    if (parts.length === 3) {
+                        const [y, m, d] = parts.map(Number);
+                        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                            return new Date(y, m - 1, d);
+                        }
+                    }
+                    return null;
+                })
+                .filter(Boolean)
+                .sort((a, b) => a - b);
+
+            // ==== Tentukan teks periode dinamis ====
+            let periodeText = "";
+            if (tanggalList.length > 0) {
+                const earliest = tanggalList[0];
+                const latest = tanggalList[tanggalList.length - 1];
+                const bulan = [
+                    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                ];
+                const namaBulanAwal = bulan[earliest.getMonth()];
+                const namaBulanAkhir = bulan[latest.getMonth()];
+                const tahunAwal = earliest.getFullYear();
+                const tahunAkhir = latest.getFullYear();
+                periodeText = (tahunAwal === tahunAkhir)
+                    ? (earliest.getMonth() === latest.getMonth()
+                        ? `${namaBulanAwal} ${tahunAwal}`
+                        : `${namaBulanAwal} – ${namaBulanAkhir} ${tahunAwal}`)
+                    : `${namaBulanAwal} ${tahunAwal} – ${namaBulanAkhir} ${tahunAkhir}`;
+            } else {
+                periodeText = `Tahun ${new Date().getFullYear()}`;
+            }
+
+            // Ambil semua URL dari kolom Dokumen
             const dokumenLinks = [];
             document.querySelectorAll('#dataTable tbody tr').forEach(row => {
                 const cell = row.children[dokIndex];
@@ -2123,14 +2168,15 @@
                 dokumenLinks.push(a ? a.href : null);
             });
 
+            // === Buat PDF ===
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
 
-            // Judul
+            // === 1. Judul ===
             doc.setFontSize(14);
-            doc.text('Rekapitulasi Pelaksanaan UDKP Tahun 2025', 420, 40, { align: 'center' });
+            doc.text(`Rekapitulasi Pelaksanaan Uji Kompetensi ${periodeText}`, 420, 40, { align: 'center' });
 
-            // AutoTable
+            // === 2. Tabel ===
             doc.autoTable({
                 html: '#dataTable',
                 startY: 60,
@@ -2143,17 +2189,14 @@
                     lineWidth: 0.1,
                 },
                 headStyles: {
-                    fillColor: [150, 150, 150],   // abu gelap seperti yang kamu minta
-                    textColor: [0, 0, 0],         // teks hitam
+                    fillColor: [150, 150, 150],
+                    textColor: [0, 0, 0],
                     fontStyle: 'bold',
                 },
-
-                // Tambahkan area hyperlink untuk kolom "Dokumen"
                 didDrawCell: function (data) {
                     if (data.section === 'body' && data.column.index === dokIndex) {
                         const url = dokumenLinks[data.row.index];
                         if (url) {
-                            // area klikable di atas teks sel
                             doc.link(
                                 data.cell.x + 2,
                                 data.cell.y + 2,
@@ -2166,15 +2209,92 @@
                 }
             });
 
-            // Tampilkan kembali kolom Aksi
+            let currentY = doc.lastAutoTable.finalY + 30;
+
+            // === 3. Card Summary ===
+            try {
+                const cardCols = document.querySelectorAll('.col-md-4.mb-3');
+                if (cardCols.length > 0) {
+                    const tempContainer = document.createElement('div');
+                    tempContainer.style.display = 'flex';
+                    tempContainer.style.justifyContent = 'center';
+                    tempContainer.style.gap = '10px';
+                    cardCols.forEach(col => tempContainer.appendChild(col.cloneNode(true)));
+                    document.body.appendChild(tempContainer);
+
+                    const cardsCanvas = await html2canvas(tempContainer, { scale: 2, backgroundColor: '#ffffff' });
+                    const cardsImg = cardsCanvas.toDataURL('image/png', 1.0);
+                    document.body.removeChild(tempContainer);
+
+                    const imgWidth = 720;
+                    const imgHeight = (cardsCanvas.height / cardsCanvas.width) * imgWidth;
+
+                    if (currentY + imgHeight > 500) {
+                        doc.addPage();
+                        currentY = 60;
+                    }
+
+                    doc.setFontSize(12);
+                    doc.text("Ringkasan Jumlah", 420, currentY - 10, { align: 'center' });
+                    doc.addImage(cardsImg, 'PNG', 50, currentY, imgWidth, imgHeight);
+                    currentY += imgHeight + 40;
+                }
+            } catch (err) {
+                console.warn("⚠️ Gagal render cards:", err);
+            }
+
+            // === 4. Dua Grafik (chartNilaiIndex dan chartLulusIndex) ===
+            try {
+                const charts = [
+                    { id: 'chartNilaiIndex', title: 'Perbandingan Nilai UPKP' },
+                    { id: 'chartLulusIndex', title: 'Perbandingan Lulus vs Tidak Lulus (UD TK. I/II)' }
+                ];
+
+                for (const chart of charts) {
+                    const canvas = document.getElementById(chart.id);
+                    if (!canvas) continue;
+
+                    await new Promise(r => setTimeout(r, 300)); // pastikan chart sudah render
+
+                    const chartCanvas = await html2canvas(canvas, {
+                        scale: 2,
+                        backgroundColor: '#ffffff',
+                        useCORS: true
+                    });
+
+                    const chartImg = chartCanvas.toDataURL('image/png', 1.0);
+                    const imgWidth = 600;
+                    const imgHeight = (chartCanvas.height / chartCanvas.width) * imgWidth;
+
+                    if (currentY + imgHeight > 500) {
+                        doc.addPage();
+                        currentY = 60;
+                    }
+
+                    doc.setFontSize(12);
+                    doc.text(chart.title, 420, currentY - 10, { align: 'center' });
+                    doc.addImage(chartImg, 'PNG', 100, currentY, imgWidth, imgHeight);
+                    currentY += imgHeight + 30;
+                }
+            } catch (err) {
+                console.error("❌ Gagal render grafik:", err);
+            }
+
+            // === Tampilkan kembali kolom aksi ===
             document.querySelectorAll('#dataTable tr').forEach(row => {
                 if (row.children[aksiIndex]) row.children[aksiIndex].style.display = '';
             });
 
-            // Simpan PDF
+            // === Simpan PDF ===
             doc.save('Laporan_UDKP.pdf');
         });
     </script>
+
+
+
+
+
+
 <script>
     $(function () {
         const $table = $('#dataTable');
