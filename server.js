@@ -78,6 +78,35 @@ app.get("/", async (req, res) => {
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(row);
     });
+    // Normalizer
+    const norm = (s) => (s || "").trim().toUpperCase().replace(/\s+/g, " ");
+
+    // Hitung per grup (bukan per baris)
+    let countUpkp = 0,
+      countUd1 = 0,
+      countUd2 = 0;
+
+    Object.values(grouped).forEach((rows) => {
+      let hasUPKP = false,
+        hasUD1 = false,
+        hasUD2 = false;
+
+      rows.forEach((row) => {
+        const jenis = norm(row.jenis_ujian);
+
+        if (jenis.includes("UPKP")) {
+          hasUPKP = true; // UPKP + REMED UPKP
+        } else if (jenis.includes("UD TK. II")) {
+          hasUD2 = true; // UD TK. II + REMED UD TK. II
+        } else if (jenis.includes("UD TK. I")) {
+          hasUD1 = true; // UD TK. I + REMED UD TK. I
+        }
+      });
+
+      if (hasUPKP) countUpkp++;
+      if (hasUD1) countUd1++;
+      if (hasUD2) countUd2++;
+    });
 
     // ubah jadi array
     const groupedArray = Object.entries(grouped).map(([key, rows]) => ({
@@ -113,6 +142,9 @@ app.get("/", async (req, res) => {
       endEntry,
       limit, // ✅ kirimkan ke view
       query: req.query.q || "",
+      countUpkp,
+      countUd1,
+      countUd2,
     });
   } catch (err) {
     console.error(err);
@@ -516,10 +548,6 @@ app.get("/search", async (req, res) => {
       .json({ status: "error", message: "Gagal melakukan pencarian" });
   }
 });
-
-
-
-
 
 app.post("/update/:ids", upload.none(), async (req, res) => {
   try {

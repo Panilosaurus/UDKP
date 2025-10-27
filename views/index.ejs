@@ -207,6 +207,48 @@
                     <!-- TABLE ROW (FULL WIDTH) -->
                     <div class="row">
                         <div class="col-12">
+                            <!-- ROW CARD INFO -->
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm border-left-danger">
+                                        <div class="card-body py-3">
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                Jumlah UPKP
+                                            </div>
+                                            <div id="cardUpkp" class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <%= countUpkp %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm border-left-success">
+                                        <div class="card-body py-3">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Jumlah UD TK. I
+                                            </div>
+                                        <div id="cardUd1" class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <%= countUd1 %>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm border-left-warning">
+                                        <div class="card-body py-3">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Jumlah UD TK. II
+                                            </div>
+                                            <div id="cardUd2" class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <%= countUd2 %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- ROW GRAFIK -->
                             <div class="row mb-4">
                                 <!-- Grafik Nilai UPKP -->
@@ -2403,6 +2445,7 @@
 
                 // update grafik
                 renderCharts(data.groupedData);
+                updateSummaryCards(data.groupedData);
 
             } catch (err) {
                 console.error("❌ Gagal fetch data:", err);
@@ -2461,6 +2504,7 @@
 
                 // perbarui grafik agar ikut hasil pencarian
                 renderCharts(data.groupedData);
+                updateSummaryCards(data.groupedData);
 
             } catch (err) {
                 console.error("❌ Error fetch:", err);
@@ -2748,7 +2792,26 @@
         const groupedData = <%- JSON.stringify(groupedData || []) %>;
         console.log("📊 Data grafik awal:", groupedData);
         renderCharts(groupedData);
+        updateSummaryCards(data.groupedData);
     });
+</script>
+<script>
+    function updateSummaryCards(groupedData) {
+        if (!Array.isArray(groupedData)) return;
+
+        // Ambil semua jenis ujian dari seluruh grup
+        const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
+
+        // Hitung kategori utama (termasuk REMED)
+        const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
+        const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
+        const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
+
+        // Tampilkan ke kartu
+        document.getElementById("cardUpkp").innerText = countUpkp;
+        document.getElementById("cardUd1").innerText = countUd1;
+        document.getElementById("cardUd2").innerText = countUd2;
+    }
 </script>
 
 </body>
