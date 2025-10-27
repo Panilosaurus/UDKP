@@ -1,6 +1,8 @@
 const express = require("express");
 const mysql = require("mysql2");
 const path = require("path");
+const ejs = require("ejs");
+console.log("✅ EJS module loaded:", typeof ejs.renderFile);
 
 const app = express();
 const port = 3000;
@@ -430,25 +432,36 @@ app.get("/search", async (req, res) => {
       const where = [];
 
       if (q) {
-        where.push(`
-          (
-            instansi LIKE ? OR
-            jenis_ujian LIKE ? OR
-            status LIKE ? OR
-            dokumen LIKE ? OR
-            petugas_cat LIKE ? OR
-            CAST(nilai_tertinggi_pg AS CHAR) LIKE ? OR
-            CAST(nilai_terendah_pg AS CHAR) LIKE ? OR
-            CAST(jumlah_lulus_pg AS CHAR) LIKE ? OR
-            CAST(jumlah_tidak_lulus_pg AS CHAR) LIKE ? OR
-            CAST(jumlah_peserta AS CHAR) LIKE ?
-          )
-        `);
-        params.push(keyword, keyword, keyword, keyword, keyword, keyword, keyword, keyword, keyword, keyword);
+        where.push(`(
+          instansi LIKE ? OR
+          jenis_ujian LIKE ? OR
+          status LIKE ? OR
+          dokumen LIKE ? OR
+          petugas_cat LIKE ? OR
+          CAST(nilai_tertinggi_pg AS CHAR) LIKE ? OR
+          CAST(nilai_terendah_pg AS CHAR) LIKE ? OR
+          CAST(jumlah_lulus_pg AS CHAR) LIKE ? OR
+          CAST(jumlah_tidak_lulus_pg AS CHAR) LIKE ? OR
+          CAST(jumlah_peserta AS CHAR) LIKE ?
+        )`);
+        params.push(
+          keyword,
+          keyword,
+          keyword,
+          keyword,
+          keyword,
+          keyword,
+          keyword,
+          keyword,
+          keyword,
+          keyword
+        );
       }
 
       if (startDate && !endDate) {
-        where.push(`MONTH(tanggal_pelaksanaan) = MONTH(?) AND YEAR(tanggal_pelaksanaan) = YEAR(?)`);
+        where.push(
+          `MONTH(tanggal_pelaksanaan) = MONTH(?) AND YEAR(tanggal_pelaksanaan) = YEAR(?)`
+        );
         params.push(startDate, startDate);
       } else if (startDate && endDate) {
         where.push(`tanggal_pelaksanaan BETWEEN ? AND ?`);
@@ -462,12 +475,13 @@ app.get("/search", async (req, res) => {
 
     const [results] = await db.promise().query(query, params);
 
-    // 🔧 Grouping sama seperti route "/"
+    // Grouping
     const groupedMap = {};
     for (const row of results) {
-      const key = row.group_id && row.group_id.trim()
-        ? row.group_id
-        : `${row.instansi}|${row.tanggal_pelaksanaan}`;
+      const key =
+        row.group_id && row.group_id.trim()
+          ? row.group_id
+          : `${row.instansi}|${row.tanggal_pelaksanaan}`;
       if (!groupedMap[key]) {
         groupedMap[key] = {
           group_id: key,
@@ -476,7 +490,7 @@ app.get("/search", async (req, res) => {
           status: row.status,
           dokumen: row.dokumen,
           petugas_cat: row.petugas_cat,
-          rows: []
+          rows: [],
         };
       }
       groupedMap[key].rows.push(row);
@@ -484,13 +498,25 @@ app.get("/search", async (req, res) => {
 
     const groupedData = Object.values(groupedMap);
 
-    // Render partial tbody
-    res.render("partials/tableBodyFlat", { groupedData });
+    // ✅ Render partial EJS via Express callback (tidak double response)
+    res.render("partials/tableBodyFlat", { groupedData }, (err, html) => {
+      if (err) {
+        console.error("❌ Gagal render partial:", err);
+        return res.status(500).json({
+          status: "error",
+          message: "Gagal render tabel.",
+        });
+      }
+      res.json({ html, groupedData });
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Gagal melakukan pencarian");
+    console.error("❌ Error di /search:", err);
+    res
+      .status(500)
+      .json({ status: "error", message: "Gagal melakukan pencarian" });
   }
 });
+
 
 
 
