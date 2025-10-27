@@ -207,6 +207,33 @@
                     <!-- TABLE ROW (FULL WIDTH) -->
                     <div class="row">
                         <div class="col-12">
+                            <!-- ROW GRAFIK -->
+                            <div class="row mb-4">
+                                <!-- Grafik Nilai UPKP -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card shadow">
+                                        <div class="card-header py-3">
+                                            <h6 class="m-0 font-weight-bold text-primary">Perbandingan Nilai UPKP</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="chartNilaiIndex"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <!-- Grafik Lulus vs Tidak Lulus -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card shadow">
+                                        <div class="card-header py-3">
+                                            <h6 class="m-0 font-weight-bold text-success">Perbandingan Lulus vs Tidak Lulus (UD TK. I/II)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="chartLulusIndex"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
                                     <h6 class="m-0 font-weight-bold text-primary">Data Pelaksanaan UDKP</h6>
@@ -2366,9 +2393,17 @@
             }
 
             try {
-                const res = await fetch(`/search?${params.toString()}`);
-                const html = await res.text();
-                tableBody.innerHTML = html;
+                const res = await fetch(`/search?${params.toString()}`, {
+                    headers: { "Accept": "application/json" }
+                });
+                const data = await res.json();
+
+                // update tabel
+                tableBody.innerHTML = data.html;
+
+                // update grafik
+                renderCharts(data.groupedData);
+
             } catch (err) {
                 console.error("❌ Gagal fetch data:", err);
             }
@@ -2383,6 +2418,7 @@
         }
     });
 </script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -2415,9 +2451,17 @@
             console.log("🔍 Fetch:", `/search?${params.toString()}`);
 
             try {
-                const res = await fetch(`/search?${params.toString()}`);
-                const html = await res.text();
-                tableBody.innerHTML = html;
+                const res = await fetch(`/search?${params.toString()}`, {
+                    headers: { "Accept": "application/json" }
+                });
+                const data = await res.json();
+
+                // tampilkan hasil pencarian ke tabel
+                tableBody.innerHTML = data.html;
+
+                // perbarui grafik agar ikut hasil pencarian
+                renderCharts(data.groupedData);
+
             } catch (err) {
                 console.error("❌ Error fetch:", err);
             }
@@ -2612,6 +2656,100 @@
     });
 </script>
 
+<script>
+    let chartNilai, chartLulus;
+
+    function renderCharts(groupedData) {
+        if (!Array.isArray(groupedData)) return;
+
+        // Hitung nilai tertinggi/terendah (UPKP)
+        let nilaiTertinggi = 0;
+        let nilaiTerendah = null;
+        let totalLulus = 0;
+        let totalTidakLulus = 0;
+
+        groupedData.forEach(group => {
+            group.rows.forEach(row => {
+                const jenis = (row.jenis_ujian || '').toUpperCase();
+                const max = parseFloat(row.nilai_tertinggi_pg);
+                const min = parseFloat(row.nilai_terendah_pg);
+                const lulus = parseInt(row.jumlah_lulus_pg);
+                const gagal = parseInt(row.jumlah_tidak_lulus_pg);
+
+                if (jenis.includes("UPKP")) {
+                    if (!isNaN(max)) nilaiTertinggi = Math.max(nilaiTertinggi, max);
+                    if (!isNaN(min)) nilaiTerendah = (nilaiTerendah === null) ? min : Math.min(nilaiTerendah, min);
+                }
+
+                if (jenis.includes("UD TK")) {
+                    if (!isNaN(lulus)) totalLulus += lulus;
+                    if (!isNaN(gagal)) totalTidakLulus += gagal;
+                }
+            });
+        });
+
+        if (nilaiTerendah === null) nilaiTerendah = 0;
+
+        const ctx1 = document.getElementById("chartNilaiIndex").getContext("2d");
+        const ctx2 = document.getElementById("chartLulusIndex").getContext("2d");
+
+        // Hapus grafik lama kalau ada
+        if (chartNilai) chartNilai.destroy();
+        if (chartLulus) chartLulus.destroy();
+
+        // Grafik Nilai UPKP
+        chartNilai = new Chart(ctx1, {
+            type: "bar",
+            data: {
+                labels: ["UPKP & REMED UPKP"],
+                datasets: [
+                    { label: "Nilai Tertinggi", data: [nilaiTertinggi], backgroundColor: "#3b82f6" },
+                    { label: "Nilai Terendah", data: [nilaiTerendah], backgroundColor: "#facc15" }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Grafik Lulus vs Tidak Lulus
+        if (totalLulus > 0 || totalTidakLulus > 0) {
+            const total = totalLulus + totalTidakLulus;
+            const persenLulus = ((totalLulus / total) * 100).toFixed(1);
+            const persenTidakLulus = ((totalTidakLulus / total) * 100).toFixed(1);
+
+            chartLulus = new Chart(ctx2, {
+                type: "pie",
+                data: {
+                    labels: [
+                        `Lulus PG (${persenLulus}%)`,
+                        `Tidak Lulus PG (${persenTidakLulus}%)`
+                    ],
+                    datasets: [{
+                        data: [totalLulus, totalTidakLulus],
+                        backgroundColor: ["#22c55e", "#ef4444"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: "bottom" } }
+                }
+            });
+        }
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Pastikan data dari server terpasang
+        const groupedData = <%- JSON.stringify(groupedData || []) %>;
+        console.log("📊 Data grafik awal:", groupedData);
+        renderCharts(groupedData);
+    });
+</script>
 
 </body>
 
