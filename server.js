@@ -549,7 +549,8 @@ app.get("/search", async (req, res) => {
   }
 });
 
-app.post("/update/:ids", upload.none(), async (req, res) => {
+// ✅ pastikan ini app.post, bukan pp.post
+app.post("/update/:id", upload.none(), async (req, res) => {
   try {
     console.log("📩 BODY DITERIMA:", req.body);
 
@@ -557,178 +558,102 @@ app.post("/update/:ids", upload.none(), async (req, res) => {
       nama_instansi,
       tgl_pelaksanaan,
       status_pelaksanaan,
-      link_dokumen,
+      link_dokumen,          // ⬅️ ambil dari body!
       group_id,
     } = req.body;
 
-    // 🛑 1️⃣ Validasi field utama (semua wajib diisi)
-    if (
-      !nama_instansi?.trim() ||
-      !tgl_pelaksanaan?.trim() ||
-      !status_pelaksanaan?.trim() ||
-      !link_dokumen?.trim()
-    ) {
+    // 1) Validasi field wajib (tanpa link)
+    if (!nama_instansi?.trim() || !tgl_pelaksanaan?.trim() || !status_pelaksanaan?.trim()) {
       console.warn("⚠️ Validasi gagal: form edit tidak lengkap.");
       return res.json({
         status: "warning",
         title: "Form belum lengkap",
-        html: "<p>Pastikan semua kolom wajib diisi: <b>Nama Instansi, Tanggal Pelaksanaan, Status, dan Link Dokumen</b>.</p>",
+        html: "<p>Pastikan semua kolom wajib diisi: <b>Nama Instansi, Tanggal Pelaksanaan, dan Status</b>.</p>",
       });
     }
 
-    // 🛡️ 2️⃣ Validasi tambahan: link Google Drive harus valid
-    if (!/^https:\/\/drive\.google\.com\//.test(link_dokumen.trim())) {
+    // 2) Link opsional; jika diisi harus valid
+    const link = (link_dokumen || "").trim();
+    const isGDrive = /^https?:\/\/(drive|docs)\.google\.com\//.test(link);
+    if (link && !isGDrive) {
       return res.json({
         status: "warning",
         title: "Link Dokumen tidak valid",
-        html: "<p>Masukkan URL berbagi Google Drive yang benar (diawali dengan <b>https://drive.google.com/...</b>).</p>",
+        html: "<p>Jika diisi, gunakan URL berbagi Google (drive/docs) yang benar.</p>",
       });
     }
+
+    // ⬇️ jika kosong, simpan null
+    const finalLink = link || null;
 
     // 🧾 lanjutkan proses update seperti biasa
     const [oldData] = await db
       .promise()
-      .query("SELECT petugas_cat FROM tabel WHERE group_id=? LIMIT 1", [
-        group_id,
-      ]);
+      .query("SELECT petugas_cat FROM tabel WHERE group_id=? LIMIT 1", [group_id]);
 
+    // === KUMPULKAN PETUGAS DARI FORM EDIT ===
     let petugasRaw = [];
 
-    // Ambil semua field petugas dari form (lama + baru)
+    // Ambil semua field petugas dari form (dinamis)
     for (const key in req.body) {
       if (key.startsWith("edit_petugas_")) {
-        const val = req.body[key].trim();
+        const val = (req.body[key] ?? "").trim();
         if (val) petugasRaw.push(val);
       }
     }
 
+    // Tambahkan juga array petugas_cat[] jika ada
     if (req.body.petugas_cat) {
       const input = req.body.petugas_cat;
-      if (Array.isArray(input)) petugasRaw.push(...input);
-      else petugasRaw.push(input);
+      if (Array.isArray(input)) petugasRaw.push(...input.map(v => (v ?? "").trim()));
+      else petugasRaw.push((input ?? "").trim());
     }
 
-    petugasRaw = [...new Set(petugasRaw.map((p) => p.trim()).filter((p) => p))];
+    // Bersihkan & unikkan
+    petugasRaw = [...new Set(petugasRaw.filter(Boolean))];
 
-    let finalPetugas =
-      petugasRaw.length > 0
-        ? petugasRaw.join(", ")
-        : oldData[0]?.petugas_cat || null;
-
-    // const jenisList = [
-    //   "UPKP",
-    //   "UD TK. I",
-    //   "UD TK. II",
-    //   "REMED UPKP",
-    //   "REMED UD TK. I",
-    //   "REMED UD TK. II",
-    // ];
-
-    // for (let i = 0; i < jenisList.length; i++) {
-    //   const jenis = jenisList[i];
-    //   const jumlah_peserta = req.body[`jumlah_peserta_${i}`];
-
-    //   const [oldRow] = await db
-    //     .promise()
-    //     .query(
-    //       "SELECT * FROM tabel WHERE group_id=? AND jenis_ujian=? LIMIT 1",
-    //       [group_id, jenis]
-    //     );
-
-    //   const old = oldRow[0] || {};
-
-    //   const finalJumlahPeserta =
-    //     jumlah_peserta === undefined || jumlah_peserta === ""
-    //       ? old.jumlah_peserta
-    //       : jumlah_peserta;
-
-    //   // Jika tidak ada data lama & tidak ada input baru, skip
-    //   if (oldRow.length === 0 && !finalJumlahPeserta) continue;
-
-    //   if (oldRow.length > 0) {
-    //     await db.promise().query(
-    //       `UPDATE tabel SET 
-    //         instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
-    //         status=?, dokumen=?, petugas_cat=? 
-    //       WHERE group_id=? AND jenis_ujian=?`,
-    //       [
-    //         nama_instansi,
-    //         finalJumlahPeserta,
-    //         tgl_pelaksanaan,
-    //         status_pelaksanaan,
-    //         link_dokumen,
-    //         finalPetugas,
-    //         group_id,
-    //         jenis,
-    //       ]
-    //     );
-    //   } else {
-    //     await db.promise().query(
-    //       `INSERT INTO tabel (
-    //         instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan,
-    //         status, dokumen, petugas_cat
-    //       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    //       [
-    //         nama_instansi,
-    //         group_id,
-    //         jenis,
-    //         finalJumlahPeserta,
-    //         tgl_pelaksanaan,
-    //         status_pelaksanaan,
-    //         link_dokumen,
-    //         finalPetugas,
-    //       ]
-    //     );
-    //   }
-    // }
-    const jenisList = [
-      "UPKP",
-      "UD TK. I",
-      "UD TK. II",
-      "REMED UPKP",
-      "REMED UD TK. I",
-      "REMED UD TK. II",
-    ];
-
-    function toNumOrNull(v) {
-      return (v === undefined || v === "") ? null : Number(v);
+    // ✅ VALIDASI: Minimal 1 petugas CAT wajib diisi
+    if (petugasRaw.length < 1) {
+      return res.json({
+        status: "warning",
+        title: "Minimal 1 Petugas CAT",
+        html: "<p>Isi setidaknya <b>1 nama Petugas CAT</b> sebelum menyimpan.</p>",
+      });
     }
+
+    // Jika lolos validasi → simpan hasil akhirnya
+    const finalPetugas = petugasRaw.join(", ");
+
+
+    const jenisList = ["UPKP", "UD TK. I", "UD TK. II", "REMED UPKP", "REMED UD TK. I", "REMED UD TK. II"];
+
+    function toNumOrNull(v) { return (v === undefined || v === "") ? null : Number(v); }
 
     for (let i = 0; i < jenisList.length; i++) {
       const jenis = jenisList[i];
 
-      // ambil input dari form Edit
       const inJumlah = req.body[`jumlah_peserta_${i}`];
       const inNilaiMax = req.body[`nilai_tertinggi_${i}`];
       const inNilaiMin = req.body[`nilai_terendah_${i}`];
       const inLulus = req.body[`jumlah_lulus_pg_${i}`];
       const inTidakLulus = req.body[`jumlah_tidak_lulus_pg_${i}`];
 
-      const isUPKP = (jenis === "UPKP" || jenis === "REMED UPKP"); // nilai UPKP & REMED UPKP
+      const isUPKP = (jenis === "UPKP" || jenis === "REMED UPKP");
       const filledForUPKP = (inJumlah || inNilaiMax || inNilaiMin);
       const filledForUD = (inJumlah || inLulus || inTidakLulus);
 
-      // cek data lama
       const [oldRow] = await db.promise().query(
         "SELECT * FROM tabel WHERE group_id=? AND jenis_ujian=? LIMIT 1",
         [group_id, jenis]
       );
 
-      // 1) jika tidak ada data lama & tidak ada input → skip
-      if (oldRow.length === 0 && !(isUPKP ? filledForUPKP : filledForUD)) {
-        continue;
-      }
+      if (oldRow.length === 0 && !(isUPKP ? filledForUPKP : filledForUD)) continue;
 
-      // 2) jika ada data lama & SEMUA input untuk jenis ini dikosongkan → DELETE row
       if (oldRow.length > 0 && !(isUPKP ? filledForUPKP : filledForUD)) {
-        await db.promise().query(
-          "DELETE FROM tabel WHERE group_id=? AND jenis_ujian=?",
-          [group_id, jenis]
-        );
+        await db.promise().query("DELETE FROM tabel WHERE group_id=? AND jenis_ujian=?", [group_id, jenis]);
         continue;
       }
 
-      // 3) UPDATE / INSERT sesuai ada/tidaknya data lama
       const jumlah_peserta = toNumOrNull(inJumlah);
       const nilai_tertinggi_pg = toNumOrNull(inNilaiMax);
       const nilai_terendah_pg = toNumOrNull(inNilaiMin);
@@ -736,78 +661,65 @@ app.post("/update/:ids", upload.none(), async (req, res) => {
       const jumlah_tidak_lulus_pg = toNumOrNull(inTidakLulus);
 
       if (oldRow.length > 0) {
-        // UPDATE
         if (isUPKP) {
           await db.promise().query(
             `UPDATE tabel SET 
-           instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
-           status=?, dokumen=?, petugas_cat=?,
-           nilai_tertinggi_pg=?, nilai_terendah_pg=?
-         WHERE group_id=? AND jenis_ujian=?`,
-            [
-              nama_instansi, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, link_dokumen, finalPetugas,
+               instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
+               status=?, dokumen=?, petugas_cat=?,
+               nilai_tertinggi_pg=?, nilai_terendah_pg=?
+             WHERE group_id=? AND jenis_ujian=?`,
+            [nama_instansi, jumlah_peserta, tgl_pelaksanaan,
+              status_pelaksanaan, finalLink, finalPetugas,
               nilai_tertinggi_pg, nilai_terendah_pg,
-              group_id, jenis
-            ]
+              group_id, jenis]
           );
         } else {
           await db.promise().query(
             `UPDATE tabel SET 
-           instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
-           status=?, dokumen=?, petugas_cat=?,
-           jumlah_lulus_pg=?, jumlah_tidak_lulus_pg=?
-         WHERE group_id=? AND jenis_ujian=?`,
-            [
-              nama_instansi, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, link_dokumen, finalPetugas,
-              jumlah_lulus_pg, jumlah_tidak_lulus_pg,
-              group_id, jenis
-            ]
+               instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
+               status=?, dokumen=?, petugas_cat=?,
+               jumlah_lulus_pg=?, jumlah_tidak_lulus_pg=?
+             WHERE group_id=? AND jenis_ujian=?`,
+            [nama_instansi, jumlah_peserta, tgl_pelaksanaan,
+              status_pelaksanaan, finalLink, finalPetugas,
+              jumlah_lusus_pg, jumlah_tidak_lulus_pg,  // <-- perhatikan nama variabelmu
+              group_id, jenis]
           );
         }
       } else {
-        // INSERT
         if (isUPKP) {
           await db.promise().query(
             `INSERT INTO tabel 
-          (instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
-           status, dokumen, petugas_cat, nilai_tertinggi_pg, nilai_terendah_pg)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              nama_instansi, group_id, jenis, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, link_dokumen, finalPetugas,
-              nilai_tertinggi_pg, nilai_terendah_pg
-            ]
+              (instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
+               status, dokumen, petugas_cat, nilai_tertinggi_pg, nilai_terendah_pg)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [nama_instansi, group_id, jenis, jumlah_peserta, tgl_pelaksanaan,
+              status_pelaksanaan, finalLink, finalPetugas,
+              nilai_tertinggi_pg, nilai_terendah_pg]
           );
         } else {
           await db.promise().query(
             `INSERT INTO tabel 
-          (instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
-           status, dokumen, petugas_cat, jumlah_lulus_pg, jumlah_tidak_lulus_pg)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              nama_instansi, group_id, jenis, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, link_dokumen, finalPetugas,
-              jumlah_lulus_pg, jumlah_tidak_lulus_pg
-            ]
+              (instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
+               status, dokumen, petugas_cat, jumlah_lulus_pg, jumlah_tidak_lulus_pg)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [nama_instansi, group_id, jenis, jumlah_peserta, tgl_pelaksanaan,
+              status_pelaksanaan, finalLink, finalPetugas,
+              jumlah_lulus_pg, jumlah_tidak_lulus_pg]
           );
         }
       }
     }
 
-
     console.log("✅ Update sukses:", group_id);
-    res.json({
-      status: "success",
-      title: "Berhasil!",
-      html: "<p>Data berhasil diperbarui.</p>",
-    });
+    return res.json({ status: "success", title: "Berhasil!", html: "<p>Data berhasil diperbarui.</p>" });
+
   } catch (err) {
     console.error("❌ Gagal update data:", err);
-    res.status(500).send("Gagal memperbarui data.");
+    return res.status(500).json({ status: "error", title: "Gagal!", message: "Terjadi kesalahan saat menyimpan data." });
   }
 });
+
 
 
 
@@ -879,3 +791,47 @@ app.post("/update-nilai/:groupId", upload.none(), async (req, res) => {
       .json({ status: "error", message: "Gagal memperbarui nilai." });
   }
 });
+
+// Jika belum ada body parser:
+app.use(express.urlencoded({ extended: true }));
+
+// Dummy data dulu
+const usersDummy = [
+  { id: 1, nama: 'Admin Utama', username: 'admin', role: 'admin', status: 'aktif' },
+  { id: 2, nama: 'Bima Aji', username: 'bimaajin', role: 'petugas', status: 'aktif' },
+  { id: 3, nama: 'Operator 01', username: 'operator01', role: 'viewer', status: 'nonaktif' },
+];
+
+// GET index manajemen akun
+app.get('/akun', (req, res) => {
+  res.render('akun', { users: usersDummy });
+});
+
+// POST tambah akun (contoh; nanti ganti dengan query INSERT ke DB)
+app.post('/akun/tambah', (req, res) => {
+  const { nama, username, password, role, status } = req.body;
+  // TODO: hash password (bcrypt) & simpan ke DB
+  usersDummy.push({ id: Date.now(), nama, username, role, status });
+  res.redirect('/akun');
+});
+
+// Toggle aktif/nonaktif (contoh)
+app.post('/akun/toggle/:id', (req, res) => {
+  const user = usersDummy.find(u => u.id == req.params.id);
+  if (user) user.status = user.status === 'aktif' ? 'nonaktif' : 'aktif';
+  res.redirect('/akun');
+});
+
+// Reset password (contoh)
+app.post('/akun/reset-password/:id', (req, res) => {
+  // TODO: set password default & simpan ke DB
+  res.redirect('/akun');
+});
+
+// Hapus akun (contoh)
+app.post('/akun/delete/:id', (req, res) => {
+  const idx = usersDummy.findIndex(u => u.id == req.params.id);
+  if (idx > -1) usersDummy.splice(idx, 1);
+  res.redirect('/akun');
+});
+
