@@ -636,6 +636,50 @@ app.post("/update/:id", upload.none(), async (req, res) => {
     // Jika lolos validasi → simpan hasil akhirnya
     const finalPetugas = petugasRaw.join(", ");
 
+    // --- VALIDASI: jika mau set ke "Selesai" pastikan kolom wajib terisi sesuai jenis & peserta>0 ---
+    if (status_pelaksanaan === 'Selesai') {
+      // tarik angka dari body (pakai helper toNumOrNull kamu kalau mau)
+      const jmlUPKP = Number(req.body['jumlah_peserta_0'] || 0);
+      const jmlUD1 = Number(req.body['jumlah_peserta_1'] || 0);
+      const jmlUD2 = Number(req.body['jumlah_peserta_2'] || 0);
+      const jmlRemUPKP = Number(req.body['jumlah_peserta_3'] || 0);
+      const jmlRemUD1 = Number(req.body['jumlah_peserta_4'] || 0);
+      const jmlRemUD2 = Number(req.body['jumlah_peserta_5'] || 0);
+
+      const maxUPKP = req.body['nilai_tertinggi_0'];
+      const minUPKP = req.body['nilai_terendah_0'];
+      const maxRemUPKP = req.body['nilai_tertinggi_3'];
+      const minRemUPKP = req.body['nilai_terendah_3'];
+
+      const lulusUD1 = req.body['jumlah_lulus_pg_1'];
+      const gagalUD1 = req.body['jumlah_tidak_lulus_pg_1'];
+      const lulusUD2 = req.body['jumlah_lulus_pg_2'];
+      const gagalUD2 = req.body['jumlah_tidak_lulus_pg_2'];
+      const lulusRemUD1 = req.body['jumlah_lulus_pg_4'];
+      const gagalRemUD1 = req.body['jumlah_tidak_lulus_pg_4'];
+      const lulusRemUD2 = req.body['jumlah_lulus_pg_5'];
+      const gagalRemUD2 = req.body['jumlah_tidak_lulus_pg_5'];
+
+      let msgs = [];
+      if (jmlUPKP > 0 && (!maxUPKP || !minUPKP)) msgs.push('• <b>UPKP</b>: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>');
+      if (jmlRemUPKP > 0 && (!maxRemUPKP || !minRemUPKP)) msgs.push('• <b>REMED UPKP</b>: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>');
+
+      if (jmlUD1 > 0 && (!lulusUD1 || !gagalUD1)) msgs.push('• <b>UD TK. I</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
+      if (jmlUD2 > 0 && (!lulusUD2 || !gagalUD2)) msgs.push('• <b>UD TK. II</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
+      if (jmlRemUD1 > 0 && (!lulusRemUD1 || !gagalRemUD1)) msgs.push('• <b>REMED UD TK. I</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
+      if (jmlRemUD2 > 0 && (!lulusRemUD2 || !gagalRemUD2)) msgs.push('• <b>REMED UD TK. II</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
+
+      if (msgs.length) {
+        return res.json({
+          status: 'warning',
+          title: 'Belum bisa diselesaikan',
+          html: `<p>Untuk mengubah status menjadi <b>Selesai</b>, lengkapi dulu kolom berikut:</p>
+             <div>${msgs.join('<br>')}</div>`
+        });
+      }
+    }
+
+
 
     const jenisList = ["UPKP", "UD TK. I", "UD TK. II", "REMED UPKP", "REMED UD TK. I", "REMED UD TK. II"];
 
@@ -694,7 +738,7 @@ app.post("/update/:id", upload.none(), async (req, res) => {
              WHERE group_id=? AND jenis_ujian=?`,
             [nama_instansi, jumlah_peserta, tgl_pelaksanaan,
               status_pelaksanaan, finalLink, finalPetugas,
-              jumlah_lusus_pg, jumlah_tidak_lulus_pg,  // <-- perhatikan nama variabelmu
+              jumlah_lulus_pg, jumlah_tidak_lulus_pg,  // <-- perhatikan nama variabelmu
               group_id, jenis]
           );
         }
@@ -732,11 +776,6 @@ app.post("/update/:id", upload.none(), async (req, res) => {
   }
 });
 
-
-
-
-
-
 app.get("/get-nilai/:groupId", async (req, res) => {
   const { groupId } = req.params;
   try {
@@ -762,88 +801,191 @@ app.get("/get-nilai/:groupId", async (req, res) => {
   }
 });
 
-
-app.post("/update-nilai/:groupId", upload.none(), async (req, res) => {
+// Simpan Nilai (dari modal "Input Nilai")
+app.post('/update-nilai/:groupId', upload.none(), async (req, res) => {
   const { groupId } = req.params;
-  const updates = [];
+
+  // helper: ubah string ke number/null
+  const toNumOrNull = (v) =>
+    (v === undefined || v === '' || v === null) ? null : Number(v);
 
   try {
-    for (const [key, value] of Object.entries(req.body)) {
-      const match = key.match(
-        /(nilai_tertinggi|nilai_terendah|jumlah_lulus|jumlah_tidak_lulus)_(\d+)/
-      );
-      if (match) {
-        const [_, field, id] = match;
-        updates.push({ id, field, value: parseInt(value) || null });
+    // Ambil semua pasangan field yang dikirim:
+    // nama fieldnya berbentuk:
+    //   nilai_tertinggi_<id>
+    //   nilai_terendah_<id>
+    //   jumlah_lulus_<id>
+    //   jumlah_tidak_lulus_<id>
+    //
+    // Kumpulkan per-ID
+    const perId = {}; // { [id]: { tertinggi, terendah, lulus, gagal } }
+    for (const [key, val] of Object.entries(req.body)) {
+      const m1 = key.match(/^nilai_tertinggi_(\d+)$/);
+      const m2 = key.match(/^nilai_terendah_(\d+)$/);
+      const m3 = key.match(/^jumlah_lulus_(\d+)$/);
+      const m4 = key.match(/^jumlah_tidak_lulus_(\d+)$/);
+      let id = null, k = null;
+
+      if (m1) { id = m1[1]; k = 'nilai_tertinggi_pg'; }
+      else if (m2) { id = m2[1]; k = 'nilai_terendah_pg'; }
+      else if (m3) { id = m3[1]; k = 'jumlah_lulus_pg'; }
+      else if (m4) { id = m4[1]; k = 'jumlah_tidak_lulus_pg'; }
+
+      if (id) {
+        perId[id] = perId[id] || {};
+        perId[id][k] = toNumOrNull(val);
       }
     }
 
-    // Update tiap field
-    for (const u of updates) {
-      await db
-        .promise()
-        .query(
-          `UPDATE tabel SET ${u.field === "nilai_tertinggi"
-            ? "nilai_tertinggi_pg"
-            : u.field === "nilai_terendah"
-              ? "nilai_terendah_pg"
-              : u.field === "jumlah_lulus"
-                ? "jumlah_lulus_pg"
-                : "jumlah_tidak_lulus_pg"
-          } = ? WHERE id = ?`,
-          [u.value, u.id]
-        );
+    // Tidak ada nilai yang dikirim
+    if (Object.keys(perId).length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Tidak ada data nilai yang dikirim.',
+      });
     }
 
-    res.json({ status: "success", message: "Nilai berhasil diperbarui." });
+    // Update per baris id
+    for (const [id, payload] of Object.entries(perId)) {
+      const {
+        nilai_tertinggi_pg = null,
+        nilai_terendah_pg = null,
+        jumlah_lulus_pg = null,
+        jumlah_tidak_lulus_pg = null,
+      } = payload;
+
+      await db.promise().query(
+        `UPDATE tabel
+         SET nilai_tertinggi_pg = ?, 
+             nilai_terendah_pg = ?, 
+             jumlah_lulus_pg = ?, 
+             jumlah_tidak_lulus_pg = ?
+         WHERE id = ? AND group_id = ?`,
+        [
+          nilai_tertinggi_pg,
+          nilai_terendah_pg,
+          jumlah_lulus_pg,
+          jumlah_tidak_lulus_pg,
+          id,
+          groupId,
+        ]
+      );
+    }
+
+    return res.json({
+      status: 'success',
+      message: 'Nilai berhasil diperbarui.',
+    });
   } catch (err) {
-    console.error(err);
-    res
-      .status(500)
-      .json({ status: "error", message: "Gagal memperbarui nilai." });
+    console.error('❌ Gagal update nilai:', err);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Terjadi kesalahan saat menyimpan nilai.',
+    });
   }
 });
 
-// Jika belum ada body parser:
-app.use(express.urlencoded({ extended: true }));
 
-// Dummy data dulu
-const usersDummy = [
-  { id: 1, nama: 'Admin Utama', username: 'admin', role: 'admin', status: 'aktif' },
-  { id: 2, nama: 'Bima Aji', username: 'bimaajin', role: 'petugas', status: 'aktif' },
-  { id: 3, nama: 'Operator 01', username: 'operator01', role: 'viewer', status: 'nonaktif' },
-];
+// Pastikan parser JSON sudah aktif sekali di atas semua route:
+// app.use(express.json());
 
-// GET index manajemen akun
-app.get('/akun', (req, res) => {
-  res.render('akun', { users: usersDummy });
+app.post('/update-status/:groupId', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { status } = req.body;
+
+    const allowed = ['Persiapan Administrasi', 'Menunggu Pelaksanaan', 'Selesai'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ status: 'error', message: 'Status tidak valid.' });
+    }
+
+    // Kalau bukan ke "Selesai", langsung update saja
+    if (status !== 'Selesai') {
+      await db.promise().query('UPDATE tabel SET status=? WHERE group_id=?', [status, groupId]);
+      return res.json({ status: 'success', message: 'Status diperbarui.' });
+    }
+
+    // === VALIDASI khusus saat ke "Selesai" ===
+    // Ambil semua baris dalam group_id yang punya peserta > 0
+    const [rows] = await db.promise().query(
+      `
+      SELECT id, jenis_ujian, jumlah_peserta,
+             nilai_tertinggi_pg, nilai_terendah_pg,
+             jumlah_lulus_pg, jumlah_tidak_lulus_pg
+      FROM tabel
+      WHERE group_id = ?
+      AND jumlah_peserta IS NOT NULL
+      AND jumlah_peserta > 0
+      `,
+      [groupId]
+    );
+
+    // Helper: cek terisi (0 valid, kosong = null/undefined/'')
+    const filled = v => !(v === null || v === undefined || v === '');
+
+    const missing = []; // kumpulkan pesan kekurangan per jenis
+
+    for (const r of rows) {
+      const jenis = (r.jenis_ujian || '').toUpperCase();
+
+      const isUPKP = (jenis === 'UPKP' || jenis === 'REMED UPKP');
+      const isUD = (jenis.includes('UD TK')); // cocok untuk 'UD TK. I/II' & 'REMED UD TK. I/II'
+
+      if (isUPKP) {
+        const ok = filled(r.nilai_tertinggi_pg) && filled(r.nilai_terendah_pg);
+        if (!ok) {
+          missing.push(`• ${r.jenis_ujian}: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>`);
+        }
+      } else if (isUD) {
+        const ok = filled(r.jumlah_lulus_pg) && filled(r.jumlah_tidak_lulus_pg);
+        if (!ok) {
+          missing.push(`• ${r.jenis_ujian}: isi <b>Jumlah Lulus</b> & <b>Jumlah Tidak Lulus</b>`);
+        }
+      }
+      // jenis lain (kalau ada) diabaikan
+    }
+
+    if (missing.length > 0) {
+      return res.status(400).json({
+        status: 'error',
+        title: 'Belum bisa diselesaikan',
+        message: `Untuk mengubah status menjadi <b>Selesai</b>, lengkapi dulu kolom berikut :<br>${missing.join('<br>')}`
+      });
+    }
+
+    // Lolos validasi → update status seluruh baris di group_id
+    await db.promise().query('UPDATE tabel SET status=? WHERE group_id=?', [status, groupId]);
+
+    return res.json({ status: 'success', message: 'Status diperbarui.' });
+  } catch (err) {
+    console.error('❌ update-status error:', err);
+    res.status(500).json({ status: 'error', message: 'Gagal memperbarui status.' });
+  }
 });
 
-// POST tambah akun (contoh; nanti ganti dengan query INSERT ke DB)
-app.post('/akun/tambah', (req, res) => {
-  const { nama, username, password, role, status } = req.body;
-  // TODO: hash password (bcrypt) & simpan ke DB
-  usersDummy.push({ id: Date.now(), nama, username, role, status });
-  res.redirect('/akun');
+app.post('/update-status', async (req, res) => {
+  try {
+    const { group_id, status } = req.body;
+    if (!group_id || !status) return res.status(400).json({ success:false, message:'Data tidak lengkap.' });
+    await db.promise().query('UPDATE tabel SET status=? WHERE group_id=?', [status, group_id]);
+    res.json({ success:true });
+  } catch (e) {
+    console.error('❌ update-status:', e);
+    res.status(500).json({ success:false, message:'Kesalahan server.' });
+  }
 });
 
-// Toggle aktif/nonaktif (contoh)
-app.post('/akun/toggle/:id', (req, res) => {
-  const user = usersDummy.find(u => u.id == req.params.id);
-  if (user) user.status = user.status === 'aktif' ? 'nonaktif' : 'aktif';
-  res.redirect('/akun');
+// Manajemen Akun – list akun sederhana
+app.get('/akun', async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(
+      'SELECT id_akun, username, nama_depan, nama_belakang FROM akun ORDER BY id_akun DESC'
+    );
+    res.render('akun', { users: rows });
+  } catch (err) {
+    console.error('GET /akun', err);
+    res.status(500).send('Gagal memuat halaman akun');
+  }
 });
 
-// Reset password (contoh)
-app.post('/akun/reset-password/:id', (req, res) => {
-  // TODO: set password default & simpan ke DB
-  res.redirect('/akun');
-});
-
-// Hapus akun (contoh)
-app.post('/akun/delete/:id', (req, res) => {
-  const idx = usersDummy.findIndex(u => u.id == req.params.id);
-  if (idx > -1) usersDummy.splice(idx, 1);
-  res.redirect('/akun');
-});
 
