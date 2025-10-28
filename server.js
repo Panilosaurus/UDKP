@@ -132,7 +132,7 @@ app.get("/", async (req, res) => {
       page * limit
     );
     // 🔹 Hitung total per instansi
-   const [rekapInstansi] = await db.promise().query(`
+    const [rekapInstansi] = await db.promise().query(`
   SELECT 
     instansi,
     SUM(CASE WHEN TRIM(jenis_ujian) IN ('UPKP','REMED UPKP') THEN 1 ELSE 0 END) AS total_upkp,
@@ -141,6 +141,20 @@ app.get("/", async (req, res) => {
   FROM tabel
   GROUP BY instansi
   ORDER BY instansi ASC
+`);
+
+    // 🔹 Ambil nilai tertinggi dan terendah dari semua jenis ujian
+    const [nilaiMinMax] = await db.promise().query(`
+  SELECT
+    GREATEST(
+      IFNULL(MAX(nilai_tertinggi_pg), 0),
+      IFNULL(MAX(jumlah_lulus_pg), 0)
+    ) AS nilai_tertinggi,
+    LEAST(
+      IFNULL(MIN(nilai_terendah_pg), 999999),
+      IFNULL(MIN(jumlah_tidak_lulus_pg), 999999)
+    ) AS nilai_terendah
+  FROM tabel
 `);
 
     res.render("index", {
@@ -157,6 +171,7 @@ app.get("/", async (req, res) => {
       countUd1,
       countUd2,
       rekapInstansi,
+      nilaiMinMax,
     });
   } catch (err) {
     console.error(err);

@@ -217,45 +217,72 @@
                         <div class="col-12">
                             <!-- ROW CARD INFO -->
                             <div class="row mb-3">
-                                <div class="col-md-4 mb-3">
+                                <!-- Card Jumlah UPKP -->
+                                <div class="col-md-2 mb-3">
                                     <div class="card shadow-sm border-left-danger">
                                         <div class="card-body py-3">
-                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                                Jumlah UPKP
-                                            </div>
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Jumlah UPKP</div>
                                             <div id="cardUpkp" class="h5 mb-0 font-weight-bold text-gray-800">
                                                 <%= countUpkp %>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="col-md-4 mb-3">
+                            
+                                <!-- Card Jumlah UD TK. I -->
+                                <div class="col-md-2 mb-3">
                                     <div class="card shadow-sm border-left-success">
                                         <div class="card-body py-3">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Jumlah UD TK. I
-                                            </div>
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Jumlah UD TK. I</div>
                                             <div id="cardUd1" class="h5 mb-0 font-weight-bold text-gray-800">
                                                 <%= countUd1 %>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="col-md-4 mb-3">
+                            
+                                <!-- Card Jumlah UD TK. II -->
+                                <div class="col-md-2 mb-3">
                                     <div class="card shadow-sm border-left-warning">
                                         <div class="card-body py-3">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Jumlah UD TK. II
-                                            </div>
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Jumlah UD TK. II</div>
                                             <div id="cardUd2" class="h5 mb-0 font-weight-bold text-gray-800">
                                                 <%= countUd2 %>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            
+                                <!-- Card Nilai Tertinggi -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="card shadow-sm border-left-primary">
+                                        <div class="card-body py-3">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Nilai Tertinggi (UPKP & UD)
+                                            </div>
+                                            <div id="cardMax" class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <%= nilaiMinMax.nilai_tertinggi || '-' %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card Nilai Terendah -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="card shadow-sm border-left-secondary">
+                                        <div class="card-body py-3">
+                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                                Nilai Terendah (UPKP & UD)
+                                            </div>
+                                            <div id="cardMin" class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <%= nilaiMinMax.nilai_terendah || '-' %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
+
 
                             <!-- ROW GRAFIK -->
                             <div class="row mb-4">
@@ -288,7 +315,6 @@
 
                             <!-- Rekap (diletakkan setelah grafik, di luar row) -->
                             <div id="rekapContainer" class="my-4" style="display: none;"></div>
-
 
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
@@ -385,7 +411,10 @@
                                                     <% } else { %>
                                                         <% groupedData.forEach((group, gIndex)=> { %>
                                                             <% group.rows.forEach((row, rIndex)=> { %>
-                                                                <tr>
+                                                                <tr class="data-row" data-jenis="<%= (row.jenis_ujian || '').toString() %>"
+                                                                    data-peserta="<%= Number(row.jumlah_peserta || 0) %>" data-lulus="<%= Number(row.jumlah_lulus_pg || 0) %>"
+                                                                    data-tidak="<%= Number(row.jumlah_tidak_lulus_pg || 0) %>">
+
                                                                     <% if (rIndex===0) { %>
                                                                         <td class="text-center align-middle"
                                                                             rowspan="<%= group.rows.length %>">
@@ -643,7 +672,7 @@
                                                                     <% }) %>
                                                                         <% } %>
                                             </tbody>
-
+                                            <tfoot id="tableFooter"></tfoot>
                                         </table>
                                         <div class="d-flex justify-content-between align-items-center flex-wrap mt-3">
                                             <div class="page-info small text-muted mb-2 mb-sm-0">
@@ -1281,6 +1310,10 @@
                 .modal-body {
                     max-height: calc(100vh - 220px);
                     overflow-y: auto;
+                }
+                @media print {
+                    thead { display: table-header-group; }
+                    tfoot { display: table-row-group; }
                 }
             </style>
 
@@ -2313,215 +2346,241 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <script>
-        document.getElementById('btnExportPDF').addEventListener('click', async () => {
-            const table = document.querySelector('#dataTable');
-            const headerCells = Array.from(table.querySelectorAll('thead tr th'));
-            const aksiIndex = headerCells.length - 1;
-            const dokIndex = headerCells.findIndex(th =>
-                th.innerText.trim().toLowerCase().includes('dokumen')
-            );
+   <script>
+    document.getElementById('btnExportPDF').addEventListener('click', async () => {
+        const table = document.querySelector('#dataTable');
+        const headerCells = Array.from(table.querySelectorAll('thead tr th'));
 
-            // 🔹 Sembunyikan kolom aksi sementara
-            document.querySelectorAll('#dataTable tr').forEach(row => {
-                if (row.children[aksiIndex]) row.children[aksiIndex].style.display = 'none';
-            });
+        // === Index kolom ===
+        const aksiIndex = headerCells.length - 1;
+        const dokIndex = headerCells.findIndex(th => th.innerText.trim().toLowerCase().includes('dokumen'));
+        const tglIndex = headerCells.findIndex(th => th.innerText.trim().toLowerCase().includes('tanggal pelaksanaan'));
+        const pesertaIdx = headerCells.findIndex(th => th.innerText.trim().toLowerCase().includes('jumlah peserta'));
+        const lulusIdx = headerCells.findIndex(th => th.innerText.trim().toLowerCase().includes('lulus pg'));
+        const tidakIdx = headerCells.findIndex(th => th.innerText.trim().toLowerCase().includes('tidak lulus'));
 
-            // 🔹 Ambil tanggal pelaksanaan untuk periode dinamis
-            const tanggalIndex = headerCells.findIndex(th =>
-                th.innerText.trim().toLowerCase().includes('tanggal pelaksanaan')
-            );
-            const tanggalList = Array.from(document.querySelectorAll('#dataTable tbody tr'))
-                .map(row => {
-                    const cell = row.children[tanggalIndex];
-                    if (!cell) return null;
-                    const raw = cell.innerText.trim();
-                    const clean = raw.replace(/[^\d-]/g, '');
-                    const parts = clean.split('-');
-                    if (parts.length === 3) {
-                        const [y, m, d] = parts.map(Number);
-                        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) return new Date(y, m - 1, d);
-                    }
-                    return null;
-                })
-                .filter(Boolean)
-                .sort((a, b) => a - b);
-
-            // 🔹 Tentukan teks periode
-            let periodeText = "";
-            if (tanggalList.length > 0) {
-                const earliest = tanggalList[0];
-                const latest = tanggalList[tanggalList.length - 1];
-                const bulan = [
-                    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-                ];
-                const namaBulanAwal = bulan[earliest.getMonth()];
-                const namaBulanAkhir = bulan[latest.getMonth()];
-                const tahunAwal = earliest.getFullYear();
-                const tahunAkhir = latest.getFullYear();
-                periodeText = (tahunAwal === tahunAkhir)
-                    ? (earliest.getMonth() === latest.getMonth()
-                        ? `${namaBulanAwal} ${tahunAwal}`
-                        : `${namaBulanAwal} – ${namaBulanAkhir} ${tahunAwal}`)
-                    : `${namaBulanAwal} ${tahunAwal} – ${namaBulanAkhir} ${tahunAkhir}`;
-            } else {
-                periodeText = `Tahun ${new Date().getFullYear()}`;
-            }
-
-            // 🔹 Ambil URL dari kolom Dokumen
-            const dokumenLinks = [];
-            document.querySelectorAll('#dataTable tbody tr').forEach(row => {
-                const cell = row.children[dokIndex];
-                const a = cell ? cell.querySelector('a') : null;
-                dokumenLinks.push(a ? a.href : null);
-            });
-
-            // 🔹 Buat PDF
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-
-            // === 1. Judul ===
-            doc.setFontSize(14);
-            doc.text(`Rekapitulasi Pelaksanaan Uji Kompetensi ${periodeText}`, 420, 40, { align: 'center' });
-
-            // === 2. Tabel Utama ===
-            doc.autoTable({
-                html: '#dataTable',
-                startY: 60,
-                theme: 'grid',
-                styles: {
-                    fontSize: 8,
-                    halign: 'center',
-                    valign: 'middle',
-                    lineColor: [0, 0, 0],
-                    lineWidth: 0.1,
-                },
-                headStyles: {
-                    fillColor: [150, 150, 150],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold',
-                },
-                didDrawCell: function (data) {
-                    if (data.section === 'body' && data.column.index === dokIndex) {
-                        const url = dokumenLinks[data.row.index];
-                        if (url) {
-                            doc.link(
-                                data.cell.x + 2,
-                                data.cell.y + 2,
-                                data.cell.width - 4,
-                                data.cell.height - 4,
-                                { url }
-                            );
-                        }
-                    }
-                }
-            });
-
-            let currentY = doc.lastAutoTable.finalY + 30;
-
-            // === 3. Tabel Rekap per Instansi ===
-            try {
-                const rekapTable = document.querySelector('#rekapContainer table');
-                if (rekapTable) {
-                    doc.setFontSize(12);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Rekap Jumlah Ujian per Instansi", 420, currentY - 10, { align: "center" });
-
-                    doc.autoTable({
-                        html: rekapTable,
-                        startY: currentY,
-                        theme: 'grid',
-                        styles: {
-                            fontSize: 8,
-                            halign: 'center',
-                            valign: 'middle',
-                            lineColor: [0, 0, 0],
-                            lineWidth: 0.1,
-                        },
-                        headStyles: {
-                            fillColor: [150, 150, 150],
-                            textColor: [255, 255, 255],
-                            fontStyle: 'bold',
-                        }
-                    });
-                    currentY = doc.lastAutoTable.finalY + 40;
-                }
-            } catch (err) {
-                console.warn("⚠️ Gagal render tabel rekap:", err);
-            }
-
-            // === 4. Card Summary ===
-            try {
-                const cardCols = document.querySelectorAll('.col-md-4.mb-3');
-                if (cardCols.length > 0) {
-                    const tempContainer = document.createElement('div');
-                    tempContainer.style.display = 'flex';
-                    tempContainer.style.justifyContent = 'center';
-                    tempContainer.style.gap = '10px';
-                    cardCols.forEach(col => tempContainer.appendChild(col.cloneNode(true)));
-                    document.body.appendChild(tempContainer);
-
-                    const cardsCanvas = await html2canvas(tempContainer, { scale: 2, backgroundColor: '#ffffff' });
-                    const cardsImg = cardsCanvas.toDataURL('image/png', 1.0);
-                    document.body.removeChild(tempContainer);
-
-                    const imgWidth = 720;
-                    const imgHeight = (cardsCanvas.height / cardsCanvas.width) * imgWidth;
-
-                    if (currentY + imgHeight > 500) {
-                        doc.addPage();
-                        currentY = 60;
-                    }
-
-                    doc.setFontSize(12);
-                    doc.text("Ringkasan Jumlah", 420, currentY - 10, { align: 'center' });
-                    doc.addImage(cardsImg, 'PNG', 50, currentY, imgWidth, imgHeight);
-                    currentY += imgHeight + 40;
-                }
-            } catch (err) {
-                console.warn("⚠️ Gagal render cards:", err);
-            }
-
-            // === 5. Grafik Bar & Pie (Sejajar) ===
-            try {
-                const chartUpkp = document.getElementById('chartNilaiIndex');
-                const chartLulus = document.getElementById('chartLulusIndex');
-
-                if (chartUpkp && chartLulus) {
-                    const upkpCanvas = chartUpkp.toDataURL('image/png', 1.0);
-                    const lulusCanvas = chartLulus.toDataURL('image/png', 1.0);
-
-                    const pdfWidth = doc.internal.pageSize.getWidth();
-                    const chartWidth = (pdfWidth - 60) / 2;
-                    const chartHeight = 130;
-
-                    // ✅ Gunakan currentY dari bagian sebelumnya (card summary)
-                    if (currentY < 100) currentY = 100;
-
-                    // Tambahkan dua chart sejajar
-                    doc.addImage(upkpCanvas, "PNG", 20, currentY, chartWidth, chartHeight);
-                    doc.addImage(lulusCanvas, "PNG", 40 + chartWidth, currentY, chartWidth, chartHeight);
-
-                    currentY += chartHeight + 30;
-                }
-            } catch (err) {
-                console.warn("⚠️ Gagal render grafik sejajar:", err);
-            }
-
-            // === Tampilkan kembali kolom aksi ===
-            document.querySelectorAll('#dataTable tr').forEach(row => {
-                if (row.children[aksiIndex]) row.children[aksiIndex].style.display = '';
-            });
-
-            // === Simpan PDF ===
-            await new Promise(resolve => {
-                doc.save('Laporan_UDKP.pdf');
-                setTimeout(resolve, 800);
-            });
+        // 🔹 Sembunyikan kolom "Aksi"
+        document.querySelectorAll('#dataTable tr').forEach(row => {
+            if (row.children[aksiIndex]) row.children[aksiIndex].style.display = 'none';
         });
-    </script>
 
+        // === 1. Ambil periode dari kolom tanggal ===
+        const tanggalList = Array.from(document.querySelectorAll('#dataTable tbody tr'))
+            .map(row => {
+                const cell = row.children[tglIndex];
+                if (!cell) return null;
+                const clean = (cell.innerText || "").trim().replace(/[^\d-]/g, "");
+                const parts = clean.split("-");
+                if (parts.length === 3) {
+                    const [y, m, d] = parts.map(Number);
+                    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) return new Date(y, m - 1, d);
+                }
+                return null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => a - b);
+
+        let periodeText = "";
+        if (tanggalList.length > 0) {
+            const earliest = tanggalList[0];
+            const latest = tanggalList[tanggalList.length - 1];
+            const bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const b1 = bulan[earliest.getMonth()], b2 = bulan[latest.getMonth()];
+            const y1 = earliest.getFullYear(), y2 = latest.getFullYear();
+            periodeText = (y1 === y2)
+                ? (b1 === b2 ? `${b1} ${y1}` : `${b1} – ${b2} ${y1}`)
+                : `${b1} ${y1} – ${b2} ${y2}`;
+        } else {
+            periodeText = `Tahun ${new Date().getFullYear()}`;
+        }
+
+        // === 2. Ambil link dokumen untuk hyperlink ===
+        const dokumenLinks = [];
+        document.querySelectorAll('#dataTable tbody tr').forEach(row => {
+            const cell = row.children[dokIndex];
+            const a = cell ? cell.querySelector('a') : null;
+            dokumenLinks.push(a ? a.href : null);
+        });
+
+        // === 3. Ambil total dari baris footer (lebih akurat) ===
+        const totalRow = table.querySelector('tfoot tr');
+        let totalPeserta = 0, totalLulus = 0, totalTidak = 0;
+        const num = v => Number(String(v).replace(/[^\d.-]/g, '')) || 0;
+
+        if (totalRow) {
+            const cells = totalRow.children;
+            totalPeserta = num(cells[pesertaIdx]?.innerText);
+            totalLulus = num(cells[lulusIdx]?.innerText);
+            totalTidak = num(cells[tidakIdx]?.innerText);
+        } else {
+            // fallback kalau tfoot belum ada
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const cells = tr.children;
+                if (cells[pesertaIdx]) totalPeserta += num(cells[pesertaIdx].innerText);
+                if (cells[lulusIdx]) totalLulus += num(cells[lulusIdx].innerText);
+                if (cells[tidakIdx]) totalTidak += num(cells[tidakIdx].innerText);
+            });
+        }
+
+        // === 4. Buat <tfoot> sementara untuk export PDF ===
+        const tempTFoot = table.tFoot || table.createTFoot();
+        const footRow = document.createElement('tr');
+        for (let i = 0; i < headerCells.length; i++) {
+            const td = document.createElement('td');
+            td.style.fontWeight = '700';
+            td.style.background = '#39a37c';
+            td.style.color = '#ffffff';
+            if (i === 0) td.textContent = 'TOTAL';
+            if (i === pesertaIdx) td.textContent = totalPeserta;
+            if (i === lulusIdx) td.textContent = totalLulus;
+            if (i === tidakIdx) td.textContent = totalTidak;
+            footRow.appendChild(td);
+        }
+        tempTFoot.innerHTML = '';
+        tempTFoot.appendChild(footRow);
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+        // === 5. Judul ===
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Rekapitulasi Pelaksanaan Uji Kompetensi ${periodeText}`, 420, 40, { align: 'center' });
+
+        // 🔹 Ubah sementara semua elemen <select> atau <input> dalam tabel jadi teks
+        const formCells = [];
+        table.querySelectorAll('select, input').forEach(el => {
+            const cell = el.closest('td');
+            if (!cell) return;
+            formCells.push({ cell, original: cell.innerHTML });
+
+            // ambil value terpilih
+            let text = '';
+            if (el.tagName === 'SELECT') {
+                text = el.options[el.selectedIndex]?.text || el.value || '';
+            } else {
+                text = el.value || '';
+            }
+
+            // ganti isi cell dengan teksnya saja
+            cell.textContent = text.trim() || '-';
+        });
+
+        // === 6. Tabel utama ===
+        doc.autoTable({
+            html: '#dataTable',
+            startY: 60,
+            theme: 'grid',
+            styles: { fontSize: 8, halign: 'center', valign: 'middle', lineColor: [0, 0, 0], lineWidth: 0.1 },
+            headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: 'bold' },
+            footStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: 'bold' },
+            showFoot: 'lastPage',
+            didDrawCell: (data) => {
+                if (data.section === 'body' && data.column.index === dokIndex) {
+                    const url = dokumenLinks[data.row.index];
+                    if (url) {
+                        doc.link(
+                            data.cell.x + 2,
+                            data.cell.y + 2,
+                            data.cell.width - 4,
+                            data.cell.height - 4,
+                            { url }
+                        );
+                    }
+                }
+            }
+        });
+        // 🔹 Kembalikan isi cell form seperti sebelum export
+        formCells.forEach(({ cell, original }) => (cell.innerHTML = original));
+
+        let currentY = doc.lastAutoTable.finalY + 30;
+
+        // === 7. Rekap per Instansi ===
+        const rekapTable = document.querySelector('#rekapContainer table');
+        if (rekapTable) {
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("Rekap Jumlah Ujian per Instansi", 420, currentY - 10, { align: "center" });
+
+            doc.autoTable({
+                html: rekapTable,
+                startY: currentY,
+                theme: 'grid',
+                styles: { fontSize: 8, halign: 'center', valign: 'middle' },
+                headStyles: { fillColor: [150, 150, 150], textColor: [255, 255, 255] }
+            });
+            currentY = doc.lastAutoTable.finalY + 30;
+        }
+
+        // === 8. Ringkasan Jumlah (Card Section) ===
+        try {
+            const cardCols = document.querySelectorAll('.col-md-2.mb-3, .col-md-3.mb-3');
+            if (cardCols.length > 0) {
+                const tempContainer = document.createElement('div');
+                tempContainer.style.display = 'flex';
+                tempContainer.style.flexWrap = 'wrap';
+                tempContainer.style.justifyContent = 'center';
+                tempContainer.style.gap = '12px';
+                tempContainer.style.padding = '10px';
+                tempContainer.style.width = '1000px';
+
+                cardCols.forEach(card => {
+                    const clone = card.cloneNode(true);
+                    clone.style.flex = '1 1 18%';
+                    tempContainer.appendChild(clone);
+                });
+
+                document.body.appendChild(tempContainer);
+                const cardCanvas = await html2canvas(tempContainer, { scale: 2, backgroundColor: '#ffffff' });
+                const cardImg = cardCanvas.toDataURL('image/png', 1.0);
+                document.body.removeChild(tempContainer);
+
+                const imgWidth = 720;
+                const imgHeight = (cardCanvas.height / cardCanvas.width) * imgWidth;
+
+                if (currentY + imgHeight > 520) { doc.addPage(); currentY = 60; }
+
+                doc.setFontSize(12);
+                doc.text("Ringkasan Jumlah (Dashboard Summary)", 420, currentY - 10, { align: 'center' });
+                doc.addImage(cardImg, 'PNG', 50, currentY, imgWidth, imgHeight);
+                currentY += imgHeight + 40;
+            }
+        } catch (err) {
+            console.warn("⚠️ Gagal render card summary:", err);
+        }
+
+        // === 9. Grafik Bar & Pie (sejajar) ===
+        try {
+            const chart1 = document.getElementById('chartNilaiIndex');
+            const chart2 = document.getElementById('chartLulusIndex');
+            if (chart1 && chart2) {
+                const img1 = chart1.toDataURL('image/png', 1.0);
+                const img2 = chart2.toDataURL('image/png', 1.0);
+                const pdfW = doc.internal.pageSize.getWidth();
+                const chartW = (pdfW - 80) / 2;
+                const chartH = 130;
+
+                if (currentY + chartH > 520) { doc.addPage(); currentY = 60; }
+
+                doc.text("Grafik Nilai UPKP & Lulus PG", 420, currentY - 10, { align: 'center' });
+                doc.addImage(img1, 'PNG', 30, currentY, chartW, chartH);
+                doc.addImage(img2, 'PNG', 50 + chartW, currentY, chartW, chartH);
+            }
+        } catch (err) {
+            console.warn("⚠️ Gagal render grafik:", err);
+        }
+
+        // === 10. Kembalikan tampilan kolom "Aksi" ===
+        document.querySelectorAll('#dataTable tr').forEach(row => {
+            if (row.children[aksiIndex]) row.children[aksiIndex].style.display = '';
+        });
+
+        // === 11. Simpan PDF ===
+        const now = new Date();
+        const namaFile = `Laporan_UDKP.pdf`;
+        doc.save(namaFile);
+    });
+</script>
 
     <script>
         $(function () {
@@ -3159,81 +3218,176 @@
         function updateSummaryCards(groupedData) {
             if (!Array.isArray(groupedData)) return;
 
-            // Ambil semua jenis ujian dari seluruh grup
+            // 🔹 Hitung jumlah per jenis ujian
             const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
-
-            // Hitung kategori utama (termasuk REMED)
             const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
             const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
             const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
 
-            // Tampilkan ke kartu
+            // 🔹 Hitung nilai tertinggi & terendah (UPKP & REMED UPKP)
+            let maxNilai = null;
+            let minNilai = null;
+
+            groupedData.forEach(g => {
+                g.rows.forEach(r => {
+                    const jenis = (r.jenis_ujian || "").toUpperCase();
+                    if (jenis.includes("UPKP")) {
+                        const max = parseFloat(r.nilai_tertinggi_pg);
+                        const min = parseFloat(r.nilai_terendah_pg);
+
+                        if (!isNaN(max)) maxNilai = (maxNilai === null) ? max : Math.max(maxNilai, max);
+                        if (!isNaN(min)) minNilai = (minNilai === null) ? min : Math.min(minNilai, min);
+                    }
+                });
+            });
+
+            // 🔹 Tampilkan ke kartu ringkasan
             document.getElementById("cardUpkp").innerText = countUpkp;
             document.getElementById("cardUd1").innerText = countUd1;
             document.getElementById("cardUd2").innerText = countUd2;
+            document.getElementById("cardMax").innerText = (maxNilai !== null) ? maxNilai : "-";
+            document.getElementById("cardMin").innerText = (minNilai !== null) ? minNilai : "-";
         }
     </script>
+
     <script>
         async function loadRekapFromGrouped(groupedData) {
-            try {
-                if (!Array.isArray(groupedData)) {
-                    document.getElementById('rekapContainer').innerHTML =
-                        '<div class="text-muted">Tidak ada data untuk direkap.</div>';
-                    return;
-                }
-                $(document).on('change', '.status-inline', async function () {
-                    const $sel = $(this);
-                    const groupId = $sel.data('group-id');
-                    const oldVal = $sel.data('old') || '';
-                    const newVal = $sel.val();
-
-                    // validasi pilihan
-                    const allowed = ['Persiapan Administrasi', 'Menunggu Pelaksanaan', 'Selesai'];
-                    if (!allowed.includes(newVal)) {
-                        $sel.val(oldVal);
-                        return Swal.fire('Tidak valid', 'Status tidak dikenali.', 'warning');
+                try {
+                    if (!Array.isArray(groupedData)) {
+                        document.getElementById('rekapContainer').innerHTML =
+                            '<div class="text-muted">Tidak ada data untuk direkap.</div>';
+                        return;
                     }
 
-                    // konfirmasi
-                    const ok = await Swal.fire({
-                        title: 'Ubah status?',
-                        html: `<p>Group ID: <b>${groupId}</b></p><p>${oldVal || '—'} ➜ <b>${newVal}</b></p>`,
-                        icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, simpan'
-                    });
-                    if (!ok.isConfirmed) { $sel.val(oldVal); return; }
+                    // 🔹 Hitung total per instansi dari groupedData
+                    const rekapMap = {};
 
-                    // disable sementara biar tak dobel klik
-                    $sel.prop('disabled', true);
-
-                    try {
-                        const res = await fetch(`/update-status`, {
-
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: newVal })
-                        });
-                        const data = await res.json();
-
-                        if (res.ok && data.status === 'success') {
-                            // simpan nilai terbaru sebagai "old"
-                            $sel.data('old', newVal);
-                            Swal.fire('Tersimpan', 'Status berhasil diperbarui.', 'success');
-                        } else {
-                            $sel.val(oldVal);
-                            Swal.fire('Gagal', data.message || 'Tidak bisa menyimpan status.', 'error');
+                    groupedData.forEach(g => {
+                        const instansi = g.instansi || "Tidak diketahui";
+                        if (!rekapMap[instansi]) {
+                            rekapMap[instansi] = { upkp: 0, ud1: 0, ud2: 0 };
                         }
-                    } catch (e) {
-                        console.error(e);
-                        $sel.val(oldVal);
-                        Swal.fire('Error', 'Kesalahan koneksi/server.', 'error');
-                    } finally {
-                        $sel.prop('disabled', false);
-                    }
-                });
+
+                        g.rows.forEach(r => {
+                            const jenis = (r.jenis_ujian || "").toUpperCase().trim();
+                            if (["UPKP", "REMED UPKP"].includes(jenis)) rekapMap[instansi].upkp++;
+                            else if (["UD TK. I", "REMED UD TK. I"].includes(jenis)) rekapMap[instansi].ud1++;
+                            else if (["UD TK. II", "REMED UD TK. II"].includes(jenis)) rekapMap[instansi].ud2++;
+                        });
+                    });
+
+                    // 🔹 Ubah jadi HTML
+                    const rowsHtml = Object.entries(rekapMap)
+                        .sort((a, b) => a[0].localeCompare(b[0]))
+                        .map(([instansi, v]) => `
+        <tr>
+          <td>${instansi}</td>
+          <td>${v.upkp}</td>
+          <td>${v.ud1}</td>
+          <td>${v.ud2}</td>
+        </tr>
+      `).join("");
+
+                    const html = `
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            Rekap Jumlah Ujian per Instansi
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+              <thead class="thead-light">
+                <tr>
+                  <th>Nama Instansi</th>
+                  <th>UPKP</th>
+                  <th>UD TK. I</th>
+                  <th>UD TK. II</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml || '<tr><td colspan="4">Tidak ada data</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+
+                    document.getElementById('rekapContainer').innerHTML = html;
+                } catch (err) {
+                    console.error("❌ Gagal buat rekap:", err);
+                    document.getElementById('rekapContainer').innerHTML =
+                        '<div class="text-danger">Gagal membuat rekap.</div>';
+                }
             }
-        }
+
     </script>
-    <!-- ==================== Script lain di atas ==================== -->
+    <script>
+        $(document).on('change', '.status-inline', async function () {
+            const $sel = $(this);
+            const groupId = $sel.data('group-id');
+            const oldVal = $sel.data('old') || '';
+            const newVal = $sel.val();
+
+            // 🔹 Validasi status yang diizinkan
+            const allowed = ['Persiapan Administrasi', 'Menunggu Pelaksanaan', 'Selesai'];
+            if (!allowed.includes(newVal)) {
+                $sel.val(oldVal);
+                return Swal.fire('Tidak valid', 'Status tidak dikenali.', 'warning');
+            }
+
+            // 🔹 Konfirmasi perubahan
+            const ok = await Swal.fire({
+                title: 'Ubah status?',
+                html: `
+                <p>Group ID: <b>${groupId}</b></p>
+                <p>${oldVal || '—'} ➜ <b>${newVal}</b></p>
+            `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, simpan',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            });
+
+            if (!ok.isConfirmed) {
+                $sel.val(oldVal);
+                return;
+            }
+
+            // 🔹 Disable sementara agar tidak double klik
+            $sel.prop('disabled', true);
+
+            try {
+                // 🔹 Panggil endpoint update status
+                const res = await fetch('/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ groupId, status: newVal })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.status === 'success') {
+                    // Update data lama
+                    $sel.data('old', newVal);
+                    Swal.fire('Tersimpan', 'Status berhasil diperbarui.', 'success');
+                } else {
+                    $sel.val(oldVal);
+                    Swal.fire('Gagal', data.message || 'Tidak bisa menyimpan status.', 'error');
+                }
+            } catch (err) {
+                console.error('❌ Error update status:', err);
+                $sel.val(oldVal);
+                Swal.fire('Error', 'Kesalahan koneksi/server.', 'error');
+            } finally {
+                $sel.prop('disabled', false);
+            }
+        });
+    </script>
+
 
     <script>
         $(document).off('change.statusInline').on('change.statusInline', '.status-inline', async function () {
@@ -3455,6 +3609,138 @@
             }
         })();
     </script>
+    <script>
+        // Cek baris terlihat (tidak tersembunyi oleh search/filter/pagination)
+        function isRowVisible(tr) {
+            if (!tr || tr.classList.contains('d-none')) return false;
+            const style = getComputedStyle(tr);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+            // Jika ada parent table yang menyembunyikan
+            let p = tr.parentElement;
+            while (p && p !== document.body) {
+                const ps = getComputedStyle(p);
+                if (ps.display === 'none' || ps.visibility === 'hidden') return false;
+                p = p.parentElement;
+            }
+            return true;
+        }
+
+        function updateTableFooterTotals() {
+            let totalPeserta = 0, totalLulus = 0, totalTidakLulus = 0;
+
+            document.querySelectorAll('#dataTable tbody tr.data-row').forEach(tr => {
+                if (!isRowVisible(tr)) return; // ⬅️ hanya baris yang tampak
+
+                const jenis = (tr.dataset.jenis || '').toUpperCase();
+                const peserta = Number(tr.dataset.peserta || 0);
+                const lulus = Number(tr.dataset.lulus || 0);
+                const tidak = Number(tr.dataset.tidak || 0);
+
+                totalPeserta += isFinite(peserta) ? peserta : 0;
+
+                // Lulus/Tidak hanya untuk UD TK (I/II & REMED)
+                if (jenis.includes('UD TK')) {
+                    totalLulus += isFinite(lulus) ? lulus : 0;
+                    totalTidakLulus += isFinite(tidak) ? tidak : 0;
+                }
+            });
+
+            const tfoot = document.getElementById('tableFooter');
+            if (!tfoot) return;
+            tfoot.innerHTML = `
+        <tr style="background:#f8f9fc; font-weight:600;">
+          <td></td>
+          <td class="text-right pr-2">TOTAL</td>
+          <td></td>
+          <td class="text-center">${totalPeserta}</td>
+          <td></td><td></td><td></td><td></td>
+          <td></td><td></td>
+          <td class="text-center text-success">${totalLulus}</td>
+          <td class="text-center text-danger">${totalTidakLulus}</td>
+          <td></td>
+        </tr>
+      `;
+        }
+
+        // Re-run setelah DOM siap
+        document.addEventListener('DOMContentLoaded', updateTableFooterTotals);
+
+        // Re-run setelah event internal kamu
+        document.addEventListener('ajaxTableUpdated', () => {
+            // Tunggu frame berikutnya supaya baris sudah ter-render / hide
+            requestAnimationFrame(updateTableFooterTotals);
+        });
+
+        // Re-run otomatis saat isi/body tabel berubah (search, pagination, toggle class, dsb.)
+        const tbody = document.getElementById('tableBody');
+        if (tbody) {
+            const observer = new MutationObserver(() => {
+                // debounce ringan
+                clearTimeout(window.__tfootDebounce);
+                window.__tfootDebounce = setTimeout(updateTableFooterTotals, 0);
+            });
+            observer.observe(tbody, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+        }
+    </script>
+
+<script>
+    (function () {
+        function moveTotalsIntoTbody() {
+            document.querySelectorAll('table').forEach((tbl, idx) => {
+                const tfoot = tbl.tFoot;
+                const tbody = tbl.tBodies[0];
+                if (!tfoot || !tbody) return;
+
+                // simpan marker agar bisa dikembalikan
+                tbl.dataset.totalMoved = '1';
+
+                // pindahkan semua baris di tfoot ke akhir tbody
+                const rows = Array.from(tfoot.rows);
+                rows.forEach((tr) => {
+                    tr.classList.add('total-row'); // untuk styling tetap hijau
+                    tbody.appendChild(tr);
+                });
+
+                // sembunyikan elemen tfoot kosong (agar tidak menyisakan ruang)
+                tfoot.style.display = 'none';
+            });
+        }
+
+        function restoreTotalsToTfoot() {
+            document.querySelectorAll('table').forEach((tbl) => {
+                if (tbl.dataset.totalMoved !== '1') return;
+
+                const tfoot = tbl.tFoot;
+                const tbody = tbl.tBodies[0];
+                if (!tfoot || !tbody) return;
+
+                // kembalikan baris total ke tfoot
+                const rows = Array.from(tbody.querySelectorAll('tr.total-row'));
+                rows.forEach((tr) => {
+                    tr.classList.remove('total-row');
+                    tfoot.appendChild(tr);
+                });
+
+                tfoot.style.removeProperty('display');
+                delete tbl.dataset.totalMoved;
+            });
+        }
+
+        // Event print modern
+        window.addEventListener('beforeprint', moveTotalsIntoTbody);
+        window.addEventListener('afterprint', restoreTotalsToTfoot);
+
+        // Fallback untuk Chrome lama
+        const mql = window.matchMedia('print');
+        if (mql && mql.addListener) {
+            mql.addListener((mq) => {
+                if (mq.matches) moveTotalsIntoTbody();
+                else restoreTotalsToTfoot();
+            });
+        }
+    })();
+</script>
+
 
 </body>
 

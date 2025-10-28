@@ -5,7 +5,9 @@
         <% } else { %>
             <% groupedData.forEach((group, gIndex)=> { %>
                 <% group.rows.forEach((row, rIndex)=> { %>
-                    <tr>
+                    <tr class="data-row" data-jenis="<%= (row.jenis_ujian || '').toString() %>"
+                        data-peserta="<%= Number(row.jumlah_peserta || 0) %>" data-lulus="<%= Number(row.jumlah_lulus_pg || 0) %>"
+                        data-tidak="<%= Number(row.jumlah_tidak_lulus_pg || 0) %>">
                         <% if (rIndex===0) { %>
                             <td rowspan="<%= group.rows.length %>" class="text-center align-middle">
                                 <%= gIndex + 1 %>
