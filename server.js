@@ -48,26 +48,26 @@ app.get("/", async (req, res) => {
     const search = req.query.q ? `%${req.query.q}%` : "%";
     const [results] = await db.promise().query(
       `
-    SELECT 
-      id,
-      instansi,
-      jenis_ujian,
-      jumlah_peserta,
-      DATE_FORMAT(tanggal_pelaksanaan, '%Y-%m-%d') AS tanggal_pelaksanaan,
-      status,
-      dokumen,
-      petugas_cat,
-      nilai_tertinggi_pg,
-      nilai_terendah_pg,
-      jumlah_lulus_pg,
-      jumlah_tidak_lulus_pg,
-      group_id
-    FROM tabel
-    WHERE instansi LIKE ? 
-       OR jenis_ujian LIKE ? 
-       OR status LIKE ?
-    ORDER BY instansi ASC, tanggal_pelaksanaan DESC
-    `,
+      SELECT 
+        id,
+        instansi,
+        jenis_ujian,
+        jumlah_peserta,
+        DATE_FORMAT(tanggal_pelaksanaan, '%Y-%m-%d') AS tanggal_pelaksanaan,
+        status,
+        dokumen,
+        petugas_cat,
+        nilai_tertinggi_pg,
+        nilai_terendah_pg,
+        jumlah_lulus_pg,
+        jumlah_tidak_lulus_pg,
+        group_id
+      FROM tabel
+      WHERE instansi LIKE ? 
+         OR jenis_ujian LIKE ? 
+         OR status LIKE ?
+      ORDER BY instansi ASC, tanggal_pelaksanaan DESC
+      `,
       [search, search, search]
     );
 
@@ -78,37 +78,8 @@ app.get("/", async (req, res) => {
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(row);
     });
-    // Normalizer
-    const norm = (s) => (s || "").trim().toUpperCase().replace(/\s+/g, " ");
 
-    // Hitung per grup (bukan per baris)
-    let countUpkp = 0,
-      countUd1 = 0,
-      countUd2 = 0;
-
-    Object.values(grouped).forEach((rows) => {
-      let hasUPKP = false,
-        hasUD1 = false,
-        hasUD2 = false;
-
-      rows.forEach((row) => {
-        const jenis = norm(row.jenis_ujian);
-
-        if (jenis.includes("UPKP")) {
-          hasUPKP = true; // UPKP + REMED UPKP
-        } else if (jenis.includes("UD TK. II")) {
-          hasUD2 = true; // UD TK. II + REMED UD TK. II
-        } else if (jenis.includes("UD TK. I")) {
-          hasUD1 = true; // UD TK. I + REMED UD TK. I
-        }
-      });
-
-      if (hasUPKP) countUpkp++;
-      if (hasUD1) countUd1++;
-      if (hasUD2) countUd2++;
-    });
-
-    // ubah jadi array
+    // ubah jadi array (tiap item = 1 grup)
     const groupedArray = Object.entries(grouped).map(([key, rows]) => ({
       group_id: key,
       instansi: rows[0].instansi,
@@ -117,11 +88,23 @@ app.get("/", async (req, res) => {
       dokumen: rows[0].dokumen,
       petugas_cat: rows[0].petugas_cat,
       rows,
+      jumlah_peserta: rows.reduce(
+        (a, b) => a + (Number(b.jumlah_peserta) || 0),
+        0
+      ),
+      jumlah_lulus_pg: rows.reduce(
+        (a, b) => a + (Number(b.jumlah_lulus_pg) || 0),
+        0
+      ),
+      jumlah_tidak_lulus_pg: rows.reduce(
+        (a, b) => a + (Number(b.jumlah_tidak_lulus_pg) || 0),
+        0
+      ),
     }));
 
     // pagination setelah grup
-    const limit = parseInt(req.query.limit) || 10; // ✅ tambahkan ini
-    const page = parseInt(req.query.page) || 1; // ✅ dan ini
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
 
     const totalGroups = groupedArray.length;
     const totalPages = Math.ceil(totalGroups / limit);
@@ -132,6 +115,39 @@ app.get("/", async (req, res) => {
       page * limit
     );
 
+    // ✅ Hitung kartu dari data yang benar-benar DITAMPILKAN (paginated)
+    function countFromDisplayed(groups) {
+      let upkp = 0,
+        ud1 = 0,
+        ud2 = 0;
+      for (const g of groups) {
+        for (const r of g.rows || []) {
+          const j = (r.jenis_ujian || "").toUpperCase();
+          if (j.includes("UPKP")) upkp++; // UPKP & REMED
+          else if (j.includes("UD TK. II")) ud2++; // UD II & REMED UD II
+          else if (j.includes("UD TK. I")) ud1++; // UD I & REMED UD I
+        }
+      }
+      return { upkp, ud1, ud2 };
+    }
+    const {
+      upkp: countUpkp,
+      ud1: countUd1,
+      ud2: countUd2,
+    } = countFromDisplayed(paginatedGroups);
+    // 🔹 Hitung total per instansi
+    // 🔧 Rekap per instansi (menggabungkan REMED)
+    const [rekapInstansi] = await db.promise().query(`
+  SELECT 
+    instansi,
+    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UPKP','REMED UPKP') THEN 1 ELSE 0 END) AS total_upkp,
+    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UD TK. I','REMED UD TK. I') THEN 1 ELSE 0 END) AS total_ud1,
+    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UD TK. II','REMED UD TK. II') THEN 1 ELSE 0 END) AS total_ud2
+  FROM tabel
+  GROUP BY instansi
+  ORDER BY instansi ASC
+`);
+
     res.render("index", {
       groupedData: paginatedGroups,
       nama: req.session.user ? req.session.user.nama : "Guest",
@@ -140,17 +156,19 @@ app.get("/", async (req, res) => {
       totalGroups,
       startEntry,
       endEntry,
-      limit, // ✅ kirimkan ke view
+      limit,
       query: req.query.q || "",
       countUpkp,
       countUd1,
       countUd2,
+      rekapInstansi,
     });
   } catch (err) {
     console.error(err);
     res.status(500).send("Terjadi kesalahan server");
   }
 });
+
 
 // -------------------- LOGIN & REGISTER --------------------
 
@@ -879,3 +897,4 @@ app.post("/update-nilai/:groupId", upload.none(), async (req, res) => {
       .json({ status: "error", message: "Gagal memperbarui nilai." });
   }
 });
+

@@ -274,6 +274,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div id="rekapContainer" style="display: none;"></div>
                             </div>
 
                             <div class="card shadow mb-4">
@@ -523,6 +524,16 @@
                                                                     <% }) %>
                                                                         <% } %>
                                             </tbody>
+                                        <tfoot>
+                                            <tr style="font-weight:bold; background-color:#f8f9fc;">
+                                                <td colspan="3" class="text-center">JUMLAH</td>
+                                                <td class="total-peserta">0</td>
+                                                <td colspan="6"></td>
+                                                <td class="total-lulus">0</td>
+                                                <td class="total-tidak">0</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
 
                                         </table>
                                         <div class="d-flex justify-content-between align-items-center flex-wrap mt-3">
@@ -2190,26 +2201,56 @@
                 },
                 headStyles: {
                     fillColor: [150, 150, 150],
-                    textColor: [0, 0, 0],
+                    textColor: [255, 255, 255],
                     fontStyle: 'bold',
                 },
-                didDrawCell: function (data) {
-                    if (data.section === 'body' && data.column.index === dokIndex) {
-                        const url = dokumenLinks[data.row.index];
-                        if (url) {
-                            doc.link(
-                                data.cell.x + 2,
-                                data.cell.y + 2,
-                                data.cell.width - 4,
-                                data.cell.height - 4,
-                                { url }
-                            );
-                        }
+                footStyles: {
+                    fillColor: [150, 150, 150],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                },
+
+                showFoot: 'lastPage',
+
+                didParseCell: function (data) {
+                    // Hanya warnai baris footer (tfoot)
+                    if (data.section === 'foot') {
+                        data.cell.styles.fillColor = [150, 150, 150];
+                        data.cell.styles.textColor = [255, 255, 255];
+                        data.cell.styles.fontStyle = 'bold';
                     }
                 }
+
             });
 
             let currentY = doc.lastAutoTable.finalY + 30;
+            // === 3. Tambahkan Tabel Rekap Ujian per Instansi ===
+            try {
+                const rekapTable = document.querySelector('#rekapContainer table');
+                if (rekapTable) {
+                    // Render tabel rekap setelah tabel utama
+                    doc.autoTable({
+                        html: rekapTable,
+                        startY: currentY,
+                        theme: 'grid',
+                        styles: {
+                            fontSize: 8,
+                            halign: 'center',
+                            valign: 'middle',
+                            lineColor: [0, 0, 0],
+                            lineWidth: 0.1,
+                        },
+                        headStyles: {
+                            fillColor: [150, 150, 150], 
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold',
+                        }
+                    });
+                    currentY = doc.lastAutoTable.finalY + 40;
+                }
+            } catch (err) {
+                console.warn("⚠️ Gagal render tabel rekap:", err);
+            }
 
             // === 3. Card Summary ===
             try {
@@ -2286,7 +2327,18 @@
             });
 
             // === Simpan PDF ===
-            doc.save('Laporan_UDKP.pdf');
+            await new Promise(resolve => {
+                doc.save('Laporan_UDKP.pdf');
+                // tunggu sedikit agar file tersimpan sepenuhnya sebelum sembunyikan
+                setTimeout(resolve, 800);
+            });
+
+            // 🔹 Sembunyikan kembali rekap setelah export
+            if (rekap) {
+                rekap.style.display = 'none';
+                rekap.classList.remove('export-visible');
+            }
+
         });
     </script>
 
@@ -2535,40 +2587,27 @@
         });
 
         async function searchData() {
-            const q = searchInput.value.trim();
-            const startDate = startDateInput.value;
-            const endDate = endDateInput.value;
+            const q = (document.getElementById("customSearch")?.value || "").trim();
+            const startDate = document.getElementById("startDate")?.value || "";
+            const endDate = document.getElementById("endDate")?.value || "";
 
             const params = new URLSearchParams({ q });
-
-            // 🔹 Kalau dua-duanya diisi → range
-            if (startDate && endDate) {
-                params.append("startDate", startDate);
-                params.append("endDate", endDate);
-            }
-            // 🔹 Kalau cuma satu → ambil bulan & tahun dari tanggal itu
-            else if (startDate || endDate) {
-                const selected = startDate || endDate;
-                const [year, month] = selected.split("-");
-                params.append("year", year);
-                params.append("month", month);
-            }
+            if (startDate) params.append("startDate", startDate);
+            if (endDate) params.append("endDate", endDate);
 
             try {
-                const res = await fetch(`/search?${params.toString()}`, {
-                    headers: { "Accept": "application/json" }
-                });
+                // 1) Tabel & grafik (sudah ada)
+                const res = await fetch(`/search?${params.toString()}`, { headers: { "Accept": "application/json" } });
                 const data = await res.json();
-
-                // update tabel
-                tableBody.innerHTML = data.html;
-
-                // update grafik
+                document.querySelector("#tableBody").innerHTML = data.html;
+                document.dispatchEvent(new CustomEvent('ajaxTableUpdated', { detail: { groupedData: data.groupedData } }));
                 renderCharts(data.groupedData);
                 updateSummaryCards(data.groupedData);
 
+                // 2) Rekap — panggil SELALU, range jika ada, kalau tidak rekap seluruh data filter q
+                loadRekapFromGrouped(data.groupedData);
             } catch (err) {
-                console.error("❌ Gagal fetch data:", err);
+                console.error("❌ Error fetch:", err);
             }
         }
 
@@ -2621,6 +2660,12 @@
 
                 // tampilkan hasil pencarian ke tabel
                 tableBody.innerHTML = data.html;
+                tableBody.innerHTML = data.html;
+
+                // kirim groupedData dari hasil pencarian ke footer
+                document.dispatchEvent(
+                    new CustomEvent('ajaxTableUpdated', { detail: { groupedData: data.groupedData } })
+                );
 
                 // perbarui grafik agar ikut hasil pencarian
                 renderCharts(data.groupedData);
@@ -2639,21 +2684,14 @@
 </script>
 <script>
     function clearFilter() {
-        document.getElementById('customSearch').value = '';
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
+            // Kosongkan input
+            document.getElementById('customSearch').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
 
-        // 🔄 Ambil halaman index penuh (bukan partial)
-        fetch('/')
-            .then(res => res.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newTable = doc.querySelector('#tableBody').innerHTML;
-                document.querySelector('#tableBody').innerHTML = newTable;
-            })
-            .catch(err => console.error('❌ Error reset:', err));
-    }
+            // Reload seluruh halaman agar grafik, tabel, dan rekap ikut reset
+            location.href = '/';
+        }
 
 </script>
 
@@ -2911,10 +2949,14 @@
         // Pastikan data dari server terpasang
         const groupedData = <%- JSON.stringify(groupedData || []) %>;
         console.log("📊 Data grafik awal:", groupedData);
+
+        // Tampilkan elemen dashboard awal
         renderCharts(groupedData);
-        updateSummaryCards(data.groupedData);
+        updateSummaryCards(groupedData);
+        loadRekapFromGrouped(groupedData); 
     });
 </script>
+
 <script>
     function updateSummaryCards(groupedData) {
         if (!Array.isArray(groupedData)) return;
@@ -2933,7 +2975,115 @@
         document.getElementById("cardUd2").innerText = countUd2;
     }
 </script>
+<script>
+    function setFooterFromData(grouped) {
+        if (!grouped || !Array.isArray(grouped)) return;
 
+        const totals = grouped.reduce((acc, g) => {
+            (g.rows || []).forEach(r => {
+                acc.peserta += Number(r.jumlah_peserta) || 0;
+                acc.lulus += Number(r.jumlah_lulus_pg) || 0;
+                acc.tidak += Number(r.jumlah_tidak_lulus_pg) || 0;
+            });
+            return acc;
+        }, { peserta: 0, lulus: 0, tidak: 0 });
+
+        const tfoot = document.querySelector('#dataTable tfoot');
+        if (!tfoot) return;
+        const tdPeserta = tfoot.querySelector('.total-peserta');
+        const tdLulus = tfoot.querySelector('.total-lulus');
+        const tdTidak = tfoot.querySelector('.total-tidak');
+
+        if (tdPeserta) tdPeserta.textContent = totals.peserta.toLocaleString('id-ID');
+        if (tdLulus) tdLulus.textContent = totals.lulus.toLocaleString('id-ID');
+        if (tdTidak) tdTidak.textContent = totals.tidak.toLocaleString('id-ID');
+    }
+
+    // Saat halaman pertama kali dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+        const groupedData = <%- JSON.stringify(groupedData) %>;
+        setFooterFromData(groupedData);
+    });
+
+    // Saat hasil search/filter diterima via AJAX
+    document.addEventListener('ajaxTableUpdated', e => {
+        setFooterFromData(e.detail?.groupedData);
+    });
+</script>
+<script>
+    async function loadRekapFromGrouped(groupedData) {
+            try {
+                if (!Array.isArray(groupedData)) {
+                    document.getElementById('rekapContainer').innerHTML =
+                        '<div class="text-muted">Tidak ada data untuk direkap.</div>';
+                    return;
+                }
+
+                // 🔹 Hitung total per instansi dari groupedData
+                const rekapMap = {};
+
+                groupedData.forEach(g => {
+                    const instansi = g.instansi || "Tidak diketahui";
+                    if (!rekapMap[instansi]) {
+                        rekapMap[instansi] = { upkp: 0, ud1: 0, ud2: 0 };
+                    }
+
+                    g.rows.forEach(r => {
+                        const jenis = (r.jenis_ujian || "").toUpperCase().trim();
+                        if (["UPKP", "REMED UPKP"].includes(jenis)) rekapMap[instansi].upkp++;
+                        else if (["UD TK. I", "REMED UD TK. I"].includes(jenis)) rekapMap[instansi].ud1++;
+                        else if (["UD TK. II", "REMED UD TK. II"].includes(jenis)) rekapMap[instansi].ud2++;
+                    });
+                });
+
+                // 🔹 Ubah jadi HTML
+                const rowsHtml = Object.entries(rekapMap)
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .map(([instansi, v]) => `
+        <tr>
+          <td>${instansi}</td>
+          <td>${v.upkp}</td>
+          <td>${v.ud1}</td>
+          <td>${v.ud2}</td>
+        </tr>
+      `).join("");
+
+                const html = `
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            Rekap Jumlah Ujian per Instansi
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+              <thead class="thead-light">
+                <tr>
+                  <th>Nama Instansi</th>
+                  <th>UPKP</th>
+                  <th>UD TK. I</th>
+                  <th>UD TK. II</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml || '<tr><td colspan="4">Tidak ada data</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+
+                document.getElementById('rekapContainer').innerHTML = html;
+            } catch (err) {
+                console.error("❌ Gagal buat rekap:", err);
+                document.getElementById('rekapContainer').innerHTML =
+                    '<div class="text-danger">Gagal membuat rekap.</div>';
+            }
+        }
+
+</script>
 </body>
 
 </html>

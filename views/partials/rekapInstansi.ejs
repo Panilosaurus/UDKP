@@ -1,0 +1,96 @@
+<% // helper format periode function fmt(d) { const [Y,M,D]=(d||'').split('-').map(Number); const
+    bln=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"]; if (!Y || !M) return d || '-' ;
+    return `${D||1} ${bln[(M||1)-1]} ${Y}`; } %>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Rekap Frekuensi Per Instansi ( <%= fmt(startDate) %> – <%=
+                        fmt(endDate) %> )</h6>
+            <button id="btnExportRekapPDF" class="btn btn-sm btn-danger">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm mb-0" id="tblRekapInstansi">
+                    <thead class="text-center">
+                        <tr>
+                            <th style="width:60px;">No</th>
+                            <th>Instansi</th>
+                            <th>UPKP (kali)</th>
+                            <th>UD TK. I (kali)</th>
+                            <th>UD TK. II (kali)</th>
+                            <th>Total (kali)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!items || items.length===0) { %>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Tidak ada data dalam periode ini.</td>
+                            </tr>
+                            <% } else { let no=1, sUp=0, sU1=0, sU2=0, sTot=0; items.forEach(it=> {
+                                sUp += Number(it.upkp||0);
+                                sU1 += Number(it.ud1||0);
+                                sU2 += Number(it.ud2||0);
+                                sTot += Number(it.total_kegiatan||0);
+                                %>
+                                <tr>
+                                    <td class="text-center">
+                                        <%= no++ %>
+                                    </td>
+                                    <td>
+                                        <%= it.instansi %>
+                                    </td>
+                                    <td class="text-center">
+                                        <%= it.upkp || 0 %>
+                                    </td>
+                                    <td class="text-center">
+                                        <%= it.ud1 || 0 %>
+                                    </td>
+                                    <td class="text-center">
+                                        <%= it.ud2 || 0 %>
+                                    </td>
+                                    <td class="text-center font-weight-bold">
+                                        <%= it.total_kegiatan || 0 %>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight:bold; background:#f8f9fc;">
+                            <td colspan="2" class="text-center">JUMLAH</td>
+                            <td class="text-center">
+                                <%= sUp %>
+                            </td>
+                            <td class="text-center">
+                                <%= sU1 %>
+                            </td>
+                            <td class="text-center">
+                                <%= sU2 %>
+                            </td>
+                            <td class="text-center">
+                                <%= sTot %>
+                            </td>
+                        </tr>
+                    </tfoot>
+                    <% } %>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Export PDF khusus rekap
+        (function () {
+            const btn = document.getElementById('btnExportRekapPDF');
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                doc.setFontSize(14);
+                doc.text('Rekap Frekuensi Per Instansi', 420, 40, { align: 'center' });
+                doc.autoTable({ html: '#tblRekapInstansi', startY: 60, theme: 'grid', styles: { fontSize: 8, halign: 'center', valign: 'middle' } });
+                doc.save('Rekap_Frekuensi_Per_Instansi.pdf');
+            });
+        })();
+    </script>
