@@ -49,6 +49,14 @@
                     <span>Dashboard</span></a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link" href="/akun">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Manajemen Akun</span>
+                </a>
+            </li>
+
+
             <hr class="sidebar-divider">
 
             <li class="nav-item">
@@ -90,7 +98,7 @@
                             </div> -->
                         </div>
                     </form>
-                    
+
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown no-arrow d-sm-none">
                             <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
@@ -162,11 +170,11 @@
                                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
                             </div>
                         </li> -->
-                        
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <div class="d-flex align-items-center">
-                            
+
                             <!-- Nama user -->
                             <span class="mr-3 text-gray-600 small">
                                 <%= nama %>
@@ -221,20 +229,20 @@
                                         </div>
                                     </div>
                                 </div>
-                            
+
                                 <div class="col-md-4 mb-3">
                                     <div class="card shadow-sm border-left-success">
                                         <div class="card-body py-3">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                 Jumlah UD TK. I
                                             </div>
-                                        <div id="cardUd1" class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <%= countUd1 %>
-                                        </div>
+                                            <div id="cardUd1" class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <%= countUd1 %>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            
+
                                 <div class="col-md-4 mb-3">
                                     <div class="card shadow-sm border-left-warning">
                                         <div class="card-body py-3">
@@ -262,12 +270,13 @@
                                         </div>
                                     </div>
                                 </div>
-                            
+
                                 <!-- Grafik Lulus vs Tidak Lulus -->
                                 <div class="col-lg-6 mb-4">
                                     <div class="card shadow">
                                         <div class="card-header py-3">
-                                            <h6 class="m-0 font-weight-bold text-success">Perbandingan Lulus vs Tidak Lulus (UD TK. I/II)</h6>
+                                            <h6 class="m-0 font-weight-bold text-success">Perbandingan Lulus vs Tidak
+                                                Lulus (UD TK. I/II)</h6>
                                         </div>
                                         <div class="card-body">
                                             <canvas id="chartLulusIndex"></canvas>
@@ -284,35 +293,43 @@
                                 <div class="card-body">
                                     <!-- Baris utama -->
                                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
-                                
+
                                         <!-- Bagian kiri: Cari Data + Tanggal + Reset -->
                                         <div class="d-flex flex-wrap align-items-center">
                                             <!-- Cari Data -->
                                             <div class="d-flex align-items-center mr-3 mb-2">
-                                                <label class="font-weight-bold mb-0 mr-2" style="white-space: nowrap;">Cari Data:</label>
-                                                <input type="text" id="customSearch" class="form-control form-control-sm"
-                                                    placeholder="Ketik nama instansi, jenis ujian, status, dll..." style="width: 220px;">
+                                                <label class="font-weight-bold mb-0 mr-2"
+                                                    style="white-space: nowrap;">Cari Data:</label>
+                                                <input type="text" id="customSearch"
+                                                    class="form-control form-control-sm"
+                                                    placeholder="Ketik nama instansi, jenis ujian, status, dll..."
+                                                    style="width: 220px;">
                                             </div>
-                                
+
                                             <!-- Awal -->
                                             <div class="d-flex align-items-center mr-3 mb-2">
-                                                <label class="font-weight-bold mb-0 mr-2" style="white-space: nowrap;">Awal:</label>
-                                                <input type="date" id="startDate" class="form-control form-control-sm" style="width: 160px;">
+                                                <label class="font-weight-bold mb-0 mr-2"
+                                                    style="white-space: nowrap;">Awal:</label>
+                                                <input type="date" id="startDate" class="form-control form-control-sm"
+                                                    style="width: 160px;">
                                             </div>
-                                
+
                                             <!-- Akhir + Reset -->
                                             <div class="d-flex align-items-center mr-3 mb-2">
-                                                <label class="font-weight-bold mb-0 mr-2" style="white-space: nowrap;">Akhir:</label>
-                                                <input type="date" id="endDate" class="form-control form-control-sm mr-2" style="width: 160px;">
+                                                <label class="font-weight-bold mb-0 mr-2"
+                                                    style="white-space: nowrap;">Akhir:</label>
+                                                <input type="date" id="endDate"
+                                                    class="form-control form-control-sm mr-2" style="width: 160px;">
                                                 <button class="btn btn-danger btn-sm" onclick="clearFilter()">
                                                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                                                 </button>
                                             </div>
                                         </div>
-                                
+
                                         <!-- Bagian kanan: Aksi Cepat + PDF -->
                                         <div class="d-flex align-items-center mb-2">
-                                            <select id="filterAction" class="form-control form-control-sm mr-2" style="width: auto;">
+                                            <select id="filterAction" class="form-control form-control-sm mr-2"
+                                                style="width: auto;">
                                                 <option value="">-- Aksi Cepat --</option>
                                                 <option value="highest">Nilai Tertinggi (UPKP)</option>
                                                 <option value="lowest">Nilai Terendah (UPKP)</option>
@@ -321,20 +338,21 @@
                                                 <i class="fas fa-file-pdf"></i> Simpan ke PDF
                                             </button>
                                         </div>
-                                    
-                                
-                                    <!-- Teks bantuan -->
-                                    <small class="form-text text-muted mt-1" style="font-size: 0.85rem;">
-                                        1. Isi hanya di <strong>Awal</strong> untuk mencari bulan dan tahun.<br>
-                                        2. Isi <strong>Awal</strong> dan <strong>Akhir</strong> untuk pencarian dengan rentang tanggal.
-                                    </small>
-                                </div>
 
-                               
+
+                                        <!-- Teks bantuan -->
+                                        <small class="form-text text-muted mt-1" style="font-size: 0.85rem;">
+                                            1. Isi hanya di <strong>Awal</strong> untuk mencari bulan dan tahun.<br>
+                                            2. Isi <strong>Awal</strong> dan <strong>Akhir</strong> untuk pencarian
+                                            dengan rentang tanggal.
+                                        </small>
+                                    </div>
+
+
 
                                     <div class="table-responsive">
                                         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                            
+
 
                                             <thead class="text-center">
                                                 <tr>
@@ -354,7 +372,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="tableBody">
-                                                
+
                                                 <% if (!groupedData || groupedData.length===0) { %>
                                                     <tr>
                                                         <td colspan="13" class="text-center">Belum ada data</td>
@@ -364,152 +382,230 @@
                                                             <% group.rows.forEach((row, rIndex)=> { %>
                                                                 <tr>
                                                                     <% if (rIndex===0) { %>
-                                                                        <td class="text-center align-middle" rowspan="<%= group.rows.length %>">
+                                                                        <td class="text-center align-middle"
+                                                                            rowspan="<%= group.rows.length %>">
                                                                             <%= gIndex + 1 %>
                                                                         </td>
-                                                                        <td class="align-middle text-center" rowspan="<%= group.rows.length %>">
+                                                                        <td class="align-middle text-center"
+                                                                            rowspan="<%= group.rows.length %>">
                                                                             <%= group.instansi %>
                                                                         </td>
                                                                         <% } %>
-                                            
+
                                                                             <!-- Jenis Ujian -->
                                                                             <td class="align-middle text-center">
-                                                                                <% const ujian=(row.jenis_ujian || '' ).toUpperCase(); 
-                                                                                let bgColor='#f0f0f0' ,textColor='#555' ; 
-                                                                                if (ujian.includes('UPKP') && !ujian.includes('REMED')) {bgColor='#fde2e1' ; textColor='#b71c1c' ; } 
-                                                                                else if (ujian.includes('UD TK. II')&& !ujian.includes('REMED')) { bgColor='#fff5cc' ; textColor='#a67c00' ; } 
-                                                                                else if (ujian.includes('UD TK. I') && !ujian.includes('REMED')) { bgColor='#cedfce'; textColor='#1b5e20' ; } 
-                                                                                else if (ujian.includes('REMED UPKP')) {bgColor='#e3f2fd' ; textColor='#0d47a1' ; } 
-                                                                                else if (ujian.includes('REMED UD TK. II')) { bgColor='#e0f7fa' ; textColor='#006064' ; } 
-                                                                                else if(ujian.includes('REMED UD TK. I')) { bgColor='#f3e5f5' ; textColor='#6a1b9a' ; }
-                                                                                    %>
+                                                                                <% const ujian=(row.jenis_ujian || ''
+                                                                                    ).toUpperCase(); let
+                                                                                    bgColor='#f0f0f0' ,textColor='#555'
+                                                                                    ; if (ujian.includes('UPKP') &&
+                                                                                    !ujian.includes('REMED'))
+                                                                                    {bgColor='#fde2e1' ;
+                                                                                    textColor='#b71c1c' ; } else if
+                                                                                    (ujian.includes('UD TK. II')&&
+                                                                                    !ujian.includes('REMED')) {
+                                                                                    bgColor='#fff5cc' ;
+                                                                                    textColor='#a67c00' ; } else if
+                                                                                    (ujian.includes('UD TK. I') &&
+                                                                                    !ujian.includes('REMED')) {
+                                                                                    bgColor='#cedfce' ;
+                                                                                    textColor='#1b5e20' ; } else if
+                                                                                    (ujian.includes('REMED UPKP'))
+                                                                                    {bgColor='#e3f2fd' ;
+                                                                                    textColor='#0d47a1' ; } else if
+                                                                                    (ujian.includes('REMED UD TK. II'))
+                                                                                    { bgColor='#e0f7fa' ;
+                                                                                    textColor='#006064' ; } else
+                                                                                    if(ujian.includes('REMED UD TK. I'))
+                                                                                    { bgColor='#f3e5f5' ;
+                                                                                    textColor='#6a1b9a' ; } %>
                                                                                     <span class="badge"
                                                                                         style="background-color:<%= bgColor %>; color:<%= textColor %>; padding:6px 12px; border-radius:10px;">
                                                                                         <%= row.jenis_ujian || '—' %>
                                                                                     </span>
                                                                             </td>
-                                            
+
                                                                             <!-- Jumlah Peserta (tidak rowspan) -->
                                                                             <td class="align-middle text-center">
                                                                                 <%= row.jumlah_peserta || '-' %>
                                                                             </td>
-                                            
+
                                                                             <% if (rIndex===0) { %>
                                                                                 <!-- Hanya baris pertama dalam grup -->
-                                                                                <td class="align-middle text-center" rowspan="<%= group.rows.length %>">
-                                                                                    <%= group.tanggal_pelaksanaan || '-' %>
+                                                                                <td class="align-middle text-center"
+                                                                                    rowspan="<%= group.rows.length %>">
+                                                                                    <%= group.tanggal_pelaksanaan || '-'
+                                                                                        %>
                                                                                 </td>
 
-                                                                                <td class="align-middle text-center" rowspan="<%= group.rows.length %>">
+                                                                                <td class="align-middle text-center"
+                                                                                    rowspan="<%= group.rows.length %>">
                                                                                     <span
                                                                                         class="badge badge-<%= group.status.toLowerCase().includes('selesai') ? 'success' : group.status.toLowerCase().includes('menunggu') ? 'warning' : 'info' %>">
                                                                                         <%= group.status %>
                                                                                     </span>
                                                                                 </td>
-                                                                                <td class="align-middle text-center" rowspan="<%= group.rows.length %>">
-                                                                                    <% if (group.dokumen && group.dokumen.startsWith('http')) { %>
-                                                                                        <a href="<%= group.dokumen %>" target="_blank">Link Dokumen</a>
+                                                                                <td class="align-middle text-center"
+                                                                                    rowspan="<%= group.rows.length %>">
+                                                                                    <% if (group.dokumen &&
+                                                                                        group.dokumen.startsWith('http'))
+                                                                                        { %>
+                                                                                        <a href="<%= group.dokumen %>"
+                                                                                            target="_blank">Link
+                                                                                            Dokumen</a>
                                                                                         <% } else { %>
                                                                                             <%= group.dokumen || '-' %>
                                                                                                 <% } %>
                                                                                 </td>
-                                                                                <td class="align-middle text-center" rowspan="<%= group.rows.length %>">
-                                                                                    <% if (group.petugas_cat) { group.petugas_cat.split(',').forEach(p=> { %>
-                                                                                        <span class="badge badge-primary">
+                                                                                <td class="align-middle text-center"
+                                                                                    rowspan="<%= group.rows.length %>">
+                                                                                    <% if (group.petugas_cat) {
+                                                                                        group.petugas_cat.split(',').forEach(p=>
+                                                                                        { %>
+                                                                                        <span
+                                                                                            class="badge badge-primary">
                                                                                             <%= p.trim() %>
                                                                                         </span>
                                                                                         <% }) } else { %> - <% } %>
                                                                                 </td>
                                                                                 <% } %>
-                                            
+
                                                                                     <!-- Nilai -->
-                                                                                    <td class="align-middle text-center" data-nilai-tertinggi="<%= row.nilai_tertinggi_pg || '' %>"
+                                                                                    <td class="align-middle text-center"
+                                                                                        data-nilai-tertinggi="<%= row.nilai_tertinggi_pg || '' %>"
                                                                                         data-nilai-terendah="<%= row.nilai_terendah_pg || '' %>">
-                                                                                        <%= row.nilai_tertinggi_pg || '—' %>
+                                                                                        <%= row.nilai_tertinggi_pg
+                                                                                            || '—' %>
                                                                                     </td>
-                                                                                    <td class="align-middle text-center" data-nilai-terendah="<%= row.nilai_terendah_pg || '' %>">
-                                                                                        <%= row.nilai_terendah_pg || '—' %>
+                                                                                    <td class="align-middle text-center"
+                                                                                        data-nilai-terendah="<%= row.nilai_terendah_pg || '' %>">
+                                                                                        <%= row.nilai_terendah_pg || '—'
+                                                                                            %>
                                                                                     </td>
-                                                                                    <td class="align-middle text-center">
-                                                                                        <% if ((row.jenis_ujian || '' ).includes('UD TK') || (row.jenis_ujian || ''
+                                                                                    <td
+                                                                                        class="align-middle text-center">
+                                                                                        <% if ((row.jenis_ujian || ''
+                                                                                            ).includes('UD TK') ||
+                                                                                            (row.jenis_ujian || ''
                                                                                             ).includes('REMED UD')) { %>
-                                                                                            <%= row.jumlah_lulus_pg || '—' %>
+                                                                                            <%= row.jumlah_lulus_pg
+                                                                                                || '—' %>
                                                                                                 <% } else { %>
                                                                                                     —
                                                                                                     <% } %>
                                                                                     </td>
-                                                                                    <td class="align-middle text-center">
-                                                                                        <% if ((row.jenis_ujian || '' ).includes('UD TK') || (row.jenis_ujian || ''
+                                                                                    <td
+                                                                                        class="align-middle text-center">
+                                                                                        <% if ((row.jenis_ujian || ''
+                                                                                            ).includes('UD TK') ||
+                                                                                            (row.jenis_ujian || ''
                                                                                             ).includes('REMED UD')) { %>
-                                                                                            <%= row.jumlah_tidak_lulus_pg || '—' %>
+                                                                                            <%= row.jumlah_tidak_lulus_pg
+                                                                                                || '—' %>
                                                                                                 <% } else { %>
                                                                                                     —
                                                                                                     <% } %>
                                                                                     </td>
-                                            
+
                                                                                     <% if (rIndex===0) { %>
-                                                                                        <td class="text-center align-middle" rowspan="<%= group.rows.length %>">
-                                                                                            <div class="d-flex flex-column justify-content-center align-items-center gap-2">
+                                                                                        <td class="text-center align-middle"
+                                                                                            rowspan="<%= group.rows.length %>">
+                                                                                            <div
+                                                                                                class="d-flex flex-column justify-content-center align-items-center gap-2">
                                                                                                 <!-- 🔹 Baris pertama: 3 tombol kecil -->
-                                                                                                <div class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
-                                                                                                    <a class="btn btn-sm btn-info" href="/inspect/<%= group.rows.map(r => r.id).join(',') %>"
+                                                                                                <div
+                                                                                                    class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
+                                                                                                    <a class="btn btn-sm btn-info"
+                                                                                                        href="/inspect/<%= group.rows.map(r => r.id).join(',') %>"
                                                                                                         title="Inspect">
-                                                                                                        <i class="fa-solid fa-magnifying-glass"></i>
-                                                                                                    </a>
-                                                                                    
-                                                                                                    <% function rowByType(arr, t) { 
-                                                                                                        if (!Array.isArray(arr)) return {}; 
-                                                                                                        for (var i=0; i < arr.length; i++) {
-                                                                                                            if (arr[i] && arr[i].jenis_ujian===t) return arr[i]; 
-                                                                                                        } 
-                                                                                                        return {}; 
-                                                                                                    } 
-                                                                                                    var upkp=rowByType(group.rows, 'UPKP' ); 
-                                                                                                    var remedUpkp=rowByType(group.rows, 'REMED UPKP' ); 
-                                                                                                    var ud1=rowByType(group.rows, 'UD TK. I' ); 
-                                                                                                    var ud2=rowByType(group.rows, 'UD TK. II' );
-                                                                                                    var rud1=rowByType(group.rows, 'REMED UD TK. I' ); 
-                                                                                                    var rud2=rowByType(group.rows, 'REMED UD TK. II' );
-                                                                                                    let tgl='' ; 
-                                                                                                    if (group.tanggal_pelaksanaan) { 
-                                                                                                        try { 
-                                                                                                            const d=new Date(group.tanggal_pelaksanaan);
-                                                                                                            tgl=d.toISOString().split('T')[0];
-                                                                                                        } catch (e) { tgl='' ; } 
-                                                                                                    } 
-                                                                                                    function v(x){ return (x===null || x===undefined) ? '' : x; } %>
-                                                                                    
-                                                                                                    <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit" data-toggle="modal" data-target="#editDataModal"
-                                                                                                        data-id="<%= group.rows.map(r => r.id).join(',') %>" data-tanggal="<%= tgl %>"
-                                                                                                        data-instansi="<%= v(group.instansi) %>"
-                                                                                                        data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
-                                                                                                        data-jumlah-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. I') || {}).jumlah_peserta || '' %>"
-                                                                                                        data-jumlah-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. II') || {}).jumlah_peserta || '' %>"
-                                                                                                        data-jumlah-remed-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UPKP') || {}).jumlah_peserta || '' %>"
-                                                                                                        data-jumlah-remed-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. I') || {}).jumlah_peserta || '' %>"
-                                                                                                        data-jumlah-remed-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. II') || {}).jumlah_peserta || '' %>"
-                                                                                                        data-status="<%= v(group.status) %>" data-dokumen="<%= v(group.dokumen) %>"
-                                                                                                        data-petugas="<%= v(group.petugas_cat) %>" data-nilai-tertinggi="<%= v(upkp.nilai_tertinggi_pg) %>"
-                                                                                                        data-nilai-terendah="<%= v(upkp.nilai_terendah_pg) %>"
-                                                                                                        data-nilai-tertinggi-remed="<%= v(remedUpkp.nilai_tertinggi_pg) %>"
-                                                                                                        data-nilai-terendah-remed="<%= v(remedUpkp.nilai_terendah_pg) %>" data-lulus-ud1="<%= v(ud1.jumlah_lulus_pg) %>"
-                                                                                                        data-tidak-lulus-ud1="<%= v(ud1.jumlah_tidak_lulus_pg) %>" data-lulus-ud2="<%= v(ud2.jumlah_lulus_pg) %>"
-                                                                                                        data-tidak-lulus-ud2="<%= v(ud2.jumlah_tidak_lulus_pg) %>" data-lulus-remed-ud1="<%= v(rud1.jumlah_lulus_pg) %>"
-                                                                                                        data-tidak-lulus-remed-ud1="<%= v(rud1.jumlah_tidak_lulus_pg) %>"
-                                                                                                        data-lulus-remed-ud2="<%= v(rud2.jumlah_lulus_pg) %>"
-                                                                                                        data-tidak-lulus-remed-ud2="<%= v(rud2.jumlah_tidak_lulus_pg) %>" data-group-id="<%= group.rows[0].group_id %>">
-                                                                                                        <i class="fas fa-edit"></i>
+                                                                                                        <i
+                                                                                                            class="fa-solid fa-magnifying-glass"></i>
                                                                                                     </a>
 
+                                                                                                    <% function
+                                                                                                        rowByType(arr,
+                                                                                                        t) { if
+                                                                                                        (!Array.isArray(arr))
+                                                                                                        return {}; for
+                                                                                                        (var i=0; i <
+                                                                                                        arr.length; i++)
+                                                                                                        { if (arr[i] &&
+                                                                                                        arr[i].jenis_ujian===t)
+                                                                                                        return arr[i]; }
+                                                                                                        return {}; } var
+                                                                                                        upkp=rowByType(group.rows, 'UPKP'
+                                                                                                        ); var
+                                                                                                        remedUpkp=rowByType(group.rows, 'REMED UPKP'
+                                                                                                        ); var
+                                                                                                        ud1=rowByType(group.rows, 'UD TK. I'
+                                                                                                        ); var
+                                                                                                        ud2=rowByType(group.rows, 'UD TK. II'
+                                                                                                        ); var
+                                                                                                        rud1=rowByType(group.rows, 'REMED UD TK. I'
+                                                                                                        ); var
+                                                                                                        rud2=rowByType(group.rows, 'REMED UD TK. II'
+                                                                                                        ); let tgl='' ;
+                                                                                                        if
+                                                                                                        (group.tanggal_pelaksanaan)
+                                                                                                        { try { const
+                                                                                                        d=new
+                                                                                                        Date(group.tanggal_pelaksanaan);
+                                                                                                        tgl=d.toISOString().split('T')[0];
+                                                                                                        } catch (e) {
+                                                                                                        tgl='' ; } }
+                                                                                                        function v(x){
+                                                                                                        return (x===null
+                                                                                                        ||
+                                                                                                        x===undefined)
+                                                                                                        ? '' : x; } %>
 
-                                                                                    
-                                                                                                        <button type="button" class="btn btn-sm btn-danger btn-delete"
-                                                                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>" title="Hapus">
-                                                                                                            <i class="fas fa-trash"></i>
+                                                                                                        <a href="#"
+                                                                                                            class="btn btn-sm btn-primary btn-edit"
+                                                                                                            title="Edit"
+                                                                                                            data-toggle="modal"
+                                                                                                            data-target="#editDataModal"
+                                                                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
+                                                                                                            data-tanggal="<%= tgl %>"
+                                                                                                            data-instansi="<%= v(group.instansi) %>"
+                                                                                                            data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
+                                                                                                            data-jumlah-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. I') || {}).jumlah_peserta || '' %>"
+                                                                                                            data-jumlah-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. II') || {}).jumlah_peserta || '' %>"
+                                                                                                            data-jumlah-remed-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UPKP') || {}).jumlah_peserta || '' %>"
+                                                                                                            data-jumlah-remed-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. I') || {}).jumlah_peserta || '' %>"
+                                                                                                            data-jumlah-remed-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. II') || {}).jumlah_peserta || '' %>"
+                                                                                                            data-status="<%= v(group.status) %>"
+                                                                                                            data-dokumen="<%= v(group.dokumen) %>"
+                                                                                                            data-petugas="<%= v(group.petugas_cat) %>"
+                                                                                                            data-nilai-tertinggi="<%= v(upkp.nilai_tertinggi_pg) %>"
+                                                                                                            data-nilai-terendah="<%= v(upkp.nilai_terendah_pg) %>"
+                                                                                                            data-nilai-tertinggi-remed="<%= v(remedUpkp.nilai_tertinggi_pg) %>"
+                                                                                                            data-nilai-terendah-remed="<%= v(remedUpkp.nilai_terendah_pg) %>"
+                                                                                                            data-lulus-ud1="<%= v(ud1.jumlah_lulus_pg) %>"
+                                                                                                            data-tidak-lulus-ud1="<%= v(ud1.jumlah_tidak_lulus_pg) %>"
+                                                                                                            data-lulus-ud2="<%= v(ud2.jumlah_lulus_pg) %>"
+                                                                                                            data-tidak-lulus-ud2="<%= v(ud2.jumlah_tidak_lulus_pg) %>"
+                                                                                                            data-lulus-remed-ud1="<%= v(rud1.jumlah_lulus_pg) %>"
+                                                                                                            data-tidak-lulus-remed-ud1="<%= v(rud1.jumlah_tidak_lulus_pg) %>"
+                                                                                                            data-lulus-remed-ud2="<%= v(rud2.jumlah_lulus_pg) %>"
+                                                                                                            data-tidak-lulus-remed-ud2="<%= v(rud2.jumlah_tidak_lulus_pg) %>"
+                                                                                                            data-group-id="<%= group.rows[0].group_id %>">
+                                                                                                            <i
+                                                                                                                class="fas fa-edit"></i>
+                                                                                                        </a>
+
+
+
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            class="btn btn-sm btn-danger btn-delete"
+                                                                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
+                                                                                                            title="Hapus">
+                                                                                                            <i
+                                                                                                                class="fas fa-trash"></i>
                                                                                                         </button>
                                                                                                 </div>
-                                                                                    
-                                                                                                <button type="button" class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
+
+                                                                                                <button type="button"
+                                                                                                    class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
                                                                                                     data-group-id="<%= group.rows[0].group_id %>">
                                                                                                     Edit Nilai
                                                                                                 </button>
@@ -527,33 +623,41 @@
                                         </table>
                                         <div class="d-flex justify-content-between align-items-center flex-wrap mt-3">
                                             <div class="page-info small text-muted mb-2 mb-sm-0">
-                                                Menampilkan <%= startEntry %>–<%= endEntry %> dari <%= totalGroups %> data
+                                                Menampilkan <%= startEntry %>–<%= endEntry %> dari <%= totalGroups %>
+                                                            data
                                             </div>
-                                        
+
                                             <nav>
                                                 <ul class="pagination mb-0">
                                                     <% if (page> 1) { %>
                                                         <li class="page-item">
-                                                            <a class="page-link" href="?page=<%= page - 1 %>&limit=<%= limit %>">&laquo;</a>
+                                                            <a class="page-link"
+                                                                href="?page=<%= page - 1 %>&limit=<%= limit %>">&laquo;</a>
                                                         </li>
                                                         <% } else { %>
-                                                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                                                            <li class="page-item disabled"><span
+                                                                    class="page-link">&laquo;</span></li>
                                                             <% } %>
-                                        
+
                                                                 <% for (let i=1; i <=totalPages; i++) { %>
-                                                                    <li class="page-item <%= page === i ? 'active' : '' %>">
-                                                                        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>">
+                                                                    <li
+                                                                        class="page-item <%= page === i ? 'active' : '' %>">
+                                                                        <a class="page-link"
+                                                                            href="?page=<%= i %>&limit=<%= limit %>">
                                                                             <%= i %>
                                                                         </a>
                                                                     </li>
                                                                     <% } %>
-                                        
+
                                                                         <% if (page < totalPages) { %>
                                                                             <li class="page-item">
-                                                                                <a class="page-link" href="?page=<%= page + 1 %>&limit=<%= limit %>">&raquo;</a>
+                                                                                <a class="page-link"
+                                                                                    href="?page=<%= page + 1 %>&limit=<%= limit %>">&raquo;</a>
                                                                             </li>
                                                                             <% } else { %>
-                                                                                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                                                                                <li class="page-item disabled"><span
+                                                                                        class="page-link">&raquo;</span>
+                                                                                </li>
                                                                                 <% } %>
                                                 </ul>
                                             </nav>
@@ -561,19 +665,24 @@
 
                                     </div>
                                     <!-- Modal Konfirmasi Hapus -->
-                                    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel"
-                                        aria-hidden="true">
+                                    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
+                                        aria-labelledby="confirmDeleteLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered" role="document">
                                             <div class="modal-content border-0 rounded-lg shadow-lg text-center">
                                                 <div class="modal-body p-4">
                                                     <div class="mb-3">
-                                                        <i class="fas fa-exclamation-circle text-danger" style="font-size: 48px;"></i>
+                                                        <i class="fas fa-exclamation-circle text-danger"
+                                                            style="font-size: 48px;"></i>
                                                     </div>
-                                                    <h5 class="mb-3 font-weight-bold">Yakin ingin menghapus data ini?</h5>
-                                                    <p class="text-muted mb-4">Data yang dihapus tidak dapat dikembalikan.</p>
+                                                    <h5 class="mb-3 font-weight-bold">Yakin ingin menghapus data ini?
+                                                    </h5>
+                                                    <p class="text-muted mb-4">Data yang dihapus tidak dapat
+                                                        dikembalikan.</p>
                                                     <div class="d-flex justify-content-center gap-2">
-                                                        <button type="button" class="btn btn-secondary px-4 mr-2" data-dismiss="modal">Batal</button>
-                                                        <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn">Ya, Hapus</button>
+                                                        <button type="button" class="btn btn-secondary px-4 mr-2"
+                                                            data-dismiss="modal">Batal</button>
+                                                        <button type="button" class="btn btn-danger px-4"
+                                                            id="confirmDeleteBtn">Ya, Hapus</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -586,120 +695,121 @@
                             </div>
                         </div>
                     </div>
-        </div>
-        <!-- /.container-fluid -->
-    </div>
-    <!-- End of Main Content -->
+                </div>
+                <!-- /.container-fluid -->
+            </div>
+            <!-- End of Main Content -->
 
-<!-- Modal: Edit Data -->
-<div class="modal fade" id="editDataModal" tabindex="-1" role="dialog" aria-labelledby="editDataLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+            <!-- Modal: Edit Data -->
+            <div class="modal fade" id="editDataModal" tabindex="-1" role="dialog" aria-labelledby="editDataLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
 
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="editDataLabel">Edit Data UDKP</h5>
-                <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="editDataLabel">Edit Data UDKP</h5>
+                            <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+
+                        <form id="formEditData" novalidate method="POST" action="/update">
+                            <input type="hidden" name="group_id" id="edit_group_id" value="">
+
+                            <div class="modal-body">
+                                <!-- Baris 1 -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label>Nama Instansi</label>
+                                        <input type="text" id="edit_nama_instansi" class="form-control"
+                                            name="nama_instansi" placeholder="contoh: BKD Prov. X" required>
+                                        <div class="invalid-feedback">Nama Instansi wajib diisi.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Baris 2 -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label>Tanggal Pelaksanaan</label>
+                                        <input type="date" id="edit_tgl_pelaksanaan" class="form-control"
+                                            name="tgl_pelaksanaan" required>
+                                        <div class="invalid-feedback">Tanggal Pelaksanaan wajib diisi.</div>
+                                    </div>
+
+                                    <div class="form-group col-md-4">
+                                        <label>Status</label>
+                                        <select id="edit_status_pelaksanaan" class="form-control"
+                                            name="status_pelaksanaan" required>
+                                            <option value="">-- Pilih --</option>
+                                            <option value="Persiapan Administrasi">Persiapan Administrasi</option>
+                                            <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
+                                            <option value="Selesai">Selesai</option>
+                                        </select>
+                                        <div class="invalid-feedback">Status Pelaksanaan wajib dipilih.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Baris 3 -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-8">
+                                        <label>Dokumen (Link Google Drive)</label>
+                                        <input type="url" id="edit_link_dokumen" class="form-control"
+                                            name="link_dokumen" placeholder="https://drive.google.com/...">
+                                        <small class="form-text text-muted">
+                                            Tempelkan URL berbagi (share link) Google Drive.
+                                        </small>
+                                        <div class="invalid-feedback">Link Dokumen wajib diisi dan harus valid.</div>
+                                    </div>
+
+                                    <div class="form-group col-md-4">
+                                        <label for="petugas_cat">Petugas CAT</label>
+                                        <div id="editPetugasCatGroup"></div>
+                                        <div id="editPetugasFeedback" class="invalid-feedback"></div>
+                                        <div class="mt-2 d-flex">
+                                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                                id="btnEditAddPetugas">+ Tambah</button>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Untuk menghapus, cukup kosongkan nama petugas yang ingin dihapus.
+                                        </small>
+                                    </div>
+
+                                </div>
+
+                                <hr>
+
+                                <!-- Section nilai -->
+                                <div id="editNilaiSection"></div>
+                            </div>
+
+                            <div class="modal-footer sticky-footer-modal">
+                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                                <button class="btn btn-primary" type="submit">Simpan</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
             </div>
 
-            <form id="formEditData" novalidate method="POST" action="/update">
-                <input type="hidden" name="group_id" id="edit_group_id" value="">
 
-                <div class="modal-body">
-                    <!-- Baris 1 -->
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Nama Instansi</label>
-                            <input type="text" id="edit_nama_instansi" class="form-control" name="nama_instansi"
-                                placeholder="contoh: BKD Prov. X" required>
-                            <div class="invalid-feedback">Nama Instansi wajib diisi.</div>
-                        </div>
-                    </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const jenisUjianList = [
+                        "UPKP",
+                        "UD TK. I",
+                        "UD TK. II",
+                        "REMED UPKP",
+                        "REMED UD TK. I",
+                        "REMED UD TK. II",
+                    ];
 
-                    <!-- Baris 2 -->
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
-                            <label>Tanggal Pelaksanaan</label>
-                            <input type="date" id="edit_tgl_pelaksanaan" class="form-control" name="tgl_pelaksanaan"
-                                required>
-                            <div class="invalid-feedback">Tanggal Pelaksanaan wajib diisi.</div>
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label>Status</label>
-                            <select id="edit_status_pelaksanaan" class="form-control" name="status_pelaksanaan"
-                                required>
-                                <option value="">-- Pilih --</option>
-                                <option value="Persiapan Administrasi">Persiapan Administrasi</option>
-                                <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
-                                <option value="Selesai">Selesai</option>
-                            </select>
-                            <div class="invalid-feedback">Status Pelaksanaan wajib dipilih.</div>
-                        </div>
-                    </div>
-
-                    <!-- Baris 3 -->
-                    <div class="form-row">
-                        <div class="form-group col-md-8">
-                            <label>Dokumen (Link Google Drive)</label>
-                            <input type="url" id="edit_link_dokumen" class="form-control" name="link_dokumen"
-                                placeholder="https://drive.google.com/..." required>
-                            <small class="form-text text-muted">
-                                Tempelkan URL berbagi (share link) Google Drive.
-                            </small>
-                            <div class="invalid-feedback">Link Dokumen wajib diisi dan harus valid.</div>
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="petugas_cat">Petugas CAT</label>
-                            <div id="editPetugasCatGroup"></div>
-                            <div id="editPetugasFeedback" class="invalid-feedback"></div>
-                            <div class="mt-2 d-flex">
-                                <button class="btn btn-sm btn-outline-primary" type="button" id="btnEditAddPetugas">+ Tambah</button>
-                            </div>
-                            <small class="form-text text-muted">
-                                Untuk menghapus, cukup kosongkan nama petugas yang ingin dihapus.
-                            </small>
-                        </div>
-
-                    </div>
-
-                    <hr>
-
-                    <!-- Section nilai -->
-                    <div id="editNilaiSection"></div>
-                </div>
-
-                <div class="modal-footer sticky-footer-modal">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary" type="submit">Simpan</button>
-                </div>
-
-            </form>
-        </div>
-    </div>
-</div>
-
-
-   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const jenisUjianList = [
-            "UPKP",
-            "UD TK. I",
-            "UD TK. II",
-            "REMED UPKP",
-            "REMED UD TK. I",
-            "REMED UD TK. II",
-        ];
-
-        function generateEditSection(container) {
-            container.innerHTML = "";
-            jenisUjianList.forEach((ujian, i) => {
-                const block = document.createElement("div");
-                block.classList.add("border", "rounded", "p-3", "mb-3", "bg-light");
-                let html = `
+                    function generateEditSection(container) {
+                        container.innerHTML = "";
+                        jenisUjianList.forEach((ujian, i) => {
+                            const block = document.createElement("div");
+                            block.classList.add("border", "rounded", "p-3", "mb-3", "bg-light");
+                            let html = `
                 <h6 class="mb-3 font-weight-bold">${ujian}</h6>
                 <div class="form-row mb-3">
                     <div class="form-group col-md-12">
@@ -709,8 +819,8 @@
                     </div>
                 </div>`;
 
-                if (ujian.includes("UPKP")) {
-                    html += `
+                            if (ujian.includes("UPKP")) {
+                                html += `
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Nilai Tertinggi (${ujian})</label>
@@ -721,8 +831,8 @@
                         <input type="number" name="nilai_terendah_${i}" class="form-control" min="0">
                     </div>
                 </div>`;
-                } else {
-                    html += `
+                            } else {
+                                html += `
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Jumlah Lulus PG (${ujian})</label>
@@ -733,130 +843,136 @@
                         <input type="number" name="jumlah_tidak_lulus_pg_${i}" class="form-control" min="0">
                     </div>
                 </div>`;
-                }
+                            }
 
-                block.innerHTML = html;
-                container.appendChild(block);
-            });
-        }
+                            block.innerHTML = html;
+                            container.appendChild(block);
+                        });
+                    }
 
-        // Jalankan hanya saat modal edit muncul
-        $('#editDataModal').on('shown.bs.modal', function () {
-            const container = document.getElementById("editNilaiSection");
-            if (container) generateEditSection(container);
-        });
-    });
-</script>
-
-
+                    // Jalankan hanya saat modal edit muncul
+                    $('#editDataModal').on('shown.bs.modal', function () {
+                        const container = document.getElementById("editNilaiSection");
+                        if (container) generateEditSection(container);
+                    });
+                });
+            </script>
 
 
-    <!-- Modal: Input Data Baru -->
-    <div class="modal fade" id="inputDataModal" tabindex="-1" role="dialog" aria-labelledby="inputDataLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="inputDataLabel">Input Data Baru</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
 
-                    <form id="formInputBaru" data-mode="tambah" novalidate action="/tambah" method="POST">
-                        <input type="hidden" name="group_id" id="groupId" value="">
-                        <div class="modal-body">
+            <!-- Modal: Input Data Baru -->
+            <div class="modal fade" id="inputDataModal" tabindex="-1" role="dialog" aria-labelledby="inputDataLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
 
-                            <!-- Baris 1 -->
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label>Nama Instansi</label>
-                                    <input type="text" id="nama_instansi" class="form-control" name="nama_instansi"
-                                        placeholder="contoh: BKD Prov. X" required>
-                                    <div class="invalid-feedback">Nama Instansi wajib diisi.</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Baris 2 -->
-                            <div class="form-row">
-                                <div class="form-group col-md-4">
-                                    <label>Tanggal Pelaksanaan</label>
-                                    <input type="date" id="tgl_pelaksanaan" class="form-control" name="tgl_pelaksanaan" required>
-                                    <div class="invalid-feedback">Tanggal Pelaksanaan wajib diisi.</div>
-                                </div>
-                            
-                                <div class="form-group col-md-4">
-                                    <label>Status</label>
-                                    <select id="status_pelaksanaan" class="form-control" name="status_pelaksanaan" required>
-                                        <option value="">-- Pilih --</option>
-                                        <option value="Persiapan Administrasi">Persiapan Administrasi</option>
-                                        <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
-                                        <option value="Selesai">Selesai</option>
-                                    </select>
-                                    <div class="invalid-feedback">Status Pelaksanaan wajib dipilih.</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Baris 3 -->
-                            <div class="form-row">
-                                <div class="form-group col-md-8">
-                                    <label>Dokumen (Link Google Drive)</label>
-                                    <input type="url" id="link_dokumen" class="form-control" name="link_dokumen"
-                                        placeholder="https://drive.google.com/..." required>
-                                    <small class="form-text text-muted">
-                                        Tempelkan URL berbagi (share link) Google Drive.
-                                    </small>
-                                    <div class="invalid-feedback">Link Dokumen wajib diisi dan harus valid.</div>
-                                </div>
-                            
-                                <div class="form-group col-md-4">
-                                    <label>Petugas CAT</label>
-                                    <div id="petugasCatGroup"></div>
-                                    <div id="petugasFeedback" class="invalid-feedback"></div>
-                                    <div class="mt-2 d-flex">
-                                        <button class="btn btn-sm btn-outline-primary mr-2" type="button" id="btnAddPetugas">+ Tambah</button>
-                                        <button class="btn btn-sm btn-outline-danger" type="button" id="btnRemovePetugas">– Kurangi</button>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="inputDataLabel">Input Data Baru</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+
+                        <form id="formInputBaru" data-mode="tambah" novalidate action="/tambah" method="POST">
+                            <input type="hidden" name="group_id" id="groupId" value="">
+                            <div class="modal-body">
+
+                                <!-- Baris 1 -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label>Nama Instansi</label>
+                                        <input type="text" id="nama_instansi" class="form-control" name="nama_instansi"
+                                            placeholder="contoh: BKD Prov. X" required>
+                                        <div class="invalid-feedback">Nama Instansi wajib diisi.</div>
                                     </div>
-                                    <small class="form-text text-muted">Mulai dari 1 nama. Gunakan +/– untuk menyesuaikan.</small>
                                 </div>
+
+                                <!-- Baris 2 -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label>Tanggal Pelaksanaan</label>
+                                        <input type="date" id="tgl_pelaksanaan" class="form-control"
+                                            name="tgl_pelaksanaan" required>
+                                        <div class="invalid-feedback">Tanggal Pelaksanaan wajib diisi.</div>
+                                    </div>
+
+                                    <div class="form-group col-md-4">
+                                        <label>Status</label>
+                                        <select id="status_pelaksanaan" class="form-control" name="status_pelaksanaan"
+                                            required>
+                                            <option value="">-- Pilih --</option>
+                                            <option value="Persiapan Administrasi">Persiapan Administrasi</option>
+                                            <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
+                                            <option value="Selesai">Selesai</option>
+                                        </select>
+                                        <div class="invalid-feedback">Status Pelaksanaan wajib dipilih.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Baris 3 -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-8">
+                                        <label>Dokumen (Link Google Drive)</label>
+                                        <input type="url" id="link_dokumen" class="form-control" name="link_dokumen"
+                                            placeholder="https://drive.google.com/...">
+                                        <small class="form-text text-muted">
+                                            Tempelkan URL berbagi (share link) Google Drive.
+                                        </small>
+                                        <div class="invalid-feedback">Jika diisi, harus berupa link Google Drive yang
+                                            valid.</div>
+                                    </div>
+
+                                    <div class="form-group col-md-4">
+                                        <label>Petugas CAT</label>
+                                        <div id="petugasCatGroup"></div>
+                                        <div id="petugasFeedback" class="invalid-feedback"></div>
+                                        <div class="mt-2 d-flex">
+                                            <button class="btn btn-sm btn-outline-primary mr-2" type="button"
+                                                id="btnAddPetugas">+ Tambah</button>
+                                            <button class="btn btn-sm btn-outline-danger" type="button"
+                                                id="btnRemovePetugas">– Kurangi</button>
+                                        </div>
+                                        <small class="form-text text-muted">Mulai dari 1 nama. Gunakan +/– untuk
+                                            menyesuaikan.</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <!-- Nilai untuk UPKP -->
+                                <div id="nilaiSection"></div>
                             </div>
-                            <hr>
-                            <!-- Nilai untuk UPKP -->
-                            <div id="nilaiSection"></div>
-                        </div>
 
-                        <div class="modal-footer sticky-footer-modal">
-                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
-                            <button class="btn btn-primary" type="submit">Simpan</button>
-                        </div>
+                            <div class="modal-footer sticky-footer-modal">
+                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                                <button class="btn btn-primary" type="submit">Simpan</button>
+                            </div>
 
-                    </form>
+                        </form>
 
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const jenisUjianList = [
-            "UPKP",
-            "UD TK. I",
-            "UD TK. II",
-            "REMED UPKP",
-            "REMED UD TK. I",
-            "REMED UD TK. II",
-        ];
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const jenisUjianList = [
+                        "UPKP",
+                        "UD TK. I",
+                        "UD TK. II",
+                        "REMED UPKP",
+                        "REMED UD TK. I",
+                        "REMED UD TK. II",
+                    ];
 
-        // Jalankan hanya ketika modal input baru dibuka
-        $('#inputDataModal').on('shown.bs.modal', function () {
-            const nilaiSection = document.getElementById("nilaiSection");
-            if (!nilaiSection) return;
+                    // Jalankan hanya ketika modal input baru dibuka
+                    $('#inputDataModal').on('shown.bs.modal', function () {
+                        const nilaiSection = document.getElementById("nilaiSection");
+                        if (!nilaiSection) return;
 
-            nilaiSection.innerHTML = "";
-            jenisUjianList.forEach((ujian, i) => {
-                const block = document.createElement("div");
-                block.classList.add("border", "rounded", "p-3", "mb-3", "bg-light");
-                block.innerHTML = `
+                        nilaiSection.innerHTML = "";
+                        jenisUjianList.forEach((ujian, i) => {
+                            const block = document.createElement("div");
+                            block.classList.add("border", "rounded", "p-3", "mb-3", "bg-light");
+                            block.innerHTML = `
                 <h6 class="mb-3 font-weight-bold">${ujian}</h6>
                 <div class="form-row mb-3">
                     <div class="form-group col-md-12">
@@ -865,280 +981,294 @@
                                min="0" placeholder="Jumlah peserta ${ujian}">
                     </div>
                 </div>`;
-                nilaiSection.appendChild(block);
-            });
-        });
-    });
-</script>
+                            nilaiSection.appendChild(block);
+                        });
+                    });
+                });
+            </script>
 
 
-<!-- Modal Input Nilai -->
-<div class="modal fade" id="modalInputNilai" tabindex="-1" role="dialog" aria-labelledby="modalInputNilaiLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+            <!-- Modal Input Nilai -->
+            <div class="modal fade" id="modalInputNilai" tabindex="-1" role="dialog"
+                aria-labelledby="modalInputNilaiLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
 
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalInputNilaiLabel">Input Nilai Peserta</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+                        <!-- Header -->
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalInputNilaiLabel">Input Nilai Peserta</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
 
-            <!-- Form -->
-            <form id="formInputNilai" novalidate>
-                <div class="modal-body">
-                    <div id="nilaiContent">
-                        <div class="text-center text-muted py-4">Memuat data...</div>
+                        <!-- Form -->
+                        <form id="formInputNilai" novalidate>
+                            <div class="modal-body">
+                                <div id="nilaiContent">
+                                    <div class="text-center text-muted py-4">Memuat data...</div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                                <button class="btn btn-primary" type="submit">Simpan Nilai</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <!-- Footer -->
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary" type="submit">Simpan Nilai</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-
-    <!-- (Opsional) gaya kecil untuk switch -->
-    <style>
-        .btn-print-darkblue {
-            background-color: #0d47a1 !important;
-            /* biru tua */
-            color: #fff !important;
-            border: none !important;
-        }
-
-        .btn-print-darkblue:hover {
-            background-color: #093170 !important;
-            /* lebih gelap saat hover */
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px
-        }
-
-        .switch input {
-            display: none
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ddd;
-            transition: .2s;
-            border-radius: 24px
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background: white;
-            transition: .2s;
-            border-radius: 50%
-        }
-
-        input:checked+.slider {
-            background-color: #1cc88a
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(24px)
-        }
-        .dataTables_filter {
-            display: block !important;
-        }
-        .dataTables_filter {
-            display: block !important;
-            float: right !important;
-            margin-bottom: 1rem;
-        }
-
-        .dataTables_length {
-            display: block !important;
-            float: left !important;
-            margin-bottom: 1rem;
-        }
-
-        /* Biar rapi */
-        div.dataTables_wrapper div.dataTables_filter input {
-            margin-left: 0.5em;
-            border: 1px solid #d1d3e2;
-            border-radius: 6px;
-            padding: 4px 8px;
-        }
-
-        .dataTables_filter {
-            display: block !important;
-            float: right !important;
-            margin-bottom: 1rem;
-        }
-        .dataTables_length {
-            display: block !important;
-            float: left !important;
-            margin-bottom: 1rem;
-        }
-        div.dataTables_wrapper div.dataTables_filter input {
-            margin-left: 0.5em;
-            border: 1px solid #d1d3e2;
-            border-radius: 6px;
-            padding: 4px 8px;
-        }
-        /* Header tabel rata tengah */
-        #dataTable thead th {
-            text-align: center;
-            vertical-align: middle;
-        }
-        #customSearch {
-            width: 300px;
-            border-radius: 6px;
-            border: 1px solid #d1d3e2;
-            padding: 6px 10px;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .pagination .page-item {
-            font-size: 1rem;
-        }
-
-        .pagination .page-link {
-            color: #4f46e5;
-            border: 1px solid #dcdcdc;
-            border-radius: 8px;
-            padding: 6px 12px;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .pagination .page-link:hover {
-            background-color: #eef2ff;
-            border-color: #6366f1;
-        }
-
-        .pagination .active .page-link {
-            background-color: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
-        }
-
-        .page-info {
-            font-size: 0.95rem;
-            color: #666;
-            margin-right: 10px;
-        }
-        /* Efek transisi untuk sidebar */
-        #accordionSidebar {
-            transition: all 0.3s ease-in-out;   
-        }
-
-        /* Ketika sidebar ditutup (SB Admin 2 menambahkan kelas 'toggled' ke body) */
-        .sidebar.toggled {
-            width: 6.5rem !important;
-            overflow: hidden;
-        }
-
-        /* Transisi ikon dan teks di dalam sidebar */
-        .sidebar .nav-item,
-        .sidebar .nav-link,
-        .sidebar .sidebar-brand {
-            transition: all 0.3s ease-in-out;
-        }
-
-        /* Ketika sidebar mengecil, sembunyikan teks dengan halus */
-        .sidebar.toggled .nav-link span,
-        .sidebar.toggled .sidebar-brand-text {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        /* Saat sidebar dibuka kembali, tampilkan teks */
-        .sidebar:not(.toggled) .nav-link span,
-        .sidebar:not(.toggled) .sidebar-brand-text {
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-        .is-valid {
-            border: 2px solid #28a745 !important;
-            background-color: #e9fbe9;
-        }
-        .is-invalid {
-            border: 2px solid #dc3545 !important;
-            background-color: #fceaea;
-        }
-        .invalid-feedback {
-            color: #dc3545;
-            font-size: 0.85rem;
-            display: none;
-            margin-top: 4px;
-        }
-        .invalid-feedback.active {
-            display: block;
-        }
-        .swal2-container {
-            z-index: 20000 !important; /* pastikan lebih tinggi dari modal Bootstrap */
-        }
-        /* === Sticky footer di dalam modal === */
-.sticky-footer-modal {
-  position: sticky;
-  bottom: 0;
-  background-color: #fff;
-  border-top: 1px solid #dee2e6;
-  padding: 12px 16px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  z-index: 100;
-}
-
-/* Tambahkan efek shadow agar tampak terpisah dari isi modal */
-.sticky-footer-modal::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.05), transparent);
-}
-
-/* Pastikan isi modal bisa di-scroll tanpa menutupi footer */
-.modal-body {
-  max-height: calc(100vh - 220px);
-  overflow-y: auto;
-}
-
-    </style>
-
-    <!-- Footer -->
-    <footer class="sticky-footer bg-white">
-        <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-                <span>Universitas Lambung Mangkurat</span>
             </div>
+
+
+            <!-- (Opsional) gaya kecil untuk switch -->
+            <style>
+                .btn-print-darkblue {
+                    background-color: #0d47a1 !important;
+                    /* biru tua */
+                    color: #fff !important;
+                    border: none !important;
+                }
+
+                .btn-print-darkblue:hover {
+                    background-color: #093170 !important;
+                    /* lebih gelap saat hover */
+                }
+
+                .switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 48px;
+                    height: 24px
+                }
+
+                .switch input {
+                    display: none
+                }
+
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ddd;
+                    transition: .2s;
+                    border-radius: 24px
+                }
+
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 18px;
+                    width: 18px;
+                    left: 3px;
+                    bottom: 3px;
+                    background: white;
+                    transition: .2s;
+                    border-radius: 50%
+                }
+
+                input:checked+.slider {
+                    background-color: #1cc88a
+                }
+
+                input:checked+.slider:before {
+                    transform: translateX(24px)
+                }
+
+                .dataTables_filter {
+                    display: block !important;
+                }
+
+                .dataTables_filter {
+                    display: block !important;
+                    float: right !important;
+                    margin-bottom: 1rem;
+                }
+
+                .dataTables_length {
+                    display: block !important;
+                    float: left !important;
+                    margin-bottom: 1rem;
+                }
+
+                /* Biar rapi */
+                div.dataTables_wrapper div.dataTables_filter input {
+                    margin-left: 0.5em;
+                    border: 1px solid #d1d3e2;
+                    border-radius: 6px;
+                    padding: 4px 8px;
+                }
+
+                .dataTables_filter {
+                    display: block !important;
+                    float: right !important;
+                    margin-bottom: 1rem;
+                }
+
+                .dataTables_length {
+                    display: block !important;
+                    float: left !important;
+                    margin-bottom: 1rem;
+                }
+
+                div.dataTables_wrapper div.dataTables_filter input {
+                    margin-left: 0.5em;
+                    border: 1px solid #d1d3e2;
+                    border-radius: 6px;
+                    padding: 4px 8px;
+                }
+
+                /* Header tabel rata tengah */
+                #dataTable thead th {
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+                #customSearch {
+                    width: 300px;
+                    border-radius: 6px;
+                    border: 1px solid #d1d3e2;
+                    padding: 6px 10px;
+                }
+
+                .pagination {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .pagination .page-item {
+                    font-size: 1rem;
+                }
+
+                .pagination .page-link {
+                    color: #4f46e5;
+                    border: 1px solid #dcdcdc;
+                    border-radius: 8px;
+                    padding: 6px 12px;
+                    transition: all 0.2s ease-in-out;
+                }
+
+                .pagination .page-link:hover {
+                    background-color: #eef2ff;
+                    border-color: #6366f1;
+                }
+
+                .pagination .active .page-link {
+                    background-color: #4f46e5;
+                    color: white;
+                    border-color: #4f46e5;
+                }
+
+                .page-info {
+                    font-size: 0.95rem;
+                    color: #666;
+                    margin-right: 10px;
+                }
+
+                /* Efek transisi untuk sidebar */
+                #accordionSidebar {
+                    transition: all 0.3s ease-in-out;
+                }
+
+                /* Ketika sidebar ditutup (SB Admin 2 menambahkan kelas 'toggled' ke body) */
+                .sidebar.toggled {
+                    width: 6.5rem !important;
+                    overflow: hidden;
+                }
+
+                /* Transisi ikon dan teks di dalam sidebar */
+                .sidebar .nav-item,
+                .sidebar .nav-link,
+                .sidebar .sidebar-brand {
+                    transition: all 0.3s ease-in-out;
+                }
+
+                /* Ketika sidebar mengecil, sembunyikan teks dengan halus */
+                .sidebar.toggled .nav-link span,
+                .sidebar.toggled .sidebar-brand-text {
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                }
+
+                /* Saat sidebar dibuka kembali, tampilkan teks */
+                .sidebar:not(.toggled) .nav-link span,
+                .sidebar:not(.toggled) .sidebar-brand-text {
+                    opacity: 1;
+                    transition: opacity 0.3s ease;
+                }
+
+                .is-valid {
+                    border: 2px solid #28a745 !important;
+                    background-color: #e9fbe9;
+                }
+
+                .is-invalid {
+                    border: 2px solid #dc3545 !important;
+                    background-color: #fceaea;
+                }
+
+                .invalid-feedback {
+                    color: #dc3545;
+                    font-size: 0.85rem;
+                    display: none;
+                    margin-top: 4px;
+                }
+
+                .invalid-feedback.active {
+                    display: block;
+                }
+
+                .swal2-container {
+                    z-index: 20000 !important;
+                    /* pastikan lebih tinggi dari modal Bootstrap */
+                }
+
+                /* === Sticky footer di dalam modal === */
+                .sticky-footer-modal {
+                    position: sticky;
+                    bottom: 0;
+                    background-color: #fff;
+                    border-top: 1px solid #dee2e6;
+                    padding: 12px 16px;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    z-index: 100;
+                }
+
+                /* Tambahkan efek shadow agar tampak terpisah dari isi modal */
+                .sticky-footer-modal::before {
+                    content: "";
+                    position: absolute;
+                    top: -6px;
+                    left: 0;
+                    right: 0;
+                    height: 6px;
+                    background: linear-gradient(to top, rgba(0, 0, 0, 0.05), transparent);
+                }
+
+                /* Pastikan isi modal bisa di-scroll tanpa menutupi footer */
+                .modal-body {
+                    max-height: calc(100vh - 220px);
+                    overflow-y: auto;
+                }
+            </style>
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Universitas Lambung Mangkurat</span>
+                    </div>
+                </div>
+            </footer>
         </div>
-    </footer>
-    </div>
-    <!-- End of Content Wrapper -->
+        <!-- End of Content Wrapper -->
     </div>
     <!-- End of Page Wrapper -->
 
@@ -1164,7 +1294,7 @@
 
     <!-- DataTables Buttons -->
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap4.min.css">
-    
+
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1172,7 +1302,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-    
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -1180,7 +1310,7 @@
         $(document).ready(function () {
             const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
 
-           $('#formInputBaru').on('submit', function (e) {
+            $('#formInputBaru').on('submit', function (e) {
                 e.preventDefault();
                 let hasValue = false;
 
@@ -1205,103 +1335,103 @@
         });
     </script>
 
-  <script>
-    $(function () {
-        const $table = $('#dataTable');
+    <script>
+        $(function () {
+            const $table = $('#dataTable');
 
-        // Hindari error "Cannot reinitialise DataTable"
-        if ($.fn.DataTable.isDataTable($table)) {
-            $table.DataTable().destroy();
-        }
-
-        // Inisialisasi DataTables TANPA rowGroup (biar rowspan aman)
-        const dtOptions = {
-            paging: false,
-            searching: false,
-            ordering: false,
-            info: false,
-            responsive: true,
-            autoWidth: false,
-            language: {
-                search: "Cari Data:",
-                zeroRecords: "Tidak ada data ditemukan",
-                info: "Menampilkan _START_–_END_ dari _TOTAL_ data",
-                infoEmpty: "Belum ada data",
-                lengthMenu: "Tampilkan _MENU_ data"
+            // Hindari error "Cannot reinitialise DataTable"
+            if ($.fn.DataTable.isDataTable($table)) {
+                $table.DataTable().destroy();
             }
-        };
 
-        let dt = $table.DataTable(dtOptions);
-        // 🗑️ Fungsi untuk binding tombol hapus
-        function bindDeleteButtons() {
-            console.log("🔗 bindDeleteButtons aktif"); // debug log di console
-
-            // Gunakan namespace .delete agar tidak bentrok dengan event lain
-           $(document).off('click', '.btn-delete').on('click', '.btn-delete', async function (e) {
-                e.preventDefault();
-                const id = $(this).data('id'); // bisa berisi "12,13,14"
-                console.log("🗑 Tombol hapus diklik, ID:", id);
-
-                if (!id) {
-                    Swal.fire("Error", "ID data tidak ditemukan.", "error");
-                    return;
+            // Inisialisasi DataTables TANPA rowGroup (biar rowspan aman)
+            const dtOptions = {
+                paging: false,
+                searching: false,
+                ordering: false,
+                info: false,
+                responsive: true,
+                autoWidth: false,
+                language: {
+                    search: "Cari Data:",
+                    zeroRecords: "Tidak ada data ditemukan",
+                    info: "Menampilkan _START_–_END_ dari _TOTAL_ data",
+                    infoEmpty: "Belum ada data",
+                    lengthMenu: "Tampilkan _MENU_ data"
                 }
+            };
 
-                // Tampilkan konfirmasi SweetAlert
-                const result = await Swal.fire({
-                    title: 'Yakin ingin menghapus data ini?',
-                    text: 'Data yang dihapus tidak dapat dikembalikan.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, hapus',
-                    cancelButtonText: 'Batal',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d'
-                });
+            let dt = $table.DataTable(dtOptions);
+            // 🗑️ Fungsi untuk binding tombol hapus
+            function bindDeleteButtons() {
+                console.log("🔗 bindDeleteButtons aktif"); // debug log di console
 
-                if (!result.isConfirmed) return;
+                // Gunakan namespace .delete agar tidak bentrok dengan event lain
+                $(document).off('click', '.btn-delete').on('click', '.btn-delete', async function (e) {
+                    e.preventDefault();
+                    const id = $(this).data('id'); // bisa berisi "12,13,14"
+                    console.log("🗑 Tombol hapus diklik, ID:", id);
 
-                try {
-                    const res = await fetch(`/hapus/${id}`, { method: 'DELETE' });
-                    const data = await res.json();
-
-                    if (res.ok && data.success) {
-                        console.log(`✅ Berhasil hapus ${data.deleted} data`);
-                        await Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: `${data.deleted} data berhasil dihapus.`,
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#28a745',
-                            allowOutsideClick: false
-                        });
-                        location.reload();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: data.message || 'Data gagal dihapus.',
-                        });
+                    if (!id) {
+                        Swal.fire("Error", "ID data tidak ditemukan.", "error");
+                        return;
                     }
-                } catch (err) {
-                    console.error("❌ Error fetch hapus:", err);
-                    Swal.fire("Kesalahan Server", "Terjadi kesalahan saat menghapus data.", "error");
-                }
-            });
-        }
-    }); 
-</script>
+
+                    // Tampilkan konfirmasi SweetAlert
+                    const result = await Swal.fire({
+                        title: 'Yakin ingin menghapus data ini?',
+                        text: 'Data yang dihapus tidak dapat dikembalikan.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, hapus',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d'
+                    });
+
+                    if (!result.isConfirmed) return;
+
+                    try {
+                        const res = await fetch(`/hapus/${id}`, { method: 'DELETE' });
+                        const data = await res.json();
+
+                        if (res.ok && data.success) {
+                            console.log(`✅ Berhasil hapus ${data.deleted} data`);
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: `${data.deleted} data berhasil dihapus.`,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#28a745',
+                                allowOutsideClick: false
+                            });
+                            location.reload();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: data.message || 'Data gagal dihapus.',
+                            });
+                        }
+                    } catch (err) {
+                        console.error("❌ Error fetch hapus:", err);
+                        Swal.fire("Kesalahan Server", "Terjadi kesalahan saat menghapus data.", "error");
+                    }
+                });
+            }
+        }); 
+    </script>
 
 
-<script>
-    document.getElementById('customSearch').addEventListener('keyup', function (e) {
-        if (e.key === 'Enter') {
-            const query = this.value.trim();
-            const baseUrl = window.location.pathname;
-            window.location.href = query ? `${baseUrl}?q=${encodeURIComponent(query)}` : baseUrl;
-        }
-    });
-</script>
+    <script>
+        document.getElementById('customSearch').addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                const baseUrl = window.location.pathname;
+                window.location.href = query ? `${baseUrl}?q=${encodeURIComponent(query)}` : baseUrl;
+            }
+        });
+    </script>
     <script>
         (function () {
             function toggleKeterangan() {
@@ -1348,10 +1478,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-    
+
     <script src="https://cdn.datatables.net/rowgroup/1.3.1/js/dataTables.rowGroup.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.3.1/css/rowGroup.dataTables.min.css">
-   
+
 
     <script>
         // ====== Petugas CAT Dinamis ======
@@ -1467,7 +1597,7 @@
             });
         })();
     </script>
-    
+
     <script>
         $(function () {
             // Fungsi untuk mengatur aktif/nonaktif field
@@ -1508,249 +1638,263 @@
             });
         });
     </script>
-    
-<!-- Core JS -->
-<script src="vendor/jquery/jquery.min.js"></script>
-<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-<script src="js/sb-admin-2.min.js"></script>
 
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Core JS -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
 
-<!-- Chart.js -->
-<script src="vendor/chart.js/Chart.min.js"></script>
-<script src="js/demo/chart-pie-demo.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- DataTables & Buttons -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap4.min.css">
-<script src="vendor/datatables/jquery.dataTables.min.js"></script>
-<script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-<script src="https://cdn.datatables.net/rowgroup/1.3.1/js/dataTables.rowGroup.min.js"></script>
+    <!-- Chart.js -->
+    <script src="vendor/chart.js/Chart.min.js"></script>
+    <script src="js/demo/chart-pie-demo.js"></script>
 
-<!-- Chart Plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <!-- DataTables & Buttons -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap4.min.css">
+    <script src="vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/rowgroup/1.3.1/js/dataTables.rowGroup.min.js"></script>
 
-<script>
-    $(document).ready(function () {
-        const $form = $('#formInputBaru');
-        const $modal = $('#inputDataModal');
-        const $table = $('#dataTable');
-        const $petugasGroup = $('#petugasCatGroup');
-        const $petugasFeedback = $('#petugasFeedback');
+    <!-- Chart Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
-        /* ============================================================
-           1️⃣  Inisialisasi DataTables (tanpa duplikasi)
-        ============================================================ */
-        const dtOptions = {
-            paging: false,
-            searching: false,
-            ordering: false,
-            info: false,
-            responsive: true,
-            autoWidth: false,
-            language: {
-                zeroRecords: "Tidak ada data ditemukan",
-                infoEmpty: "Belum ada data",
-            }
-        };
-        if ($.fn.DataTable.isDataTable($table)) $table.DataTable().destroy();
-        let dt = $table.DataTable(dtOptions);
+    <script>
+        $(document).ready(function () {
+            const $form = $('#formInputBaru');
+            const $modal = $('#inputDataModal');
+            const $table = $('#dataTable');
+            const $petugasGroup = $('#petugasCatGroup');
+            const $petugasFeedback = $('#petugasFeedback');
 
-        /* ============================================================
-           3️⃣  Petugas CAT Dinamis
-        ============================================================ */
-        function createPetugasInput(index, value = '') {
-            return `
+            /* ============================================================
+               1️⃣  Inisialisasi DataTables (tanpa duplikasi)
+            ============================================================ */
+            const dtOptions = {
+                paging: false,
+                searching: false,
+                ordering: false,
+                info: false,
+                responsive: true,
+                autoWidth: false,
+                language: {
+                    zeroRecords: "Tidak ada data ditemukan",
+                    infoEmpty: "Belum ada data",
+                }
+            };
+            if ($.fn.DataTable.isDataTable($table)) $table.DataTable().destroy();
+            let dt = $table.DataTable(dtOptions);
+
+            /* ============================================================
+               3️⃣  Petugas CAT Dinamis
+            ============================================================ */
+            function createPetugasInput(index, value = '') {
+                return `
             <div class="mb-2" data-role="petugas-item">
                 <input type="text" class="form-control" name="petugas_cat[]" 
                        placeholder="Nama Pegawai ${index}" value="${value}" required>
             </div>`;
-        }
-        function refreshPetugasPlaceholders() {
-            $petugasGroup.find('input').each((i, el) => $(el).attr('placeholder', `Nama Pegawai ${i + 1}`));
-        }
-        $('#btnAddPetugas').click(() => {
-            const count = $petugasGroup.find('[data-role="petugas-item"]').length;
-            $petugasGroup.append(createPetugasInput(count + 1));
-        });
-        $('#btnRemovePetugas').click(() => {
-            const items = $petugasGroup.find('[data-role="petugas-item"]');
-            if (items.length > 1) items.last().remove();
-        });
-
-        /* ============================================================
-           4️⃣  Enable/Disable Field berdasarkan Jenis Ujian
-        ============================================================ */
-        const jenis = document.getElementById('jenisUjian');
-        const upkpFields = [$('#nilaiTertinggiUpkp'), $('#nilaiTerendahUpkp')];
-        const udFields = [$('#jumlahLulusUd'), $('#jumlahTidakLulusUd')];
-        function updateFieldState() {
-            const v = jenis.value;
-            const isUPKP = (v === 'UPKP' || v === 'REMED UPKP');
-            const isUD = ['UD TK. I', 'UD TK. II', 'REMED UD TK. I', 'REMED UD TK. II'].includes(v);
-            upkpFields.forEach(f => f.prop('disabled', !isUPKP));
-            udFields.forEach(f => f.prop('disabled', !isUD));
-        }
-        $(jenis).on('change', updateFieldState);
-        updateFieldState();
-
-        /* ============================================================
-           5️⃣  Validasi Form Sebelum Submit
-        ============================================================ */
-        function validateForm() {
-            let isValid = true;
-            let firstInvalid = null;
-
-            const namaInstansi = $('#nama_instansi');
-            const tglPelaksanaan = $('#tgl_pelaksanaan');
-            const statusPelaksanaan = $('#status_pelaksanaan');
-            const linkDokumen = $('#link_dokumen');
-            const petugasInputs = $('input[name="petugas_cat[]"]');
-
-            $('.is-invalid').removeClass('is-invalid');
-            if ($petugasFeedback.length) $petugasFeedback.removeClass('active').text('');
-
-            function markInvalid(el, msg) {
-                isValid = false;
-                el.addClass('is-invalid');
-                el.parent().find('.invalid-feedback').text(msg).addClass('active');
-                if (!firstInvalid) firstInvalid = el[0];
             }
-
-            if (!namaInstansi.val().trim()) markInvalid(namaInstansi, 'Nama Instansi wajib diisi.');
-            if (!tglPelaksanaan.val().trim()) markInvalid(tglPelaksanaan, 'Tanggal Pelaksanaan wajib diisi.');
-            if (!statusPelaksanaan.val().trim()) markInvalid(statusPelaksanaan, 'Status Pelaksanaan wajib dipilih.');
-            if (!linkDokumen.val().trim()) {
-                markInvalid(linkDokumen, 'Link Dokumen wajib diisi.');
-            } else if (!/^https:\/\/drive\.google\.com\//.test(linkDokumen.val().trim())) {
-                markInvalid(linkDokumen, 'Masukkan link Google Drive yang valid.');
+            function refreshPetugasPlaceholders() {
+                $petugasGroup.find('input').each((i, el) => $(el).attr('placeholder', `Nama Pegawai ${i + 1}`));
             }
-
-            if (![...petugasInputs].some(input => input.value.trim())) {
-                $petugasFeedback.text("Minimal 1 nama Petugas CAT harus diisi.").addClass("active");
-                isValid = false;
-            }
-
-            if (!isValid && firstInvalid) {
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                firstInvalid.focus();
-            }
-
-            return isValid;
-        }
-
-        /* ============================================================
-           6️⃣  Submit Form (Tambah/Edit)
-        ============================================================ */
-        $form.off('submit').on('submit', async function (e) {
-            e.preventDefault();
-            if (!validateForm()) return;
-
-            const formData = new FormData(this);
-            const actionUrl = $form.attr('action') || '/tambah';
-
-            try {
-                const res = await fetch(actionUrl, { method: 'POST', body: formData });
-                const data = await res.json();
-
-                if (data.status === "warning") {
-                    Swal.fire({ icon: "warning", title: data.title, html: data.html || data.message });
-                } else if (data.status === "success") {
-                    $modal.modal('hide');
-                    Swal.fire({
-                        icon: "success", title: data.title, text: data.message,
-                    }).then(() => location.reload());
-                } else {
-                    Swal.fire({ icon: "error", title: data.title || "Gagal", html: data.message });
-                }
-            } catch (err) {
-                console.error(err);
-                Swal.fire("Kesalahan Server", "Terjadi kesalahan saat menyimpan data.", "error");
-            }
-        });
-
-        /* ============================================================
-           7️⃣  Tombol Edit
-        ============================================================ */
-        $(document).off('click', '.btn-edit').on('click', '.btn-edit', function (e) {
-            e.preventDefault();
-            const $btn = $(this);
-            $form[0].reset();
-            $form.attr('action', '/update/' + $btn.data('id'));
-            $('#inputDataLabel').text('Edit Data UDKP');
-
-            $('input[name="nama_instansi"]').val($btn.data('instansi'));
-            $('input[name="tgl_pelaksanaan"]').val($btn.data('tanggal'));
-            $('select[name="status_pelaksanaan"]').val($btn.data('status'));
-            $('input[name="link_dokumen"]').val($btn.data('dokumen'));
-
-            $petugasGroup.empty();
-            const petugas = ($btn.data('petugas') || '').toString().trim();
-            if (petugas) petugas.split(',').forEach((p, i) => $petugasGroup.append(createPetugasInput(i + 1, p.trim())));
-            else $petugasGroup.append(createPetugasInput(1));
-
-            $modal.modal('show');
-        });
-
-        /* ============================================================
-           8️⃣  Tombol Hapus
-        ============================================================ */
-        $(document).off('click.delete').on('click.delete', '.btn-delete', async function (e) {
-            e.preventDefault();
-            const id = $(this).data('id');
-            if (!id) return Swal.fire("Error", "ID data tidak ditemukan.", "error");
-
-            const result = await Swal.fire({
-                title: "Yakin ingin menghapus data ini?",
-                text: "Data yang dihapus tidak dapat dikembalikan.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Ya, hapus",
-                cancelButtonText: "Batal",
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#6c757d"
+            $('#btnAddPetugas').click(() => {
+                const count = $petugasGroup.find('[data-role="petugas-item"]').length;
+                $petugasGroup.append(createPetugasInput(count + 1));
             });
-            if (!result.isConfirmed) return;
+            $('#btnRemovePetugas').click(() => {
+                const items = $petugasGroup.find('[data-role="petugas-item"]');
+                if (items.length > 1) items.last().remove();
+            });
 
-            try {
-                const res = await fetch(`/hapus/${id}`, { method: "DELETE" });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    await Swal.fire({
-                        icon: "success", title: "Berhasil!", text: `${data.deleted} data berhasil dihapus.`,
-                    });
-                    location.reload();
-                } else {
-                    Swal.fire("Gagal", data.message || "Data gagal dihapus.", "error");
-                }
-            } catch (err) {
-                Swal.fire("Kesalahan Server", "Terjadi kesalahan saat menghapus data.", "error");
+            /* ============================================================
+               4️⃣  Enable/Disable Field berdasarkan Jenis Ujian
+            ============================================================ */
+            const jenis = document.getElementById('jenisUjian');
+            const upkpFields = [$('#nilaiTertinggiUpkp'), $('#nilaiTerendahUpkp')];
+            const udFields = [$('#jumlahLulusUd'), $('#jumlahTidakLulusUd')];
+            function updateFieldState() {
+                const v = jenis.value;
+                const isUPKP = (v === 'UPKP' || v === 'REMED UPKP');
+                const isUD = ['UD TK. I', 'UD TK. II', 'REMED UD TK. I', 'REMED UD TK. II'].includes(v);
+                upkpFields.forEach(f => f.prop('disabled', !isUPKP));
+                udFields.forEach(f => f.prop('disabled', !isUD));
             }
-        });
+            $(jenis).on('change', updateFieldState);
+            updateFieldState();
 
-        /* ============================================================
-           9️⃣  Reset Modal saat Ditutup
-        ============================================================ */
-        $modal.on('hidden.bs.modal', function () {
-            $form[0].reset();
-            $form.attr('action', '/tambah');
-            $('#inputDataLabel').text('Input Data Baru');
-            $petugasGroup.empty().append(createPetugasInput(1));
-            $form.find('.is-invalid, .is-valid').removeClass('is-invalid is-valid');
-            if ($petugasFeedback.length) $petugasFeedback.removeClass('active').text('');
-        });
-    });
-</script>
+            /* ============================================================
+               5️⃣  Validasi Form Sebelum Submit
+            ============================================================ */
+            function validateForm() {
+                let isValid = true;
+                let firstInvalid = null;
 
-<script>
+                const namaInstansi = $('#nama_instansi');
+                const tglPelaksanaan = $('#tgl_pelaksanaan');
+                const statusPelaksanaan = $('#status_pelaksanaan');
+                const linkDokumen = $('#link_dokumen');
+                const petugasInputs = $('input[name="petugas_cat[]"]');
+
+                // reset state error
+                $('.is-invalid').removeClass('is-invalid');
+                if (typeof $petugasFeedback !== 'undefined' && $petugasFeedback.length) {
+                    $petugasFeedback.removeClass('active').text('');
+                }
+
+                function markInvalid(el, msg) {
+                    isValid = false;
+                    el.addClass('is-invalid');
+                    el.parent().find('.invalid-feedback').text(msg).addClass('active');
+                    if (!firstInvalid) firstInvalid = el[0];
+                }
+
+                // ✅ Wajib umum
+                if (!namaInstansi.val().trim()) markInvalid(namaInstansi, 'Nama Instansi wajib diisi.');
+                if (!tglPelaksanaan.val().trim()) markInvalid(tglPelaksanaan, 'Tanggal Pelaksanaan wajib diisi.');
+                if (!statusPelaksanaan.val().trim()) markInvalid(statusPelaksanaan, 'Status Pelaksanaan wajib dipilih.');
+
+                // ✅ Link GDrive: BOLEH KOSONG untuk tambah & edit; kalau DIISI harus valid
+                const linkVal = linkDokumen.val().trim();
+                // lebih longgar: terima http/https dan berbagai pola share link
+                const isGDrive = /^https?:\/\/drive\.google\.com\//.test(linkVal)
+                    || /^https?:\/\/docs\.google\.com\/(spreadsheets|document|presentation)\//.test(linkVal);
+
+                if (linkVal && !isGDrive) {
+                    markInvalid(linkDokumen, 'Jika diisi, gunakan URL Google Drive/Docs yang valid.');
+                }
+
+                // ✅ Minimal 1 petugas
+                if (![...petugasInputs].some(input => input.value.trim())) {
+                    if (typeof $petugasFeedback !== 'undefined' && $petugasFeedback.length) {
+                        $petugasFeedback.text('Minimal 1 nama Petugas CAT harus diisi.').addClass('active');
+                    }
+                    isValid = false;
+                }
+
+                if (!isValid && firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
+
+                return isValid;
+            }
+
+
+
+            /* ============================================================
+               6️⃣  Submit Form (Tambah/Edit)
+            ============================================================ */
+            $form.off('submit').on('submit', async function (e) {
+                e.preventDefault();
+                if (!validateForm()) return;
+
+                const formData = new FormData(this);
+                const actionUrl = $form.attr('action') || '/tambah';
+
+                try {
+                    const res = await fetch(actionUrl, { method: 'POST', body: formData });
+                    const data = await res.json();
+
+                    if (data.status === "warning") {
+                        Swal.fire({ icon: "warning", title: data.title, html: data.html || data.message });
+                    } else if (data.status === "success") {
+                        $modal.modal('hide');
+                        Swal.fire({
+                            icon: "success", title: data.title, text: data.message,
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire({ icon: "error", title: data.title || "Gagal", html: data.message });
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire("Kesalahan Server", "Terjadi kesalahan saat menyimpan data.", "error");
+                }
+            });
+
+            /* ============================================================
+               7️⃣  Tombol Edit
+            ============================================================ */
+            $(document).off('click', '.btn-edit').on('click', '.btn-edit', function (e) {
+                e.preventDefault();
+                const $btn = $(this);
+                $form[0].reset();
+                $form.attr('action', '/update/' + $btn.data('id'));
+                $('#inputDataLabel').text('Edit Data UDKP');
+
+                $('input[name="nama_instansi"]').val($btn.data('instansi'));
+                $('input[name="tgl_pelaksanaan"]').val($btn.data('tanggal'));
+                $('select[name="status_pelaksanaan"]').val($btn.data('status'));
+                $('input[name="link_dokumen"]').val($btn.data('dokumen'));
+
+                $petugasGroup.empty();
+                const petugas = ($btn.data('petugas') || '').toString().trim();
+                if (petugas) petugas.split(',').forEach((p, i) => $petugasGroup.append(createPetugasInput(i + 1, p.trim())));
+                else $petugasGroup.append(createPetugasInput(1));
+
+                $modal.modal('show');
+            });
+
+            /* ============================================================
+               8️⃣  Tombol Hapus
+            ============================================================ */
+            $(document).off('click.delete').on('click.delete', '.btn-delete', async function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (!id) return Swal.fire("Error", "ID data tidak ditemukan.", "error");
+
+                const result = await Swal.fire({
+                    title: "Yakin ingin menghapus data ini?",
+                    text: "Data yang dihapus tidak dapat dikembalikan.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Ya, hapus",
+                    cancelButtonText: "Batal",
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#6c757d"
+                });
+                if (!result.isConfirmed) return;
+
+                try {
+                    const res = await fetch(`/hapus/${id}`, { method: "DELETE" });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        await Swal.fire({
+                            icon: "success", title: "Berhasil!", text: `${data.deleted} data berhasil dihapus.`,
+                        });
+                        location.reload();
+                    } else {
+                        Swal.fire("Gagal", data.message || "Data gagal dihapus.", "error");
+                    }
+                } catch (err) {
+                    Swal.fire("Kesalahan Server", "Terjadi kesalahan saat menghapus data.", "error");
+                }
+            });
+
+            /* ============================================================
+               9️⃣  Reset Modal saat Ditutup
+            ============================================================ */
+            $modal.on('hidden.bs.modal', function () {
+                $form[0].reset();
+                $form.attr('action', '/tambah');
+                $('#inputDataLabel').text('Input Data Baru');
+                $petugasGroup.empty().append(createPetugasInput(1));
+                $form.find('.is-invalid, .is-valid').removeClass('is-invalid is-valid');
+                if ($petugasFeedback.length) $petugasFeedback.removeClass('active').text('');
+            });
+        });
+    </script>
+
+    <script>
         $('#inputDataModal').on('hidden.bs.modal', function () {
             const form = document.getElementById('formInputBaru');
             form.reset();
@@ -1759,7 +1903,7 @@
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.textContent = "Simpan";
         });
-</script>
+    </script>
     <script>
         $(function () {
             const $modal = $('#inputDataModal');
@@ -1792,135 +1936,151 @@
                 }
             }
 
-            
-            
+
+
         });
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-                // Ketika tombol edit ditekan
-                $(document).on("click", ".btn-edit", function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+            // Ketika tombol edit ditekan
+            $(document).on("click", ".btn-edit", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-                    // Tutup modal input kalau kebuka
-                    $('#inputDataModal').modal('hide');
+                // Tutup modal input kalau kebuka
+                $('#inputDataModal').modal('hide');
 
-                    // Ambil data dari tombol
-                    const idGroup = $(this).data('group-id');
-                    const instansi = $(this).data('instansi');
-                    const tanggal = $(this).data('tanggal');
-                    const status = $(this).data('status');
-                    const dokumen = $(this).data('dokumen');
-                    const petugas = $(this).data('petugas');
+                // Ambil data dari tombol
+                const idGroup = $(this).data('group-id');
+                const instansi = $(this).data('instansi');
+                const tanggal = $(this).data('tanggal');
+                const status = $(this).data('status');
+                const dokumen = $(this).data('dokumen');
+                const petugas = $(this).data('petugas');
 
-                    const jumlahUpkp = $(this).data('jumlah-upkp');
-                    const jumlahUd1 = $(this).data('jumlah-ud1');
-                    const jumlahUd2 = $(this).data('jumlah-ud2');
-                    const jumlahRemedUpkp = $(this).data('jumlah-remed-upkp');
-                    const jumlahRemedUd1 = $(this).data('jumlah-remed-ud1');
-                    const jumlahRemedUd2 = $(this).data('jumlah-remed-ud2');
+                const jumlahUpkp = $(this).data('jumlah-upkp');
+                const jumlahUd1 = $(this).data('jumlah-ud1');
+                const jumlahUd2 = $(this).data('jumlah-ud2');
+                const jumlahRemedUpkp = $(this).data('jumlah-remed-upkp');
+                const jumlahRemedUd1 = $(this).data('jumlah-remed-ud1');
+                const jumlahRemedUd2 = $(this).data('jumlah-remed-ud2');
 
-                    const nilaiTertinggiUpkp = $(this).data('nilai-tertinggi');
-                    const nilaiTerendahUpkp = $(this).data('nilai-terendah');
-                    const nilaiTertinggiRemed = $(this).data('nilai-tertinggi-remed');
-                    const nilaiTerendahRemed = $(this).data('nilai-terendah-remed');
+                const nilaiTertinggiUpkp = $(this).data('nilai-tertinggi');
+                const nilaiTerendahUpkp = $(this).data('nilai-terendah');
+                const nilaiTertinggiRemed = $(this).data('nilai-tertinggi-remed');
+                const nilaiTerendahRemed = $(this).data('nilai-terendah-remed');
 
-                    const lulusUd1 = $(this).data('lulus-ud1');
-                    const tidakLulusUd1 = $(this).data('tidak-lulus-ud1');
-                    const lulusUd2 = $(this).data('lulus-ud2');
-                    const tidakLulusUd2 = $(this).data('tidak-lulus-ud2');
-                    const lulusRemedUd1 = $(this).data('lulus-remed-ud1');
-                    const tidakLulusRemedUd1 = $(this).data('tidak-lulus-remed-ud1');
-                    const lulusRemedUd2 = $(this).data('lulus-remed-ud2');
-                    const tidakLulusRemedUd2 = $(this).data('tidak-lulus-remed-ud2');
+                const lulusUd1 = $(this).data('lulus-ud1');
+                const tidakLulusUd1 = $(this).data('tidak-lulus-ud1');
+                const lulusUd2 = $(this).data('lulus-ud2');
+                const tidakLulusUd2 = $(this).data('tidak-lulus-ud2');
+                const lulusRemedUd1 = $(this).data('lulus-remed-ud1');
+                const tidakLulusRemedUd1 = $(this).data('tidak-lulus-remed-ud1');
+                const lulusRemedUd2 = $(this).data('lulus-remed-ud2');
+                const tidakLulusRemedUd2 = $(this).data('tidak-lulus-remed-ud2');
 
-                    // Masukkan ke dalam modal edit
-                    $("#edit_group_id").val(idGroup);
-                    $("#edit_nama_instansi").val(instansi);
-                    $("#edit_tgl_pelaksanaan").val(tanggal);
-                    $("#edit_status_pelaksanaan").val(status);
-                    $("#edit_link_dokumen").val(dokumen);
+                // Masukkan ke dalam modal edit
+                $("#edit_group_id").val(idGroup);
+                $("#edit_nama_instansi").val(instansi);
+                $("#edit_tgl_pelaksanaan").val(tanggal);
+                $("#edit_status_pelaksanaan").val(status);
+                $("#edit_link_dokumen").val(dokumen);
 
-                    // Isi field jumlah peserta
-                    $("input[name='jumlah_peserta_0']").val(jumlahUpkp);
-                    $("input[name='jumlah_peserta_1']").val(jumlahUd1);
-                    $("input[name='jumlah_peserta_2']").val(jumlahUd2);
-                    $("input[name='jumlah_peserta_3']").val(jumlahRemedUpkp);
-                    $("input[name='jumlah_peserta_4']").val(jumlahRemedUd1);
-                    $("input[name='jumlah_peserta_5']").val(jumlahRemedUd2);
+                // Isi field jumlah peserta
+                $("input[name='jumlah_peserta_0']").val(jumlahUpkp);
+                $("input[name='jumlah_peserta_1']").val(jumlahUd1);
+                $("input[name='jumlah_peserta_2']").val(jumlahUd2);
+                $("input[name='jumlah_peserta_3']").val(jumlahRemedUpkp);
+                $("input[name='jumlah_peserta_4']").val(jumlahRemedUd1);
+                $("input[name='jumlah_peserta_5']").val(jumlahRemedUd2);
 
-                    // Nilai UPKP
-                    $("input[name='nilai_tertinggi_0']").val(nilaiTertinggiUpkp);
-                    $("input[name='nilai_terendah_0']").val(nilaiTerendahUpkp);
-                    $("input[name='nilai_tertinggi_3']").val(nilaiTertinggiRemed);
-                    $("input[name='nilai_terendah_3']").val(nilaiTerendahRemed);
+                // Nilai UPKP
+                $("input[name='nilai_tertinggi_0']").val(nilaiTertinggiUpkp);
+                $("input[name='nilai_terendah_0']").val(nilaiTerendahUpkp);
+                $("input[name='nilai_tertinggi_3']").val(nilaiTertinggiRemed);
+                $("input[name='nilai_terendah_3']").val(nilaiTerendahRemed);
 
-                    // Nilai lulus/tidak lulus UD
-                    $("input[name='jumlah_lulus_pg_1']").val(lulusUd1);
-                    $("input[name='jumlah_tidak_lulus_pg_1']").val(tidakLulusUd1);
-                    $("input[name='jumlah_lulus_pg_2']").val(lulusUd2);
-                    $("input[name='jumlah_tidak_lulus_pg_2']").val(tidakLulusUd2);
-                    $("input[name='jumlah_lulus_pg_4']").val(lulusRemedUd1);
-                    $("input[name='jumlah_tidak_lulus_pg_4']").val(tidakLulusRemedUd1);
-                    $("input[name='jumlah_lulus_pg_5']").val(lulusRemedUd2);
-                    $("input[name='jumlah_tidak_lulus_pg_5']").val(tidakLulusRemedUd2);
+                // Nilai lulus/tidak lulus UD
+                $("input[name='jumlah_lulus_pg_1']").val(lulusUd1);
+                $("input[name='jumlah_tidak_lulus_pg_1']").val(tidakLulusUd1);
+                $("input[name='jumlah_lulus_pg_2']").val(lulusUd2);
+                $("input[name='jumlah_tidak_lulus_pg_2']").val(tidakLulusUd2);
+                $("input[name='jumlah_lulus_pg_4']").val(lulusRemedUd1);
+                $("input[name='jumlah_tidak_lulus_pg_4']").val(tidakLulusRemedUd1);
+                $("input[name='jumlah_lulus_pg_5']").val(lulusRemedUd2);
+                $("input[name='jumlah_tidak_lulus_pg_5']").val(tidakLulusRemedUd2);
 
-                    // Petugas CAT (jika ada field dinamis)
-                    $("#editPetugasCatGroup").html("");
-                    if (petugas) {
-                        const arrPetugas = petugas.split(",").map(p => p.trim());
-                        arrPetugas.forEach((nama, i) => {
-                            $("#editPetugasCatGroup").append(`
+                // Petugas CAT (jika ada field dinamis)
+                $("#editPetugasCatGroup").html("");
+                if (petugas) {
+                    const arrPetugas = petugas.split(",").map(p => p.trim());
+                    arrPetugas.forEach((nama, i) => {
+                        $("#editPetugasCatGroup").append(`
                     <input type="text" name="petugas_cat_${i}" value="${nama}" class="form-control mb-2">
                 `);
-                        });
-                    }
+                    });
+                }
 
-                    // Tampilkan modal
-                    $('#editDataModal').modal('show');
-                });
+                // Tampilkan modal
+                $('#editDataModal').modal('show');
             });
+        });
 
     </script>
     <script>
         $(document).on('click', '.btn-edit', function () {
-                const btn = $(this);
-                const groupId = btn.data('group-id');
+            const btn = $(this);
+            const groupId = btn.data('group-id');
 
-                // Atur action form sesuai route Express
-                $('#formEditData').attr('action', `/update/${groupId}`);
+            // Atur action form sesuai route Express
+            $('#formEditData').attr('action', `/update/${groupId}`);
 
-                // Isi input lain seperti biasa...
-                $('#edit_group_id').val(groupId);
-                $('#edit_nama_instansi').val(btn.data('instansi'));
-                $('#edit_tgl_pelaksanaan').val(btn.data('tanggal'));
-                $('#edit_status_pelaksanaan').val(btn.data('status'));
-                $('#edit_link_dokumen').val(btn.data('dokumen'));
+            // Isi input lain seperti biasa...
+            $('#edit_group_id').val(groupId);
+            $('#edit_nama_instansi').val(btn.data('instansi'));
+            $('#edit_tgl_pelaksanaan').val(btn.data('tanggal'));
+            $('#edit_status_pelaksanaan').val(btn.data('status'));
+            $('#edit_link_dokumen').val(btn.data('dokumen'));
 
-                // Petugas, dll...
-                const petugas = btn.data('petugas')?.split(',') || [''];
-                const container = document.getElementById('editPetugasCatGroup');
-                container.innerHTML = '';
-                petugas.forEach((nama, i) => {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.classList.add('form-control', 'mb-2');
-                    input.name = `petugas_cat`;
-                    input.value = nama.trim();
-                    container.appendChild(input);
-                });
-
-                $('#editDataModal').modal('show');
+            // Petugas, dll...
+            const petugas = btn.data('petugas')?.split(',') || [''];
+            const container = document.getElementById('editPetugasCatGroup');
+            container.innerHTML = '';
+            petugas.forEach((nama, i) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.classList.add('form-control', 'mb-2');
+                input.name = `petugas_cat`;
+                input.value = nama.trim();
+                container.appendChild(input);
             });
+
+            $('#editDataModal').modal('show');
+        });
 
     </script>
     <script>
         $(document).ready(function () {
+
             // Tangani submit form edit
             $('#formEditData').on('submit', function (e) {
                 e.preventDefault(); // cegah reload
 
+                // 🧩 1️⃣ Validasi minimal 1 Petugas CAT
+                const hasAtLeastOne = Array
+                    .from(document.querySelectorAll('#editPetugasCatGroup input[type="text"]'))
+                    .some(inp => (inp.value || '').trim().length > 0);
+
+                if (!hasAtLeastOne) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Minimal 1 Petugas CAT',
+                        html: '<p>Isi setidaknya <b>1 nama Petugas CAT</b> sebelum menyimpan.</p>'
+                    });
+                    return; // hentikan kirim form
+                }
+
+                // 🧩 2️⃣ Jika lolos validasi, lanjut kirim AJAX
                 const form = $(this);
                 const actionUrl = form.attr('action');
                 const formData = form.serialize();
@@ -1936,16 +2096,14 @@
                             html: response.html || '<p>Data berhasil diperbarui.</p>',
                             confirmButtonText: 'OK'
                         }).then(() => {
-                            // ❗ Tutup modal hanya kalau berhasil
                             if (response.status === 'success') {
                                 $('#editDataModal').modal('hide');
                                 location.reload();
                             }
-                            // Kalau warning/error → biarkan modal tetap terbuka
                         });
                     },
 
-                    error: function (xhr) {
+                    error: function () {
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal!',
@@ -1956,6 +2114,7 @@
             });
         });
     </script>
+
 
     <script>
         $(document).off('submit', '#formInputBaru').on('submit', '#formInputBaru', async function (e) {
@@ -1972,7 +2131,7 @@
             const statusPelaksanaan = $('#status_pelaksanaan').val(); // ganti sesuai ID select kamu
             const linkDokumen = $('#link_dokumen').val().trim();
 
-            if (!namaInstansi || !tglPelaksanaan || !statusPelaksanaan || !linkDokumen) {
+            if (!namaInstansi || !tglPelaksanaan || !statusPelaksanaan) {
                 Swal.fire({
                     icon: "warning",
                     title: "Form belum lengkap",
@@ -2100,7 +2259,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
+
     <script>
         document.getElementById('btnExportPDF').addEventListener('click', async () => {
             const table = document.querySelector('#dataTable');
@@ -2305,89 +2464,99 @@
             $tbody.find('td').removeClass('cell-highlight')
                 .css({ backgroundColor: '', fontWeight: '' });
         }
+    <script>
+        $(function () {
+            const $table = $('#dataTable');
+            const $tbody = $table.find('tbody');
 
-        function toNumber(v) {
-            if (v === undefined || v === null) return NaN;
-            return parseFloat(String(v).replace(/[^\d.-]/g, ''));
-        }
+            function clearHighlight() {
+                $tbody.find('tr').removeClass('row-highlight').css('opacity', '1');
+                $tbody.find('td').removeClass('cell-highlight')
+                    .css({ backgroundColor: '', fontWeight: '' });
+            }
 
-        // ✅ Deteksi baris UPKP TANPA bergantung index kolom (aman terhadap rowspan)
-        function isUPKPRow($tr) {
-            return $tr.text().toUpperCase().includes('UPKP'); // UPKP & REMED UPKP ikut
-        }
+            function toNumber(v) {
+                if (v === undefined || v === null) return NaN;
+                return parseFloat(String(v).replace(/[^\d.-]/g, ''));
+            }
 
-        // Kumpulkan semua kandidat nilai (value + referensi row & cell)
-        function collectCandidates(mode) {
-            const items = [];
-            $tbody.find('tr').each(function () {
-                const $tr = $(this);
-                if (!isUPKPRow($tr)) return;
+            // ✅ Deteksi baris UPKP TANPA bergantung index kolom (aman terhadap rowspan)
+            function isUPKPRow($tr) {
+                return $tr.text().toUpperCase().includes('UPKP'); // UPKP & REMED UPKP ikut
+            }
 
-                // ambil sel nilai via data-attribute (fallback ke kelas kolom jika perlu)
-                let $cell = (mode === 'highest')
-                    ? $tr.find('td[data-nilai-tertinggi]')
-                    : $tr.find('td[data-nilai-terendah]');
-                if ($cell.length === 0) {
-                    $cell = (mode === 'highest')
-                        ? $tr.find('td.col-nilai-tertinggi')
-                        : $tr.find('td.col-nilai-terendah');
-                }
-                if ($cell.length === 0) return;
+            // Kumpulkan semua kandidat nilai (value + referensi row & cell)
+            function collectCandidates(mode) {
+                const items = [];
+                $tbody.find('tr').each(function () {
+                    const $tr = $(this);
+                    if (!isUPKPRow($tr)) return;
 
-                const raw = (mode === 'highest')
-                    ? $cell.attr('data-nilai-tertinggi')
-                    : $cell.attr('data-nilai-terendah');
-                const val = toNumber(raw ?? $cell.text());
-                if (isNaN(val)) return;
+                    // ambil sel nilai via data-attribute (fallback ke kelas kolom jika perlu)
+                    let $cell = (mode === 'highest')
+                        ? $tr.find('td[data-nilai-tertinggi]')
+                        : $tr.find('td[data-nilai-terendah]');
+                    if ($cell.length === 0) {
+                        $cell = (mode === 'highest')
+                            ? $tr.find('td.col-nilai-tertinggi')
+                            : $tr.find('td.col-nilai-terendah');
+                    }
+                    if ($cell.length === 0) return;
 
-                items.push({ val, $tr, $cell });
-            });
-            return items;
-        }
+                    const raw = (mode === 'highest')
+                        ? $cell.attr('data-nilai-tertinggi')
+                        : $cell.attr('data-nilai-terendah');
+                    const val = toNumber(raw ?? $cell.text());
+                    if (isNaN(val)) return;
 
-        $('#filterAction').off('change.quick').on('change.quick', function () {
-            const mode = this.value; // 'highest' | 'lowest' | ''
-            clearHighlight();
-            if (!mode) return;
-
-            const items = collectCandidates(mode);
-            if (items.length === 0) return;
-
-            // ✅ Cari nilai terbaik secara pasti (menghindari efek loop/skipped row)
-            const bestVal = items.reduce((acc, it) => {
-                if (acc === null) return it.val;
-                return (mode === 'highest') ? Math.max(acc, it.val) : Math.min(acc, it.val);
-            }, null);
-
-            // Sorot semua baris yang bernilai sama dengan bestVal (kalau ada lebih dari satu)
-            items.forEach(({ val, $tr, $cell }) => {
-                if (val !== bestVal) return;
-                $tbody.find('tr').not($tr).css('opacity', '0.4');
-                $tr.addClass('row-highlight');
-                $tr.find('td').css({
-                    backgroundColor: mode === 'highest' ? '#fff3cd' : '#d6f5fa',
-                    fontWeight: '700'
+                    items.push({ val, $tr, $cell });
                 });
-                $cell.addClass('cell-highlight');
-                $tr[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return items;
+            }
+
+            $('#filterAction').off('change.quick').on('change.quick', function () {
+                const mode = this.value; // 'highest' | 'lowest' | ''
+                clearHighlight();
+                if (!mode) return;
+
+                const items = collectCandidates(mode);
+                if (items.length === 0) return;
+
+                // ✅ Cari nilai terbaik secara pasti (menghindari efek loop/skipped row)
+                const bestVal = items.reduce((acc, it) => {
+                    if (acc === null) return it.val;
+                    return (mode === 'highest') ? Math.max(acc, it.val) : Math.min(acc, it.val);
+                }, null);
+
+                // Sorot semua baris yang bernilai sama dengan bestVal (kalau ada lebih dari satu)
+                items.forEach(({ val, $tr, $cell }) => {
+                    if (val !== bestVal) return;
+                    $tbody.find('tr').not($tr).css('opacity', '0.4');
+                    $tr.addClass('row-highlight');
+                    $tr.find('td').css({
+                        backgroundColor: mode === 'highest' ? '#fff3cd' : '#d6f5fa',
+                        fontWeight: '700'
+                    });
+                    $cell.addClass('cell-highlight');
+                    $tr[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
             });
         });
-    });
-</script>
+    </script>
 
-<script>
-    $(document).on('click', '.btn-input-nilai', async function () {
-        const groupId = $(this).data('group-id');
-        if (!groupId) return Swal.fire("Error", "Group ID tidak ditemukan.", "error");
+    <script>
+        $(document).on('click', '.btn-input-nilai', async function () {
+            const groupId = $(this).data('group-id');
+            if (!groupId) return Swal.fire("Error", "Group ID tidak ditemukan.", "error");
 
-        try {
-            const res = await fetch(`/get-nilai/${groupId}`);
-            if (!res.ok) throw new Error("Gagal mengambil data nilai.");
-            const data = await res.json();
+            try {
+                const res = await fetch(`/get-nilai/${groupId}`);
+                if (!res.ok) throw new Error("Gagal mengambil data nilai.");
+                const data = await res.json();
 
-            let html = '';
-            if (Array.isArray(data) && data.length > 0) {
-                html += `
+                let html = '';
+                if (Array.isArray(data) && data.length > 0) {
+                    html += `
         <form id="formInputNilai">
         <table class="table table-bordered table-sm">
           <thead class="table-success">
@@ -2401,36 +2570,36 @@
           </thead>
           <tbody>
       `;
-                data.forEach(r => {
-                    const isUPKP = r.jenis_ujian.includes("UPKP"); // UPKP & REMED UPKP
-                    const isUD = r.jenis_ujian.includes("UD TK");  // UD TK I/II & REMED-nya
+                    data.forEach(r => {
+                        const isUPKP = r.jenis_ujian.includes("UPKP"); // UPKP & REMED UPKP
+                        const isUD = r.jenis_ujian.includes("UD TK");  // UD TK I/II & REMED-nya
 
-                    html += `
+                        html += `
     <tr>
       <td>${r.jenis_ujian}</td>
 
       <!-- Kolom Nilai Tertinggi -->
       <td>
         ${isUPKP
-                            ? `<input type="number" class="form-control form-control-sm" 
+                                ? `<input type="number" class="form-control form-control-sm" 
                      name="nilai_tertinggi_${r.id}" 
                      value="${r.nilai_tertinggi_pg ?? ''}" min="0">`
-                            : `<input type="number" class="form-control form-control-sm" 
+                                : `<input type="number" class="form-control form-control-sm" 
                      name="nilai_tertinggi_${r.id}" 
                      value="${r.nilai_tertinggi_pg ?? ''}" min="0" disabled>`
-                        }
+                            }
       </td>
 
       <!-- Kolom Nilai Terendah -->
       <td>
         ${isUPKP
-                            ? `<input type="number" class="form-control form-control-sm" 
+                                ? `<input type="number" class="form-control form-control-sm" 
                      name="nilai_terendah_${r.id}" 
                      value="${r.nilai_terendah_pg ?? ''}" min="0">`
-                            : `<input type="number" class="form-control form-control-sm" 
+                                : `<input type="number" class="form-control form-control-sm" 
                      name="nilai_terendah_${r.id}" 
                      value="${r.nilai_terendah_pg ?? ''}" min="0" disabled>`
-                        }
+                            }
       </td>
 
       <!-- Kolom Jumlah Lulus -->
@@ -2452,36 +2621,36 @@
       </td>
     </tr>
   `;
-                });
+                    });
 
 
-                html += `
+                    html += `
           </tbody></table>
           
         </form>`;
-            } else {
-                html = `<div class="alert alert-info mb-0">Tidak ada jenis ujian yang memiliki peserta.</div>`;
+                } else {
+                    html = `<div class="alert alert-info mb-0">Tidak ada jenis ujian yang memiliki peserta.</div>`;
 
+                }
+
+                const modalInputNilai = document.querySelector('#modalInputNilai');
+                if (!modalInputNilai) {
+                    console.error('Modal Input Nilai tidak ditemukan!');
+                    return;
+                }
+
+                // pastikan selalu isi di dalam modal Input Nilai, bukan di edit
+                $(modalInputNilai).find('#nilaiContent').html(html);
+                $(modalInputNilai).modal('show');
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire("Kesalahan", "Gagal memuat data nilai.", "error");
             }
-
-            const modalInputNilai = document.querySelector('#modalInputNilai');
-            if (!modalInputNilai) {
-                console.error('Modal Input Nilai tidak ditemukan!');
-                return;
-            }
-
-            // pastikan selalu isi di dalam modal Input Nilai, bukan di edit
-            $(modalInputNilai).find('#nilaiContent').html(html);
-            $(modalInputNilai).modal('show');
-
-        } catch (err) {
-            console.error(err);
-            Swal.fire("Kesalahan", "Gagal memuat data nilai.", "error");
-        }
-    });
-</script>
-<script>
-    $(document).on("submit", "#formInputNilai", async function (e) {
+        });
+    </script>
+    <script>
+        $(document).on("submit", "#formInputNilai", async function (e) {
             e.preventDefault();
             const groupId = $(this).data("group-id");
             console.log("📦 Group ID yang dikirim:", groupId);
@@ -2517,252 +2686,252 @@
             }
         });
 
-</script>
+    </script>
 
 
-<!-- setelah semua library -->
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const searchInput = document.getElementById("customSearch");
-        const startDateInput = document.getElementById("startDate");
-        const endDateInput = document.getElementById("endDate");
-        const tableBody = document.querySelector("#tableBody");
+    <!-- setelah semua library -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchInput = document.getElementById("customSearch");
+            const startDateInput = document.getElementById("startDate");
+            const endDateInput = document.getElementById("endDate");
+            const tableBody = document.querySelector("#tableBody");
 
-        if (!tableBody) return;
+            if (!tableBody) return;
 
-        [searchInput, startDateInput, endDateInput].forEach(el => {
-            el.addEventListener("input", debounce(searchData, 400));
+            [searchInput, startDateInput, endDateInput].forEach(el => {
+                el.addEventListener("input", debounce(searchData, 400));
+            });
+
+            async function searchData() {
+                const q = searchInput.value.trim();
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+
+                const params = new URLSearchParams({ q });
+
+                // 🔹 Kalau dua-duanya diisi → range
+                if (startDate && endDate) {
+                    params.append("startDate", startDate);
+                    params.append("endDate", endDate);
+                }
+                // 🔹 Kalau cuma satu → ambil bulan & tahun dari tanggal itu
+                else if (startDate || endDate) {
+                    const selected = startDate || endDate;
+                    const [year, month] = selected.split("-");
+                    params.append("year", year);
+                    params.append("month", month);
+                }
+
+                try {
+                    const res = await fetch(`/search?${params.toString()}`, {
+                        headers: { "Accept": "application/json" }
+                    });
+                    const data = await res.json();
+
+                    // update tabel
+                    tableBody.innerHTML = data.html;
+
+                    // update grafik
+                    renderCharts(data.groupedData);
+                    updateSummaryCards(data.groupedData);
+
+                } catch (err) {
+                    console.error("❌ Gagal fetch data:", err);
+                }
+            }
+
+            function debounce(func, delay) {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
         });
+    </script>
 
-        async function searchData() {
-            const q = searchInput.value.trim();
-            const startDate = startDateInput.value;
-            const endDate = endDateInput.value;
 
-            const params = new URLSearchParams({ q });
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("✅ Search script aktif");
 
-            // 🔹 Kalau dua-duanya diisi → range
-            if (startDate && endDate) {
-                params.append("startDate", startDate);
-                params.append("endDate", endDate);
+            const searchInput = document.getElementById("customSearch");
+            const startDateInput = document.getElementById("startDate");
+            const endDateInput = document.getElementById("endDate");
+            const tableBody = document.querySelector("#tableBody"); // pastikan ini ID tbody kamu
+
+            // fungsi debounce biar gak spam fetch
+            function debounce(fn, delay = 500) {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => fn(...args), delay);
+                };
             }
-            // 🔹 Kalau cuma satu → ambil bulan & tahun dari tanggal itu
-            else if (startDate || endDate) {
-                const selected = startDate || endDate;
-                const [year, month] = selected.split("-");
-                params.append("year", year);
-                params.append("month", month);
-            }
 
-            try {
-                const res = await fetch(`/search?${params.toString()}`, {
-                    headers: { "Accept": "application/json" }
-                });
-                const data = await res.json();
+            // fungsi utama search
+            const searchData = debounce(async () => {
+                const q = searchInput.value.trim();
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
 
-                // update tabel
-                tableBody.innerHTML = data.html;
+                const params = new URLSearchParams({ q });
+                if (startDate) params.append("startDate", startDate);
+                if (endDate) params.append("endDate", endDate);
 
-                // update grafik
-                renderCharts(data.groupedData);
-                updateSummaryCards(data.groupedData);
+                console.log("🔍 Fetch:", `/search?${params.toString()}`);
 
-            } catch (err) {
-                console.error("❌ Gagal fetch data:", err);
-            }
+                try {
+                    const res = await fetch(`/search?${params.toString()}`, {
+                        headers: { "Accept": "application/json" }
+                    });
+                    const data = await res.json();
+
+                    // tampilkan hasil pencarian ke tabel
+                    tableBody.innerHTML = data.html;
+
+                    // perbarui grafik agar ikut hasil pencarian
+                    renderCharts(data.groupedData);
+                    updateSummaryCards(data.groupedData);
+
+                } catch (err) {
+                    console.error("❌ Error fetch:", err);
+                }
+            });
+
+            // pasang event listener
+            [searchInput, startDateInput, endDateInput].forEach(el =>
+                el.addEventListener("input", searchData)
+            );
+        });
+    </script>
+    <script>
+        function clearFilter() {
+            document.getElementById('customSearch').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+
+            // 🔄 Ambil halaman index penuh (bukan partial)
+            fetch('/')
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newTable = doc.querySelector('#tableBody').innerHTML;
+                    document.querySelector('#tableBody').innerHTML = newTable;
+                })
+                .catch(err => console.error('❌ Error reset:', err));
         }
 
-        function debounce(func, delay) {
-            let timeout;
-            return (...args) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), delay);
-            };
-        }
-    });
-</script>
+    </script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Simpan data tombol edit sementara
+            let editDataTemp = null;
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        console.log("✅ Search script aktif");
+            // Ketika tombol edit diklik
+            $(document).on("click", ".btn-edit", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-        const searchInput = document.getElementById("customSearch");
-        const startDateInput = document.getElementById("startDate");
-        const endDateInput = document.getElementById("endDate");
-        const tableBody = document.querySelector("#tableBody"); // pastikan ini ID tbody kamu
+                const btn = $(this);
 
-        // fungsi debounce biar gak spam fetch
-        function debounce(fn, delay = 500) {
-            let timeout;
-            return (...args) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => fn(...args), delay);
-            };
-        }
+                // Simpan semua data tombol ke variabel sementara
+                editDataTemp = {
+                    groupId: btn.data('group-id'),
+                    instansi: btn.data('instansi'),
+                    tanggal: btn.data('tanggal'),
+                    status: btn.data('status'),
+                    dokumen: btn.data('dokumen'),
+                    petugas: btn.data('petugas'),
 
-        // fungsi utama search
-        const searchData = debounce(async () => {
-            const q = searchInput.value.trim();
-            const startDate = startDateInput.value;
-            const endDate = endDateInput.value;
+                    jumlahUpkp: btn.data('jumlah-upkp'),
+                    jumlahUd1: btn.data('jumlah-ud1'),
+                    jumlahUd2: btn.data('jumlah-ud2'),
+                    jumlahRemedUpkp: btn.data('jumlah-remed-upkp'),
+                    jumlahRemedUd1: btn.data('jumlah-remed-ud1'),
+                    jumlahRemedUd2: btn.data('jumlah-remed-ud2'),
 
-            const params = new URLSearchParams({ q });
-            if (startDate) params.append("startDate", startDate);
-            if (endDate) params.append("endDate", endDate);
+                    nilaiTertinggiUpkp: btn.data('nilai-tertinggi'),
+                    nilaiTerendahUpkp: btn.data('nilai-terendah'),
+                    nilaiTertinggiRemed: btn.data('nilai-tertinggi-remed'),
+                    nilaiTerendahRemed: btn.data('nilai-terendah-remed'),
 
-            console.log("🔍 Fetch:", `/search?${params.toString()}`);
+                    lulusUd1: btn.data('lulus-ud1'),
+                    tidakLulusUd1: btn.data('tidak-lulus-ud1'),
+                    lulusUd2: btn.data('lulus-ud2'),
+                    tidakLulusUd2: btn.data('tidak-lulus-ud2'),
+                    lulusRemedUd1: btn.data('lulus-remed-ud1'),
+                    tidakLulusRemedUd1: btn.data('tidak-lulus-remed-ud1'),
+                    lulusRemedUd2: btn.data('lulus-remed-ud2'),
+                    tidakLulusRemedUd2: btn.data('tidak-lulus-remed-ud2')
+                };
 
-            try {
-                const res = await fetch(`/search?${params.toString()}`, {
-                    headers: { "Accept": "application/json" }
-                });
-                const data = await res.json();
+                // Tampilkan modal edit
+                $('#editDataModal').modal('show');
+            });
 
-                // tampilkan hasil pencarian ke tabel
-                tableBody.innerHTML = data.html;
+            // Setelah modal tampil dan section nilai sudah dibuat
+            $('#editDataModal').on('shown.bs.modal', function () {
+                if (!editDataTemp) return;
+                const d = editDataTemp;
 
-                // perbarui grafik agar ikut hasil pencarian
-                renderCharts(data.groupedData);
-                updateSummaryCards(data.groupedData);
+                // === Isi field utama ===
+                $("#edit_group_id").val(d.groupId);
+                $("#edit_nama_instansi").val(d.instansi);
+                $("#edit_tgl_pelaksanaan").val(d.tanggal);
+                $("#edit_status_pelaksanaan").val(d.status);
+                $("#edit_link_dokumen").val(d.dokumen);
 
-            } catch (err) {
-                console.error("❌ Error fetch:", err);
-            }
+                // === Isi petugas CAT ===
+                const container = document.getElementById('editPetugasCatGroup');
+                container.innerHTML = '';
+                if (d.petugas) {
+                    const arr = d.petugas.split(',').map(x => x.trim());
+                    arr.forEach((nama, i) => {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.classList.add('form-control', 'mb-2');
+                        input.name = `edit_petugas_${i + 1}`;
+                        input.value = nama;
+                        container.appendChild(input);
+                    });
+                }
+
+                // === Isi jumlah peserta ===
+                $("input[name='jumlah_peserta_0']").val(d.jumlahUpkp);
+                $("input[name='jumlah_peserta_1']").val(d.jumlahUd1);
+                $("input[name='jumlah_peserta_2']").val(d.jumlahUd2);
+                $("input[name='jumlah_peserta_3']").val(d.jumlahRemedUpkp);
+                $("input[name='jumlah_peserta_4']").val(d.jumlahRemedUd1);
+                $("input[name='jumlah_peserta_5']").val(d.jumlahRemedUd2);
+
+                // === Nilai UPKP dan REMED ===
+                $("input[name='nilai_tertinggi_0']").val(d.nilaiTertinggiUpkp);
+                $("input[name='nilai_terendah_0']").val(d.nilaiTerendahUpkp);
+                $("input[name='nilai_tertinggi_3']").val(d.nilaiTertinggiRemed);
+                $("input[name='nilai_terendah_3']").val(d.nilaiTerendahRemed);
+
+                // === Lulus / Tidak Lulus ===
+                $("input[name='jumlah_lulus_pg_1']").val(d.lulusUd1);
+                $("input[name='jumlah_tidak_lulus_pg_1']").val(d.tidakLulusUd1);
+                $("input[name='jumlah_lulus_pg_2']").val(d.lulusUd2);
+                $("input[name='jumlah_tidak_lulus_pg_2']").val(d.tidakLulusUd2);
+                $("input[name='jumlah_lulus_pg_4']").val(d.lulusRemedUd1);
+                $("input[name='jumlah_tidak_lulus_pg_4']").val(d.tidakLulusRemedUd1);
+                $("input[name='jumlah_lulus_pg_5']").val(d.lulusRemedUd2);
+                $("input[name='jumlah_tidak_lulus_pg_5']").val(d.tidakLulusRemedUd2);
+
+                // Reset variabel temp
+                editDataTemp = null;
+            });
         });
+    </script>
 
-        // pasang event listener
-        [searchInput, startDateInput, endDateInput].forEach(el =>
-            el.addEventListener("input", searchData)
-        );
-    });
-</script>
-<script>
-    function clearFilter() {
-        document.getElementById('customSearch').value = '';
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-
-        // 🔄 Ambil halaman index penuh (bukan partial)
-        fetch('/')
-            .then(res => res.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newTable = doc.querySelector('#tableBody').innerHTML;
-                document.querySelector('#tableBody').innerHTML = newTable;
-            })
-            .catch(err => console.error('❌ Error reset:', err));
-    }
-
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Simpan data tombol edit sementara
-        let editDataTemp = null;
-
-        // Ketika tombol edit diklik
-        $(document).on("click", ".btn-edit", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const btn = $(this);
-
-            // Simpan semua data tombol ke variabel sementara
-            editDataTemp = {
-                groupId: btn.data('group-id'),
-                instansi: btn.data('instansi'),
-                tanggal: btn.data('tanggal'),
-                status: btn.data('status'),
-                dokumen: btn.data('dokumen'),
-                petugas: btn.data('petugas'),
-
-                jumlahUpkp: btn.data('jumlah-upkp'),
-                jumlahUd1: btn.data('jumlah-ud1'),
-                jumlahUd2: btn.data('jumlah-ud2'),
-                jumlahRemedUpkp: btn.data('jumlah-remed-upkp'),
-                jumlahRemedUd1: btn.data('jumlah-remed-ud1'),
-                jumlahRemedUd2: btn.data('jumlah-remed-ud2'),
-
-                nilaiTertinggiUpkp: btn.data('nilai-tertinggi'),
-                nilaiTerendahUpkp: btn.data('nilai-terendah'),
-                nilaiTertinggiRemed: btn.data('nilai-tertinggi-remed'),
-                nilaiTerendahRemed: btn.data('nilai-terendah-remed'),
-
-                lulusUd1: btn.data('lulus-ud1'),
-                tidakLulusUd1: btn.data('tidak-lulus-ud1'),
-                lulusUd2: btn.data('lulus-ud2'),
-                tidakLulusUd2: btn.data('tidak-lulus-ud2'),
-                lulusRemedUd1: btn.data('lulus-remed-ud1'),
-                tidakLulusRemedUd1: btn.data('tidak-lulus-remed-ud1'),
-                lulusRemedUd2: btn.data('lulus-remed-ud2'),
-                tidakLulusRemedUd2: btn.data('tidak-lulus-remed-ud2')
-            };
-
-            // Tampilkan modal edit
-            $('#editDataModal').modal('show');
-        });
-
-        // Setelah modal tampil dan section nilai sudah dibuat
-        $('#editDataModal').on('shown.bs.modal', function () {
-            if (!editDataTemp) return;
-            const d = editDataTemp;
-
-            // === Isi field utama ===
-            $("#edit_group_id").val(d.groupId);
-            $("#edit_nama_instansi").val(d.instansi);
-            $("#edit_tgl_pelaksanaan").val(d.tanggal);
-            $("#edit_status_pelaksanaan").val(d.status);
-            $("#edit_link_dokumen").val(d.dokumen);
-
-            // === Isi petugas CAT ===
-            const container = document.getElementById('editPetugasCatGroup');
-            container.innerHTML = '';
-            if (d.petugas) {
-                const arr = d.petugas.split(',').map(x => x.trim());
-                arr.forEach((nama, i) => {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.classList.add('form-control', 'mb-2');
-                    input.name = `edit_petugas_${i + 1}`;
-                    input.value = nama;
-                    container.appendChild(input);
-                });
-            }
-
-            // === Isi jumlah peserta ===
-            $("input[name='jumlah_peserta_0']").val(d.jumlahUpkp);
-            $("input[name='jumlah_peserta_1']").val(d.jumlahUd1);
-            $("input[name='jumlah_peserta_2']").val(d.jumlahUd2);
-            $("input[name='jumlah_peserta_3']").val(d.jumlahRemedUpkp);
-            $("input[name='jumlah_peserta_4']").val(d.jumlahRemedUd1);
-            $("input[name='jumlah_peserta_5']").val(d.jumlahRemedUd2);
-
-            // === Nilai UPKP dan REMED ===
-            $("input[name='nilai_tertinggi_0']").val(d.nilaiTertinggiUpkp);
-            $("input[name='nilai_terendah_0']").val(d.nilaiTerendahUpkp);
-            $("input[name='nilai_tertinggi_3']").val(d.nilaiTertinggiRemed);
-            $("input[name='nilai_terendah_3']").val(d.nilaiTerendahRemed);
-
-            // === Lulus / Tidak Lulus ===
-            $("input[name='jumlah_lulus_pg_1']").val(d.lulusUd1);
-            $("input[name='jumlah_tidak_lulus_pg_1']").val(d.tidakLulusUd1);
-            $("input[name='jumlah_lulus_pg_2']").val(d.lulusUd2);
-            $("input[name='jumlah_tidak_lulus_pg_2']").val(d.tidakLulusUd2);
-            $("input[name='jumlah_lulus_pg_4']").val(d.lulusRemedUd1);
-            $("input[name='jumlah_tidak_lulus_pg_4']").val(d.tidakLulusRemedUd1);
-            $("input[name='jumlah_lulus_pg_5']").val(d.lulusRemedUd2);
-            $("input[name='jumlah_tidak_lulus_pg_5']").val(d.tidakLulusRemedUd2);
-
-            // Reset variabel temp
-            editDataTemp = null;
-        });
-    });
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
             // Pastikan modal input tidak ikut terbuka saat edit ditekan
             $(document).on("click", ".btn-edit", function (e) {
                 e.preventDefault(); // hentikan default link behavior
@@ -2785,154 +2954,154 @@
             });
         });
 
-</script>
-<script>
-    $(document).ready(function () {
-        // Hitung jumlah input petugas di modal edit
-        let editPetugasCount = $('#editPetugasCatGroup input').length || 1;
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Hitung jumlah input petugas di modal edit
+            let editPetugasCount = $('#editPetugasCatGroup input').length || 1;
 
-        // Tambah petugas
-        $(document).on('click', '#btnEditAddPetugas', function () {
-            editPetugasCount++;
-            const container = $('#editPetugasCatGroup');
-            const input = `
+            // Tambah petugas
+            $(document).on('click', '#btnEditAddPetugas', function () {
+                editPetugasCount++;
+                const container = $('#editPetugasCatGroup');
+                const input = `
             <input type="text" 
                    name="petugas_cat[]" 
                    class="form-control mb-2" 
                    placeholder="Nama Pegawai ${editPetugasCount}">
         `;
-            container.append(input);
-        });
+                container.append(input);
+            });
 
-        // Kurangi petugas
-        $(document).on('click', '#btnEditRemovePetugas', function () {
-            const container = $('#editPetugasCatGroup');
-            if (container.children('input').length > 1) {
-                container.children('input').last().remove();
-                editPetugasCount--;
-            }
-        });
-
-        // Reset counter setiap kali modal dibuka
-        $('#editDataModal').on('shown.bs.modal', function () {
-            editPetugasCount = $('#editPetugasCatGroup input').length || 1;
-        });
-    });
-</script>
-
-<script>
-    let chartNilai, chartLulus;
-
-    function renderCharts(groupedData) {
-        if (!Array.isArray(groupedData)) return;
-
-        // Hitung nilai tertinggi/terendah (UPKP)
-        let nilaiTertinggi = 0;
-        let nilaiTerendah = null;
-        let totalLulus = 0;
-        let totalTidakLulus = 0;
-
-        groupedData.forEach(group => {
-            group.rows.forEach(row => {
-                const jenis = (row.jenis_ujian || '').toUpperCase();
-                const max = parseFloat(row.nilai_tertinggi_pg);
-                const min = parseFloat(row.nilai_terendah_pg);
-                const lulus = parseInt(row.jumlah_lulus_pg);
-                const gagal = parseInt(row.jumlah_tidak_lulus_pg);
-
-                if (jenis.includes("UPKP")) {
-                    if (!isNaN(max)) nilaiTertinggi = Math.max(nilaiTertinggi, max);
-                    if (!isNaN(min)) nilaiTerendah = (nilaiTerendah === null) ? min : Math.min(nilaiTerendah, min);
-                }
-
-                if (jenis.includes("UD TK")) {
-                    if (!isNaN(lulus)) totalLulus += lulus;
-                    if (!isNaN(gagal)) totalTidakLulus += gagal;
+            // Kurangi petugas
+            $(document).on('click', '#btnEditRemovePetugas', function () {
+                const container = $('#editPetugasCatGroup');
+                if (container.children('input').length > 1) {
+                    container.children('input').last().remove();
+                    editPetugasCount--;
                 }
             });
+
+            // Reset counter setiap kali modal dibuka
+            $('#editDataModal').on('shown.bs.modal', function () {
+                editPetugasCount = $('#editPetugasCatGroup input').length || 1;
+            });
         });
+    </script>
 
-        if (nilaiTerendah === null) nilaiTerendah = 0;
+    <script>
+        let chartNilai, chartLulus;
 
-        const ctx1 = document.getElementById("chartNilaiIndex").getContext("2d");
-        const ctx2 = document.getElementById("chartLulusIndex").getContext("2d");
+        function renderCharts(groupedData) {
+            if (!Array.isArray(groupedData)) return;
 
-        // Hapus grafik lama kalau ada
-        if (chartNilai) chartNilai.destroy();
-        if (chartLulus) chartLulus.destroy();
+            // Hitung nilai tertinggi/terendah (UPKP)
+            let nilaiTertinggi = 0;
+            let nilaiTerendah = null;
+            let totalLulus = 0;
+            let totalTidakLulus = 0;
 
-        // Grafik Nilai UPKP
-        chartNilai = new Chart(ctx1, {
-            type: "bar",
-            data: {
-                labels: ["UPKP & REMED UPKP"],
-                datasets: [
-                    { label: "Nilai Tertinggi", data: [nilaiTertinggi], backgroundColor: "#3b82f6" },
-                    { label: "Nilai Terendah", data: [nilaiTerendah], backgroundColor: "#facc15" }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: "bottom" } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+            groupedData.forEach(group => {
+                group.rows.forEach(row => {
+                    const jenis = (row.jenis_ujian || '').toUpperCase();
+                    const max = parseFloat(row.nilai_tertinggi_pg);
+                    const min = parseFloat(row.nilai_terendah_pg);
+                    const lulus = parseInt(row.jumlah_lulus_pg);
+                    const gagal = parseInt(row.jumlah_tidak_lulus_pg);
 
-        // Grafik Lulus vs Tidak Lulus
-        if (totalLulus > 0 || totalTidakLulus > 0) {
-            const total = totalLulus + totalTidakLulus;
-            const persenLulus = ((totalLulus / total) * 100).toFixed(1);
-            const persenTidakLulus = ((totalTidakLulus / total) * 100).toFixed(1);
+                    if (jenis.includes("UPKP")) {
+                        if (!isNaN(max)) nilaiTertinggi = Math.max(nilaiTertinggi, max);
+                        if (!isNaN(min)) nilaiTerendah = (nilaiTerendah === null) ? min : Math.min(nilaiTerendah, min);
+                    }
 
-            chartLulus = new Chart(ctx2, {
-                type: "pie",
+                    if (jenis.includes("UD TK")) {
+                        if (!isNaN(lulus)) totalLulus += lulus;
+                        if (!isNaN(gagal)) totalTidakLulus += gagal;
+                    }
+                });
+            });
+
+            if (nilaiTerendah === null) nilaiTerendah = 0;
+
+            const ctx1 = document.getElementById("chartNilaiIndex").getContext("2d");
+            const ctx2 = document.getElementById("chartLulusIndex").getContext("2d");
+
+            // Hapus grafik lama kalau ada
+            if (chartNilai) chartNilai.destroy();
+            if (chartLulus) chartLulus.destroy();
+
+            // Grafik Nilai UPKP
+            chartNilai = new Chart(ctx1, {
+                type: "bar",
                 data: {
-                    labels: [
-                        `Lulus PG (${persenLulus}%)`,
-                        `Tidak Lulus PG (${persenTidakLulus}%)`
-                    ],
-                    datasets: [{
-                        data: [totalLulus, totalTidakLulus],
-                        backgroundColor: ["#22c55e", "#ef4444"]
-                    }]
+                    labels: ["UPKP & REMED UPKP"],
+                    datasets: [
+                        { label: "Nilai Tertinggi", data: [nilaiTertinggi], backgroundColor: "#3b82f6" },
+                        { label: "Nilai Terendah", data: [nilaiTerendah], backgroundColor: "#facc15" }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: "bottom" } }
+                    plugins: { legend: { position: "bottom" } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
+
+            // Grafik Lulus vs Tidak Lulus
+            if (totalLulus > 0 || totalTidakLulus > 0) {
+                const total = totalLulus + totalTidakLulus;
+                const persenLulus = ((totalLulus / total) * 100).toFixed(1);
+                const persenTidakLulus = ((totalTidakLulus / total) * 100).toFixed(1);
+
+                chartLulus = new Chart(ctx2, {
+                    type: "pie",
+                    data: {
+                        labels: [
+                            `Lulus PG (${persenLulus}%)`,
+                            `Tidak Lulus PG (${persenTidakLulus}%)`
+                        ],
+                        datasets: [{
+                            data: [totalLulus, totalTidakLulus],
+                            backgroundColor: ["#22c55e", "#ef4444"]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: "bottom" } }
+                    }
+                });
+            }
         }
-    }
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Pastikan data dari server terpasang
-        const groupedData = <%- JSON.stringify(groupedData || []) %>;
-        console.log("📊 Data grafik awal:", groupedData);
-        renderCharts(groupedData);
-        updateSummaryCards(data.groupedData);
-    });
-</script>
-<script>
-    function updateSummaryCards(groupedData) {
-        if (!Array.isArray(groupedData)) return;
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Pastikan data dari server terpasang
+            const groupedData = <%- JSON.stringify(groupedData || []) %>;
+            console.log("📊 Data grafik awal:", groupedData);
+            renderCharts(groupedData);
+            updateSummaryCards(data.groupedData);
+        });
+    </script>
+    <script>
+        function updateSummaryCards(groupedData) {
+            if (!Array.isArray(groupedData)) return;
 
-        // Ambil semua jenis ujian dari seluruh grup
-        const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
+            // Ambil semua jenis ujian dari seluruh grup
+            const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
 
-        // Hitung kategori utama (termasuk REMED)
-        const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
-        const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
-        const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
+            // Hitung kategori utama (termasuk REMED)
+            const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
+            const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
+            const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
 
-        // Tampilkan ke kartu
-        document.getElementById("cardUpkp").innerText = countUpkp;
-        document.getElementById("cardUd1").innerText = countUd1;
-        document.getElementById("cardUd2").innerText = countUd2;
-    }
-</script>
+            // Tampilkan ke kartu
+            document.getElementById("cardUpkp").innerText = countUpkp;
+            document.getElementById("cardUd1").innerText = countUd1;
+            document.getElementById("cardUd2").innerText = countUd2;
+        }
+    </script>
 
 </body>
 
