@@ -131,6 +131,17 @@ app.get("/", async (req, res) => {
       (page - 1) * limit,
       page * limit
     );
+    // 🔹 Hitung total per instansi
+   const [rekapInstansi] = await db.promise().query(`
+  SELECT 
+    instansi,
+    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UPKP','REMED UPKP') THEN 1 ELSE 0 END) AS total_upkp,
+    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UD TK. I','REMED UD TK. I') THEN 1 ELSE 0 END) AS total_ud1,
+    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UD TK. II','REMED UD TK. II') THEN 1 ELSE 0 END) AS total_ud2
+  FROM tabel
+  GROUP BY instansi
+  ORDER BY instansi ASC
+`);
 
     res.render("index", {
       groupedData: paginatedGroups,
@@ -145,6 +156,7 @@ app.get("/", async (req, res) => {
       countUpkp,
       countUd1,
       countUd2,
+      rekapInstansi,
     });
   } catch (err) {
     console.error(err);
