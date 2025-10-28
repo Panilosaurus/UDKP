@@ -270,7 +270,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            
+
                                 <!-- Grafik Lulus vs Tidak Lulus -->
                                 <div class="col-lg-6 mb-4">
                                     <div class="card shadow">
@@ -285,7 +285,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Rekap (diletakkan setelah grafik, di luar row) -->
                             <div id="rekapContainer" class="my-4" style="display: none;"></div>
 
@@ -444,11 +444,30 @@
 
                                                                                 <td class="align-middle text-center"
                                                                                     rowspan="<%= group.rows.length %>">
-                                                                                    <span
-                                                                                        class="badge badge-<%= group.status.toLowerCase().includes('selesai') ? 'success' : group.status.toLowerCase().includes('menunggu') ? 'warning' : 'info' %>">
-                                                                                        <%= group.status %>
-                                                                                    </span>
+                                                                                    <select
+                                                                                        class="form-control form-control-sm status-inline d-inline-block w-auto"
+                                                                                        data-group-id="<%= group.group_id %>"
+                                                                                        data-old="<%= group.status || '' %>"
+                                                                                        onchange="handleStatusChange(event)">
+                                                                                        <option value="">-- Pilih --
+                                                                                        </option>
+                                                                                        <option
+                                                                                            value="Persiapan Administrasi"
+                                                                                            <%=group.status==='Persiapan Administrasi'
+                                                                                            ?'selected':'' %>>Persiapan
+                                                                                            Administrasi</option>
+                                                                                        <option
+                                                                                            value="Menunggu Pelaksanaan"
+                                                                                            <%=group.status==='Menunggu Pelaksanaan'
+                                                                                            ?'selected':'' %>>Menunggu
+                                                                                            Pelaksanaan</option>
+                                                                                        <option value="Selesai"
+                                                                                            <%=group.status==='Selesai'
+                                                                                            ?'selected':'' %>>Selesai
+                                                                                        </option>
+                                                                                    </select>
                                                                                 </td>
+
                                                                                 <td class="align-middle text-center"
                                                                                     rowspan="<%= group.rows.length %>">
                                                                                     <% if (group.dokumen &&
@@ -1018,7 +1037,8 @@
                             <!-- Footer -->
                             <div class="modal-footer">
                                 <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
-                                <button class="btn btn-primary" type="submit">Simpan Nilai</button>
+                                <button type="submit" class="btn btn-primary" form="formInputNilai">Simpan
+                                    Nilai</button>
                             </div>
                         </form>
                     </div>
@@ -1262,7 +1282,6 @@
                     max-height: calc(100vh - 220px);
                     overflow-y: auto;
                 }
-                
             </style>
 
             <!-- Footer -->
@@ -2067,34 +2086,66 @@
     </script>
     <script>
         $(document).ready(function () {
-
-            // Tangani submit form edit
             $('#formEditData').on('submit', function (e) {
-                e.preventDefault(); // cegah reload
+                e.preventDefault();
 
-                // 🧩 1️⃣ Validasi minimal 1 Petugas CAT
-                const hasAtLeastOne = Array
-                    .from(document.querySelectorAll('#editPetugasCatGroup input[type="text"]'))
-                    .some(inp => (inp.value || '').trim().length > 0);
-
-                if (!hasAtLeastOne) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Minimal 1 Petugas CAT',
-                        html: '<p>Isi setidaknya <b>1 nama Petugas CAT</b> sebelum menyimpan.</p>'
-                    });
-                    return; // hentikan kirim form
-                }
-
-                // 🧩 2️⃣ Jika lolos validasi, lanjut kirim AJAX
                 const form = $(this);
                 const actionUrl = form.attr('action');
-                const formData = form.serialize();
 
+                // ambil status yang dipilih di modal edit
+                const status = ($('#edit_status_pelaksanaan').val() || '').trim();
+
+                // ambil semua field jumlah & nilai dari modal edit
+                const jmlUPKP = Number($("input[name='jumlah_peserta_0']").val() || 0);
+                const jmlUD1 = Number($("input[name='jumlah_peserta_1']").val() || 0);
+                const jmlUD2 = Number($("input[name='jumlah_peserta_2']").val() || 0);
+                const jmlRemUPKP = Number($("input[name='jumlah_peserta_3']").val() || 0);
+                const jmlRemUD1 = Number($("input[name='jumlah_peserta_4']").val() || 0);
+                const jmlRemUD2 = Number($("input[name='jumlah_peserta_5']").val() || 0);
+
+                const maxUPKP = $("input[name='nilai_tertinggi_0']").val();
+                const minUPKP = $("input[name='nilai_terendah_0']").val();
+                const maxRemUPKP = $("input[name='nilai_tertinggi_3']").val();
+                const minRemUPKP = $("input[name='nilai_terendah_3']").val();
+
+                const lulusUD1 = $("input[name='jumlah_lulus_pg_1']").val();
+                const gagalUD1 = $("input[name='jumlah_tidak_lulus_pg_1']").val();
+                const lulusUD2 = $("input[name='jumlah_lulus_pg_2']").val();
+                const gagalUD2 = $("input[name='jumlah_tidak_lulus_pg_2']").val();
+                const lulusRemUD1 = $("input[name='jumlah_lulus_pg_4']").val();
+                const gagalRemUD1 = $("input[name='jumlah_tidak_lulus_pg_4']").val();
+                const lulusRemUD2 = $("input[name='jumlah_lulus_pg_5']").val();
+                const gagalRemUD2 = $("input[name='jumlah_tidak_lulus_pg_5']").val();
+
+                if (status === 'Selesai') {
+                    let msgs = [];
+
+                    // UPKP & REMED UPKP: jika ada peserta >0, wajib isi max & min
+                    if (jmlUPKP > 0 && (!maxUPKP || !minUPKP)) msgs.push('• UPKP: isi Nilai Tertinggi & Nilai Terendah');
+                    if (jmlRemUPKP > 0 && (!maxRemUPKP || !minRemUPKP)) msgs.push('• REMED UPKP: isi Nilai Tertinggi & Nilai Terendah');
+
+                    // UD TK I/II (+ Remed): jika ada peserta >0, wajib isi lulus & tidak lulus
+                    if (jmlUD1 > 0 && (!lulusUD1 || !gagalUD1)) msgs.push('• UD TK. I: isi Jumlah Lulus & Tidak Lulus');
+                    if (jmlUD2 > 0 && (!lulusUD2 || !gagalUD2)) msgs.push('• UD TK. II: isi Jumlah Lulus & Tidak Lulus');
+                    if (jmlRemUD1 > 0 && (!lulusRemUD1 || !gagalRemUD1)) msgs.push('• REMED UD TK. I: isi Jumlah Lulus & Tidak Lulus');
+                    if (jmlRemUD2 > 0 && (!lulusRemUD2 || !gagalRemUD2)) msgs.push('• REMED UD TK. II: isi Jumlah Lulus & Tidak Lulus');
+
+                    if (msgs.length) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Belum bisa diselesaikan',
+                            html: `<p>Untuk mengubah status menjadi <b>Selesai</b>, lengkapi dulu kolom berikut:</p>
+                   <div>${msgs.join('<br>')}</div>`
+                        });
+                        return; // stop submit
+                    }
+                }
+
+                // lanjut submit (pakai serialize untuk form urlencoded)
                 $.ajax({
                     url: actionUrl,
                     type: 'POST',
-                    data: formData,
+                    data: form.serialize(),
                     success: function (response) {
                         Swal.fire({
                             icon: response.status || 'success',
@@ -2108,18 +2159,14 @@
                             }
                         });
                     },
-
                     error: function () {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            html: '<p>Terjadi kesalahan saat menyimpan data.</p>'
-                        });
+                        Swal.fire({ icon: 'error', title: 'Gagal!', html: '<p>Terjadi kesalahan saat menyimpan data.</p>' });
                     }
                 });
             });
         });
     </script>
+
 
 
     <script>
@@ -2569,7 +2616,7 @@
                 let html = '';
                 if (Array.isArray(data) && data.length > 0) {
                     html += `
-        <form id="formInputNilai">
+         <form id="formInputNilai" data-group-id="${groupId}">
         <table class="table table-bordered table-sm">
           <thead class="table-success">
             <tr>
@@ -2653,6 +2700,7 @@
 
                 // pastikan selalu isi di dalam modal Input Nilai, bukan di edit
                 $(modalInputNilai).find('#nilaiContent').html(html);
+                $(modalInputNilai).find('#formInputNilai').attr('data-group-id', groupId);
                 $(modalInputNilai).modal('show');
 
             } catch (err) {
@@ -2664,31 +2712,27 @@
     <script>
         $(document).on("submit", "#formInputNilai", async function (e) {
             e.preventDefault();
-            const groupId = $(this).data("group-id");
-            console.log("📦 Group ID yang dikirim:", groupId);
 
-            const formData = $(this).serialize();
+            const groupId = $(this).data("group-id");
+            if (!groupId) {
+                Swal.fire("Error", "Group ID tidak ditemukan.", "error");
+                return;
+            }
+
+            // Kirim sebagai multipart/form-data agar cocok dengan upload.none()
+            const fd = new FormData(this);
 
             try {
                 const res = await fetch(`/update-nilai/${groupId}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: formData,
+                    body: fd,                // ⬅️ JANGAN set Content-Type manual
                 });
 
                 const result = await res.json();
-                console.log("Server response:", result);
-
                 if (result.status === "success") {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Berhasil!",
-                        text: result.message || "Nilai berhasil diperbarui.",
-                        timer: 1500,
-                        showConfirmButton: false,
-                    });
+                    Swal.fire({ icon: "success", title: "Berhasil", text: result.message || "Nilai berhasil diperbarui." });
                     $("#modalInputNilai").modal("hide");
-                    setTimeout(() => location.reload(), 1500);
+                    setTimeout(() => location.reload(), 800);
                 } else {
                     Swal.fire("Gagal", result.message || "Gagal menyimpan nilai.", "error");
                 }
@@ -2697,7 +2741,6 @@
                 Swal.fire("Error", "Gagal menghubungi server.", "error");
             }
         });
-
     </script>
 
 
@@ -2832,23 +2875,23 @@
     </script>
     <script>
         async function clearFilter() {
-                document.getElementById('customSearch').value = '';
-                document.getElementById('startDate').value = '';
-                document.getElementById('endDate').value = '';
+            document.getElementById('customSearch').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
 
-                try {
-                    const res = await fetch(`/search`, { headers: { "Accept": "application/json" } });
-                    const data = await res.json();
+            try {
+                const res = await fetch(`/search`, { headers: { "Accept": "application/json" } });
+                const data = await res.json();
 
-                    // Update tabel, grafik, kartu, dan rekap semuanya
-                    document.querySelector("#tableBody").innerHTML = data.html;
-                    renderCharts(data.groupedData);
-                    updateSummaryCards(data.groupedData);
-                    loadRekapFromGrouped(data.groupedData);
-                } catch (err) {
-                    console.error("❌ Error reset:", err);
-                }
+                // Update tabel, grafik, kartu, dan rekap semuanya
+                document.querySelector("#tableBody").innerHTML = data.html;
+                renderCharts(data.groupedData);
+                updateSummaryCards(data.groupedData);
+                loadRekapFromGrouped(data.groupedData);
+            } catch (err) {
+                console.error("❌ Error reset:", err);
             }
+        }
 
 
     </script>
@@ -3132,78 +3175,287 @@
     </script>
     <script>
         async function loadRekapFromGrouped(groupedData) {
-                try {
-                    if (!Array.isArray(groupedData)) {
-                        document.getElementById('rekapContainer').innerHTML =
-                            '<div class="text-muted">Tidak ada data untuk direkap.</div>';
-                        return;
+            try {
+                if (!Array.isArray(groupedData)) {
+                    document.getElementById('rekapContainer').innerHTML =
+                        '<div class="text-muted">Tidak ada data untuk direkap.</div>';
+                    return;
+                }
+                $(document).on('change', '.status-inline', async function () {
+                    const $sel = $(this);
+                    const groupId = $sel.data('group-id');
+                    const oldVal = $sel.data('old') || '';
+                    const newVal = $sel.val();
+
+                    // validasi pilihan
+                    const allowed = ['Persiapan Administrasi', 'Menunggu Pelaksanaan', 'Selesai'];
+                    if (!allowed.includes(newVal)) {
+                        $sel.val(oldVal);
+                        return Swal.fire('Tidak valid', 'Status tidak dikenali.', 'warning');
                     }
 
-                    // 🔹 Hitung total per instansi dari groupedData
-                    const rekapMap = {};
-
-                    groupedData.forEach(g => {
-                        const instansi = g.instansi || "Tidak diketahui";
-                        if (!rekapMap[instansi]) {
-                            rekapMap[instansi] = { upkp: 0, ud1: 0, ud2: 0 };
-                        }
-
-                        g.rows.forEach(r => {
-                            const jenis = (r.jenis_ujian || "").toUpperCase().trim();
-                            if (["UPKP", "REMED UPKP"].includes(jenis)) rekapMap[instansi].upkp++;
-                            else if (["UD TK. I", "REMED UD TK. I"].includes(jenis)) rekapMap[instansi].ud1++;
-                            else if (["UD TK. II", "REMED UD TK. II"].includes(jenis)) rekapMap[instansi].ud2++;
-                        });
+                    // konfirmasi
+                    const ok = await Swal.fire({
+                        title: 'Ubah status?',
+                        html: `<p>Group ID: <b>${groupId}</b></p><p>${oldVal || '—'} ➜ <b>${newVal}</b></p>`,
+                        icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, simpan'
                     });
+                    if (!ok.isConfirmed) { $sel.val(oldVal); return; }
 
-                    // 🔹 Ubah jadi HTML
-                    const rowsHtml = Object.entries(rekapMap)
-                        .sort((a, b) => a[0].localeCompare(b[0]))
-                        .map(([instansi, v]) => `
-        <tr>
-          <td>${instansi}</td>
-          <td>${v.upkp}</td>
-          <td>${v.ud1}</td>
-          <td>${v.ud2}</td>
-        </tr>
-      `).join("");
+                    // disable sementara biar tak dobel klik
+                    $sel.prop('disabled', true);
 
-                    const html = `
-      <div class="card shadow mb-4">
-        <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">
-            Rekap Jumlah Ujian per Instansi
-          </h6>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped text-center">
-              <thead class="thead-light">
-                <tr>
-                  <th>Nama Instansi</th>
-                  <th>UPKP</th>
-                  <th>UD TK. I</th>
-                  <th>UD TK. II</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rowsHtml || '<tr><td colspan="4">Tidak ada data</td></tr>'}
-              </tbody>
-            </table>
+                    try {
+                        const res = await fetch(`/update-status`, {
+
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: newVal })
+                        });
+                        const data = await res.json();
+
+                        if (res.ok && data.status === 'success') {
+                            // simpan nilai terbaru sebagai "old"
+                            $sel.data('old', newVal);
+                            Swal.fire('Tersimpan', 'Status berhasil diperbarui.', 'success');
+                        } else {
+                            $sel.val(oldVal);
+                            Swal.fire('Gagal', data.message || 'Tidak bisa menyimpan status.', 'error');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        $sel.val(oldVal);
+                        Swal.fire('Error', 'Kesalahan koneksi/server.', 'error');
+                    } finally {
+                        $sel.prop('disabled', false);
+                    }
+                });
+            }
+        }
+    </script>
+    <!-- ==================== Script lain di atas ==================== -->
+
+    <script>
+        $(document).off('change.statusInline').on('change.statusInline', '.status-inline', async function () {
+            const $sel = $(this);
+            const groupId = $sel.data('group-id');
+            const oldVal = $sel.data('old') || '';
+            const newVal = $sel.val();
+
+            const allowed = ['Persiapan Administrasi', 'Menunggu Pelaksanaan', 'Selesai'];
+            if (!allowed.includes(newVal)) { $sel.val(oldVal); return; }
+
+            const ok = await Swal.fire({
+                title: 'Ubah status?',
+                html: `<p>Group ID: <b>${groupId}</b></p><p>${oldVal || '—'} ➜ <b>${newVal}</b></p>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, simpan',
+                cancelButtonText: 'Batal'
+            });
+            if (!ok.isConfirmed) { $sel.val(oldVal); return; }
+
+            $sel.prop('disabled', true);
+            try {
+                // ✅ route dan payload sesuai server.js kamu
+                const res = await fetch(`/update-status/${groupId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newVal })
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.status === 'success') {
+                    // === sinkronkan UI TANPA reload ===
+                    // 1) kunci nilai baru pada select
+                    $sel.data('old', newVal).val(newVal);
+
+                    // 2) kalau ada badge/label status di cell yang sama, perbarui
+                    const $badge = $sel.closest('td').find('.badge');
+                    if ($badge.length) {
+                        $badge
+                            .text(newVal)
+                            .removeClass('badge-success badge-warning badge-info')
+                            .addClass(
+                                /selesai/i.test(newVal) ? 'badge-success' :
+                                    /menunggu/i.test(newVal) ? 'badge-warning' :
+                                        'badge-info'
+                            );
+                    }
+
+                    // 3) sinkronkan tombol Edit pada grup yang sama
+                    const $editBtn = $(`.btn-edit[data-group-id="${groupId}"]`);
+                    if ($editBtn.length) {
+                        $editBtn.data('status', newVal);        // untuk .data(...)
+                        $editBtn.attr('data-status', newVal);   // untuk dataset HTML (kalau modal baca via dataset)
+                    }
+
+                    // 4) toast sukses
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Tersimpan',
+                        text: data.message || 'Status berhasil diperbarui.',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // tampilkan pesan validasi dari server (bisa HTML)
+                    $sel.val(oldVal);
+                    const html = data.message || 'Tidak bisa menyimpan status.';
+                    Swal.fire({ icon: 'warning', title: data.title || 'Gagal', html });
+                }
+            } catch (e) {
+                console.error(e);
+                $sel.val(oldVal);
+                Swal.fire('Error', 'Kesalahan koneksi/server.', 'error');
+            } finally {
+                $sel.prop('disabled', false);
+            }
+        });
+    </script>
+
+    <script>
+        window.handleStatusChange = async function (e) {
+            const sel = e.target;
+            if (!(sel instanceof HTMLSelectElement)) return;
+
+            const groupId = sel.dataset.groupId;
+            const oldVal = sel.dataset.old || '';
+            const newVal = sel.value;
+
+            const ok = await Swal.fire({
+                title: 'Ubah status?',
+                text: `Status akan diubah menjadi "${newVal}".`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, simpan',
+                cancelButtonText: 'Batal'
+            }).then(r => r.isConfirmed);
+
+            if (!ok) { sel.value = oldVal; return; }
+
+            sel.disabled = true;
+            try {
+                // ✨ Sesuaikan dengan server: /update-status/:groupId
+                const res = await fetch(`/update-status/${groupId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newVal })
+                });
+
+                let data = {};
+                try { data = await res.json(); } catch (_) { }
+
+                // Server membalas: { status: 'success' | 'error', message? }
+                if (res.ok && data.status === 'success') {
+                    // 1) kunci nilai baru di select
+                    sel.value = newVal;
+                    sel.dataset.old = newVal;
+
+                    // 2) perbarui badge (jika ada)
+                    const badge = sel.closest('td')?.querySelector('.badge');
+                    if (badge) {
+                        badge.textContent = newVal;
+                        badge.className = 'badge ' + (
+                            /selesai/i.test(newVal) ? 'badge-success' :
+                                /menunggu/i.test(newVal) ? 'badge-warning' :
+                                    'badge-info'
+                        );
+                    }
+
+                    // 3) sinkronkan tombol Edit pada group yang sama (agar modal baca nilai terbaru)
+                    const editBtn = document.querySelector(`.btn-edit[data-group-id="${groupId}"]`);
+                    if (editBtn) editBtn.setAttribute('data-status', newVal);
+
+                    // 4) toast sukses
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Tersimpan',
+                        text: data.message || 'Status berhasil diperbarui.',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    sel.value = oldVal;
+                    Swal.fire('Gagal', data.message || 'Tidak dapat menyimpan status.', 'error');
+                }
+            } catch (err) {
+                sel.value = oldVal;
+                Swal.fire('Gagal', 'Tidak bisa menghubungi server.', 'error');
+            } finally {
+                sel.disabled = false;
+            }
+        };
+    </script>
+
+    <script>
+        (function () {
+            try {
+                // 🔹 Hitung total per instansi dari groupedData
+                const rekapMap = {};
+
+                (groupedData || []).forEach(g => {
+                    const instansi = g.instansi || 'Tidak diketahui';
+                    if (!rekapMap[instansi]) {
+                        rekapMap[instansi] = { upkp: 0, ud1: 0, ud2: 0 };
+                    }
+
+                    (g.rows || []).forEach(r => {
+                        const jenis = (r.jenis_ujian || '').toUpperCase().trim();
+                        if (['UPKP', 'REMED UPKP'].includes(jenis)) rekapMap[instansi].upkp++;
+                        else if (['UD TK. I', 'REMED UD TK. I'].includes(jenis)) rekapMap[instansi].ud1++;
+                        else if (['UD TK. II', 'REMED UD TK. II'].includes(jenis)) rekapMap[instansi].ud2++;
+                    });
+                });
+
+                // Render HTML
+                const rowsHtml = Object.entries(rekapMap)
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .map(([instansi, v]) => `
+          <tr>
+            <td>${instansi}</td>
+            <td>${v.upkp}</td>
+            <td>${v.ud1}</td>
+            <td>${v.ud2}</td>
+          </tr>
+        `).join('');
+
+                const html = `
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Rekap Jumlah Ujian per Instansi</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped text-center">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Nama Instansi</th>
+                    <th>UPKP</th>
+                    <th>UD TK. I</th>
+                    <th>UD TK. II</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rowsHtml || '<tr><td colspan="4">Tidak ada data</td></tr>'}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
 
-                    document.getElementById('rekapContainer').innerHTML = html;
-                } catch (err) {
-                    console.error("❌ Gagal buat rekap:", err);
-                    document.getElementById('rekapContainer').innerHTML =
-                        '<div class="text-danger">Gagal membuat rekap.</div>';
-                }
+                const container = document.getElementById('rekapContainer');
+                if (container) container.innerHTML = html;
+            } catch (err) {
+                console.error('❌ Gagal buat rekap:', err);
+                const container = document.getElementById('rekapContainer');
+                if (container) container.innerHTML = '<div class="text-danger">Gagal membuat rekap.</div>';
             }
-
+        })();
     </script>
+
 </body>
 
 </html>
