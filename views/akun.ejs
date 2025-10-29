@@ -187,10 +187,13 @@
 
                           <!-- Aksi: Edit / Toggle Aktif / Reset Password / Hapus -->
                           <td class="text-nowrap">
-                            <!-- Edit (bisa arahkan ke modal atau halaman edit) -->
-                            <a href="/akun/edit/<%= u.id %>" class="btn btn-sm btn-warning mr-1" title="Edit">
+                            <!-- Edit (buka modal Edit Akun) -->
+                            <button type="button" class="btn btn-sm btn-warning mr-1 btnEditAkun" title="Edit" data-id="<%= u.id %>"
+                              data-nama-depan="<%= u.nama_depan %>" data-nama-belakang="<%= u.nama_belakang %>" data-username="<%= u.username %>"
+                              data-role="<%= (u.role || '').toUpperCase() %>" data-status="<%= (u.status || '').toUpperCase() %>">
                               <i class="fas fa-edit"></i>
-                            </a>
+                            </button>
+
 
                             <!-- Toggle Aktif/Nonaktif -->
                             <form action="/akun/toggle/<%= u.id %>" method="POST" class="d-inline">
@@ -318,6 +321,71 @@
     </div>
   </div>
 
+  <!-- Modal: Edit Akun -->
+  <div class="modal fade" id="modalEditAkun" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <form id="formEditAkun" action="" method="POST" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Akun</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+  
+        <div class="modal-body">
+          <input type="hidden" id="edit_id" name="id" />
+  
+          <div class="form-group">
+            <label>Nama Depan</label>
+            <input type="text" class="form-control" id="edit_nama_depan" name="nama_depan" required />
+            <small class="text-danger d-block" data-error="nama_depan"></small>
+          </div>
+  
+          <div class="form-group">
+            <label>Nama Belakang</label>
+            <input type="text" class="form-control" id="edit_nama_belakang" name="nama_belakang" />
+            <small class="text-danger d-block" data-error="nama_belakang"></small>
+          </div>
+  
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" class="form-control" id="edit_username" name="username" disabled />
+            <small class="text-muted">Username tidak bisa diubah.</small>
+          </div>
+  
+          <div class="form-group">
+            <label>Password Baru</label>
+            <input type="password" class="form-control" id="edit_password" name="password" minlength="6" />
+            <small class="text-muted">Kosongkan jika tidak ingin mengubah password.</small>
+          </div>
+  
+          <div class="form-group">
+            <label>Role</label>
+            <select class="form-control" id="edit_role" name="role" required>
+              <option value="PETUGAS">Petugas</option>
+              <option value="ADMIN">Admin</option>
+              <option value="VIEWER">Viewer</option>
+            </select>
+          </div>
+  
+          <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" id="edit_status" name="status" required>
+              <option value="AKTIF">Aktif</option>
+              <option value="NONAKTIF">Nonaktif</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">Batal</button>
+          <button type="submit" id="btnUpdateAkun" class="btn btn-warning">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- SB Admin 2 JS -->
   <script src="/vendor/jquery/jquery.min.js"></script>
@@ -469,7 +537,146 @@
       });
     })();
   </script>
+<script>
+  $(document).on('click', '.btnEditAkun', function () {
+    const depan = $(this).data('nama-depan');
+    const belakang = $(this).data('nama-belakang');
+    console.log("DEBUG nama depan:", depan, "nama belakang:", belakang);
+    const id = $(this).data('id');
+    const namaDepan = $(this).data('nama-depan');
+    const namaBelakang = $(this).data('nama-belakang');
+    const username = $(this).data('username');
+    const role = $(this).data('role');
+    const status = $(this).data('status');
 
+    $('#edit_id').val($(this).data('id'));
+    $('#edit_nama_depan').val($(this).data('nama-depan'));
+    $('#edit_nama_belakang').val($(this).data('nama-belakang'));
+    $('#edit_username').val($(this).data('username'));
+    $('#edit_role').val($(this).data('role'));     // value opsi: ADMIN/PETUGAS/VIEWER
+    $('#edit_status').val($(this).data('status')); // value opsi: AKTIF/NONAKTIF
+    $('#edit_password').val('');
+    $('#modalEditAkun').modal('show');
+  });
+
+  $('#formEditAkun').on('submit', async function (e) {
+      e.preventDefault();
+
+      const id = $('#edit_id').val();
+      const payload = {
+        nama_depan: $('#edit_nama_depan').val().trim(),
+        nama_belakang: $('#edit_nama_belakang').val().trim(),
+        password: $('#edit_password').val(),
+        role: $('#edit_role').val().toUpperCase(),
+        status: $('#edit_status').val().toUpperCase()
+      };
+
+      if (!payload.nama_depan) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'Peringatan',
+          text: 'Nama depan wajib diisi.'
+        });
+      }
+
+      const btn = $('#btnUpdateAkun');
+      btn.prop('disabled', true).text('Menyimpan...');
+
+      try {
+        const res = await fetch(`/akun/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: data.message || 'Akun berhasil diperbarui.',
+            timer: 1500,
+            showConfirmButton: false
+          });
+          location.reload();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: data.message || 'Tidak dapat memperbarui akun.'
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan Server',
+          text: 'Terjadi kesalahan koneksi atau server.'
+        });
+      } finally {
+        btn.prop('disabled', false).text('Update');
+      }
+    });
+</script>
+
+<script>
+  // Saat klik tombol edit → isi field (sudah kamu punya)
+  $(document).on('click', '.btnEditAkun', function () {
+    $('#edit_id').val($(this).data('id'));
+    $('#edit_nama_depan').val($(this).data('nama-depan'));
+    $('#edit_nama_belakang').val($(this).data('nama-belakang'));
+    $('#edit_username').val($(this).data('username'));
+    $('#edit_role').val($(this).data('role'));
+    $('#edit_status').val($(this).data('status'));
+    $('#edit_password').val('');
+    $('#modalEditAkun').modal('show');
+  });
+
+  // Saat form edit dikirim
+  $('#formEditAkun').on('submit', async function (e) {
+    e.preventDefault();
+
+    const id = $('#edit_id').val();
+    const payload = {
+      nama_depan: $('#edit_nama_depan').val().trim(),
+      nama_belakang: $('#edit_nama_belakang').val().trim(),
+      password: $('#edit_password').val(),
+      role: $('#edit_role').val().toUpperCase(),
+      status: $('#edit_status').val().toUpperCase()
+    };
+
+    if (!payload.nama_depan) {
+      alert('Nama depan wajib diisi.');
+      return;
+    }
+
+    const btn = $('#btnUpdateAkun');
+    btn.prop('disabled', true).text('Menyimpan...');
+
+    try {
+      const res = await fetch(`/akun/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        alert('✅ ' + data.message);
+        location.reload();
+      } else {
+        alert('⚠️ ' + (data.message || 'Gagal memperbarui akun.'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Terjadi kesalahan koneksi atau server.');
+    } finally {
+      btn.prop('disabled', false).text('Update');
+    }
+  });
+</script>
 
 </body>
 

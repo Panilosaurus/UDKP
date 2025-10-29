@@ -73,7 +73,6 @@ function requireRole(...roles) {
       return res.redirect('/login');
     }
 
-<<<<<<< HEAD
     // Jika role tidak sesuai
     if (!roles.includes(req.session.user.role)) {
       return res.status(403).send(`
@@ -96,18 +95,6 @@ function requireRole(...roles) {
           </body>
         </html>
       `);
-=======
-    if (!roles.includes(req.session.user.role)) {
-      if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.status(403).json({
-          ok: false,
-          message: 'Tidak memiliki hak akses.'
-        });
-      }
-      return res
-        .status(403)
-        .send('Akses ditolak: Anda tidak memiliki izin untuk halaman ini.');
->>>>>>> main
     }
 
     next();
@@ -1074,35 +1061,6 @@ app.post('/update-status', async (req, res) => {
   }
 });
 
-app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
-  try {
-    const [rows] = await db.promise().query(`
-      SELECT
-        id_akun AS id,
-        username,
-        nama_depan,
-        nama_belakang,
-        role,
-        status
-      FROM akun
-      ORDER BY id_akun ASC
-    `);
-
-    const users = rows.map(u => ({
-      id: u.id,
-      username: u.username,
-      nama: (`${u.nama_depan || ''} ${u.nama_belakang || ''}`).trim() || '-',
-      role: u.role || 'viewer',
-      status: u.status || 'nonaktif',
-    }));
-
-    res.render("akun", { users });
-  } catch (err) {
-    console.error("GET /akun error:", err);
-    res.status(500).send("Gagal memuat halaman akun");
-  }
-});
-
 // TAMBAH AKUN (dipanggil oleh modal via fetch/Ajax)
 app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
@@ -1171,5 +1129,69 @@ app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   }
 });
 
+app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(`
+      SELECT
+        id_akun AS id,
+        username,
+        nama_depan,
+        nama_belakang,
+        role,
+        status
+      FROM akun
+      ORDER BY id_akun ASC
+    `);
 
+    // Gabungkan agar aman: kirim semua data yang dibutuhkan EJS
+    const users = rows.map((u) => ({
+      id: u.id,
+      username: u.username,
+      // kirim nama depan dan belakang terpisah untuk modal edit
+      nama_depan: u.nama_depan || "",
+      nama_belakang: u.nama_belakang || "",
+      // gabungkan untuk ditampilkan di tabel
+      nama: `${u.nama_depan || ""} ${u.nama_belakang || ""}`.trim() || "-",
+      role: (u.role || "viewer").toLowerCase(),
+      status: (u.status || "nonaktif").toLowerCase(),
+    }));
+    res.render("akun", { users });
+  } catch (err) {
+    console.error("GET /akun error:", err);
+    res.status(500).send("Gagal memuat halaman akun");
+  }
+});
 
+// UPDATE AKUN (dipanggil dari modal Edit Akun)
+app.put("/akun/:id", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama_depan, nama_belakang, role, status, password } = req.body;
+
+    // Validasi sederhana
+    if (!nama_depan) {
+      return res.status(400).json({ ok: false, message: "Nama depan wajib diisi." });
+    }
+
+    // Siapkan SQL dan parameter
+    let sql, params;
+    if (password && password.length >= 6) {
+      // Jika password diisi → update termasuk password
+      const bcrypt = require("bcryptjs");
+      const hashed = await bcrypt.hash(password, 10);
+      sql = `UPDATE akun SET nama_depan=?, nama_belakang=?, role=?, status=?, password=? WHERE id_akun=?`;
+      params = [nama_depan, nama_belakang, role, status, hashed, id];
+    } else {
+      // Jika password kosong → jangan ubah password
+      sql = `UPDATE akun SET nama_depan=?, nama_belakang=?, role=?, status=? WHERE id_akun=?`;
+      params = [nama_depan, nama_belakang, role, status, id];
+    }
+
+    await db.promise().query(sql, params);
+
+    return res.json({ ok: true, message: "Akun berhasil diperbarui." });
+  } catch (err) {
+    console.error("PUT /akun/:id error:", err);
+    return res.status(500).json({ ok: false, message: "Kesalahan server." });
+  }
+});
