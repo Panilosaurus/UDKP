@@ -73,6 +73,30 @@ function requireRole(...roles) {
       return res.redirect('/login');
     }
 
+<<<<<<< HEAD
+    // Jika role tidak sesuai
+    if (!roles.includes(req.session.user.role)) {
+      return res.status(403).send(`
+        <html>
+          <head>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+          </head>
+          <body>
+            <script>
+              Swal.fire({
+                icon: "error",
+                title: "Akses Ditolak",
+                html: "Anda tidak memiliki izin untuk membuka halaman ini.",
+                confirmButtonText: "Kembali",
+                confirmButtonColor: "#3085d6"
+              }).then(() => {
+                window.location.href = "/";
+              });
+            </script>
+          </body>
+        </html>
+      `);
+=======
     if (!roles.includes(req.session.user.role)) {
       if (req.xhr || req.headers.accept?.includes('application/json')) {
         return res.status(403).json({
@@ -83,6 +107,7 @@ function requireRole(...roles) {
       return res
         .status(403)
         .send('Akses ditolak: Anda tidak memiliki izin untuk halaman ini.');
+>>>>>>> main
     }
 
     next();
