@@ -30,17 +30,51 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+app.use((req, res, next) => {
+  res.locals.nama  = (req.session?.user?.nama)  || "Guest";
+  res.locals.role  = (req.session?.user?.role)  || null;   // <-- tambahkan
+  res.locals.status= (req.session?.user?.status)|| null;   // <-- opsional
+  next();
+});
+
+// Simpan nama user agar bisa diakses di semua halaman EJS
 app.use((req, res, next) => {
   res.locals.nama =
     (req.session && req.session.user && req.session.user.nama) || "Guest";
   next();
 });
+
+// ✅ Tambahkan middleware untuk autentikasi & otorisasi
+function requireLogin(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+}
+
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+    if (!roles.includes(req.session.user.role)) {
+      return res
+        .status(403)
+        .send("Akses ditolak: Anda tidak memiliki izin untuk halaman ini.");
+    }
+    next();
+  };
+}
+// ✅ Akhir tambahan middleware
+
 // Middleware untuk static files
 app.use(express.static(path.join(__dirname, "public")));
 
 // View engine pakai EJS
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+
 
 // Route utama → ambil data dari tabel
 app.get("/", async (req, res) => {
@@ -143,7 +177,7 @@ app.get("/", async (req, res) => {
   ORDER BY instansi ASC
 `);
 
-    // 🔹 Ambil nilai tertinggi dan terendah dari semua jenis ujian
+ // 🔹 Ambil nilai tertinggi dan terendah dari semua jenis ujian
     const [nilaiMinMax] = await db.promise().query(`
   SELECT
     GREATEST(
@@ -253,6 +287,7 @@ app.post("/register", async (req, res) => {
 });
 
 // LOGIN
+// LOGIN
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -262,43 +297,44 @@ app.post("/login", async (req, res) => {
 
     if (!rows.length) {
       return res.render("login", {
-        modal: {
-          type: "error",
-          title: "Login Gagal",
-          message: "Username tidak ditemukan.",
-        },
+        modal: { type: "error", title: "Login Gagal", message: "Username tidak ditemukan." },
       });
     }
 
     const user = rows[0];
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
+
+    // Blokir user nonaktif
+    if (user.status && user.status.toLowerCase() === "nonaktif") {
       return res.render("login", {
-        modal: {
-          type: "error",
-          title: "Login Gagal",
-          message: "Password salah.",
-        },
+        modal: { type: "error", title: "Akun Nonaktif", message: "Hubungi admin untuk mengaktifkan akun Anda." },
       });
     }
 
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.render("login", {
+        modal: { type: "error", title: "Login Gagal", message: "Password salah." },
+      });
+    }
+
+    // ✅ simpan lengkap, termasuk role & status
     req.session.user = {
       id: user.id_akun,
       username: user.username,
       nama: `${user.nama_depan || ""} ${user.nama_belakang || ""}`.trim(),
+      role: user.role,        // <-- penting
+      status: user.status     // <-- penting
     };
+
     return res.redirect("/");
   } catch (err) {
     console.error(err);
     res.render("login", {
-      modal: {
-        type: "error",
-        title: "Kesalahan Server",
-        message: "Terjadi kesalahan. Coba lagi nanti.",
-      },
+      modal: { type: "error", title: "Kesalahan Server", message: "Terjadi kesalahan. Coba lagi nanti." },
     });
   }
 });
+
 
 // HAPUS DATA
 app.delete("/hapus/:id", (req, res) => {
@@ -981,26 +1017,43 @@ app.post('/update-status/:groupId', async (req, res) => {
 app.post('/update-status', async (req, res) => {
   try {
     const { group_id, status } = req.body;
-    if (!group_id || !status) return res.status(400).json({ success:false, message:'Data tidak lengkap.' });
+    if (!group_id || !status) return res.status(400).json({ success: false, message: 'Data tidak lengkap.' });
     await db.promise().query('UPDATE tabel SET status=? WHERE group_id=?', [status, group_id]);
-    res.json({ success:true });
+    res.json({ success: true });
   } catch (e) {
     console.error('❌ update-status:', e);
-    res.status(500).json({ success:false, message:'Kesalahan server.' });
+    res.status(500).json({ success: false, message: 'Kesalahan server.' });
   }
 });
 
-// Manajemen Akun – list akun sederhana
-app.get('/akun', async (req, res) => {
+app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
-    const [rows] = await db.promise().query(
-      'SELECT id_akun, username, nama_depan, nama_belakang FROM akun ORDER BY id_akun DESC'
-    );
-    res.render('akun', { users: rows });
+    const [rows] = await db.promise().query(`
+      SELECT
+        id_akun AS id,
+        username,
+        nama_depan,
+        nama_belakang,
+        role,
+        status
+      FROM akun
+      ORDER BY id_akun ASC
+    `);
+
+    const users = rows.map(u => ({
+      id: u.id,
+      username: u.username,
+      nama: (`${u.nama_depan || ''} ${u.nama_belakang || ''}`).trim() || '-',
+      role: u.role || 'viewer',
+      status: u.status || 'nonaktif',
+    }));
+
+    res.render("akun", { users });
   } catch (err) {
-    console.error('GET /akun', err);
-    res.status(500).send('Gagal memuat halaman akun');
+    console.error("GET /akun error:", err);
+    res.status(500).send("Gagal memuat halaman akun");
   }
 });
+
 
 

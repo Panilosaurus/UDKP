@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -10,6 +11,7 @@
   <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
   <link href="/css/sb-admin-2.min.css" rel="stylesheet" />
 </head>
+
 <body id="page-top">
   <!-- Page Wrapper -->
   <div id="wrapper">
@@ -64,7 +66,8 @@
           <ul class="navbar-nav ml-auto">
             <!-- Nav Item - User Information (dummy) -->
             <li class="nav-item dropdown no-arrow">
-              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
                 <img class="img-profile rounded-circle" src="/img/undraw_profile.svg" />
               </a>
@@ -72,7 +75,8 @@
               <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                 <a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
+                <a class="dropdown-item" href="/logout"><i
+                    class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a>
               </div>
             </li>
           </ul>
@@ -100,7 +104,8 @@
               <form class="row">
                 <div class="col-md-4 mb-2">
                   <label class="small text-gray-600 mb-1">Cari (Nama / Username)</label>
-                  <input id="filterKeyword" type="text" class="form-control" placeholder="ketik kata kunci..." oninput="filterTable()" />
+                  <input id="filterKeyword" type="text" class="form-control" placeholder="ketik kata kunci..."
+                    oninput="filterTable()" />
                 </div>
                 <div class="col-md-3 mb-2">
                   <label class="small text-gray-600 mb-1">Role</label>
@@ -147,46 +152,77 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <% if (users && users.length) { %>
-                      <% users.forEach((u, i) => { %>
-                        <tr data-role="<%= u.role %>" data-status="<%= u.status %>" data-keyword="<%= (u.nama + ' ' + u.username).toLowerCase() %>">
-                          <td class="text-center"><%= i + 1 %></td>
-                          <td><%= u.nama %></td>
-                          <td><code><%= u.username %></code></td>
-                          <td>
-                            <span class="badge <%= u.role==='admin'?'badge-danger':(u.role==='petugas'?'badge-info':'badge-secondary') %>"><%= (u.role || '').toUpperCase() %></span>
+                    <% if (Array.isArray(users) && users.length) { %>
+                      <% users.forEach(function(u, i) { %>
+                        <tr>
+                          <td class="text-center">
+                            <%= i + 1 %>
                           </td>
-                          <td>
-                            <% if (u.status === 'aktif') { %>
-                              <span class="badge badge-success">Aktif</span>
-                            <% } else { %>
-                              <span class="badge badge-secondary">Nonaktif</span>
-                            <% } %>
-                          </td>
-                          <td class="text-nowrap">
-                            <a href="/akun/edit/<%= u.id %>" class="btn btn-sm btn-warning mr-1" title="Edit"><i class="fas fa-edit"></i></a>
 
+                          <!-- Nama (gabungan nama_depan + nama_belakang) -->
+                          <td>
+                            <%= u.nama %>
+                          </td>
+
+                          <!-- Username -->
+                          <td><code><%= u.username %></code></td>
+
+                          <!-- Role -->
+                          <td>
+                            <span
+                              class="badge <%= u.role === 'admin' ? 'badge-danger' : (u.role === 'petugas' ? 'badge-info' : 'badge-secondary') %>">
+                              <%= (u.role || '' ).toUpperCase() %>
+                            </span>
+                          </td>
+
+                          <!-- Status -->
+                          <td>
+                            <% if (u.status==='aktif' ) { %>
+                              <span class="badge badge-success">Aktif</span>
+                              <% } else { %>
+                                <span class="badge badge-secondary">Nonaktif</span>
+                                <% } %>
+                          </td>
+
+                          <!-- Aksi: Edit / Toggle Aktif / Reset Password / Hapus -->
+                          <td class="text-nowrap">
+                            <!-- Edit (bisa arahkan ke modal atau halaman edit) -->
+                            <a href="/akun/edit/<%= u.id %>" class="btn btn-sm btn-warning mr-1" title="Edit">
+                              <i class="fas fa-edit"></i>
+                            </a>
+
+                            <!-- Toggle Aktif/Nonaktif -->
                             <form action="/akun/toggle/<%= u.id %>" method="POST" class="d-inline">
-                              <button type="submit" class="btn btn-sm <%= u.status==='aktif'?'btn-outline-secondary':'btn-outline-success' %> mr-1" title="Toggle Aktif">
-                                <i class="fas <%= u.status==='aktif'?'fa-user-slash':'fa-user-check' %>"></i>
+                              <button type="submit"
+                                class="btn btn-sm <%= u.status === 'aktif' ? 'btn-outline-secondary' : 'btn-outline-success' %> mr-1"
+                                title="Toggle Aktif">
+                                <i class="fas <%= u.status === 'aktif' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
                               </button>
                             </form>
 
-                            <form action="/akun/reset-password/<%= u.id %>" method="POST" class="d-inline" onsubmit="return confirm('Reset password untuk <%= u.username %>?');">
-                              <button type="submit" class="btn btn-sm btn-outline-primary mr-1" title="Reset Password"><i class="fas fa-key"></i></button>
+                            <!-- Reset Password (akan set ke default di backend) -->
+                            <form action="/akun/reset-password/<%= u.id %>" method="POST" class="d-inline"
+                              onsubmit="return confirm('Reset password untuk <%= u.username %>?');">
+                              <button type="submit" class="btn btn-sm btn-outline-primary mr-1" title="Reset Password">
+                                <i class="fas fa-key"></i>
+                              </button>
                             </form>
 
-                            <form action="/akun/delete/<%= u.id %>" method="POST" class="d-inline" onsubmit="return confirm('Hapus akun <%= u.username %>? Tindakan ini tidak dapat dibatalkan.');">
-                              <button type="submit" class="btn btn-sm btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                            <!-- Hapus -->
+                            <form action="/akun/delete/<%= u.id %>" method="POST" class="d-inline"
+                              onsubmit="return confirm('Hapus akun <%= u.username %>? Tindakan ini tidak dapat dibatalkan.');">
+                              <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                              </button>
                             </form>
                           </td>
                         </tr>
-                      <% }) %>
-                    <% } else { %>
-                      <tr>
-                        <td colspan="6" class="text-center text-muted">Belum ada data akun.</td>
-                      </tr>
-                    <% } %>
+                        <% }) %>
+                          <% } else { %>
+                            <tr>
+                              <td colspan="6" class="text-center text-muted">Belum ada data akun.</td>
+                            </tr>
+                            <% } %>
                   </tbody>
                 </table>
               </div>
@@ -222,7 +258,8 @@
       <form action="/akun/tambah" method="POST" class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Tambah Akun Baru</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -294,4 +331,5 @@
     }
   </script>
 </body>
+
 </html>
