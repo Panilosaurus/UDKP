@@ -73,6 +73,7 @@ function requireRole(...roles) {
       return res.redirect('/login');
     }
 
+<<<<<<< HEAD
     // Jika role tidak sesuai
     if (!roles.includes(req.session.user.role)) {
       return res.status(403).send(`
@@ -95,6 +96,18 @@ function requireRole(...roles) {
           </body>
         </html>
       `);
+=======
+    if (!roles.includes(req.session.user.role)) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(403).json({
+          ok: false,
+          message: 'Tidak memiliki hak akses.'
+        });
+      }
+      return res
+        .status(403)
+        .send('Akses ditolak: Anda tidak memiliki izin untuk halaman ini.');
+>>>>>>> main
     }
 
     next();
