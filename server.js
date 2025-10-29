@@ -58,14 +58,35 @@ function requireRole(...roles) {
     if (!req.session.user) {
       return res.redirect("/login");
     }
+
+    // Jika role tidak sesuai
     if (!roles.includes(req.session.user.role)) {
-      return res
-        .status(403)
-        .send("Akses ditolak: Anda tidak memiliki izin untuk halaman ini.");
+      return res.status(403).send(`
+        <html>
+          <head>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+          </head>
+          <body>
+            <script>
+              Swal.fire({
+                icon: "error",
+                title: "Akses Ditolak",
+                html: "Anda tidak memiliki izin untuk membuka halaman ini.",
+                confirmButtonText: "Kembali",
+                confirmButtonColor: "#3085d6"
+              }).then(() => {
+                window.location.href = "/";
+              });
+            </script>
+          </body>
+        </html>
+      `);
     }
+
     next();
   };
 }
+
 // ✅ Akhir tambahan middleware
 
 // Middleware untuk static files
