@@ -92,8 +92,9 @@
               <p class="text-muted mt-1 mb-0">Kelola pengguna yang memiliki akses ke sistem UDKP.</p>
             </div>
             <div class="text-right">
-              <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#tambahAkunModal">
-                <i class="fas fa-user-plus fa-sm text-white-50 mr-1"></i> Tambah Akun
+              <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#modalTambahAkun">
+                <i class="fas fa-user-plus fa-sm text-white-50 mr-1"></i>
+                Tambah Akun
               </button>
             </div>
           </div>
@@ -151,7 +152,7 @@
                       <th style="width:200px">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="tbodyAkun">
                     <% if (Array.isArray(users) && users.length) { %>
                       <% users.forEach(function(u, i) { %>
                         <tr>
@@ -253,55 +254,70 @@
   </a>
 
   <!-- Modal: Tambah Akun -->
-  <div class="modal fade" id="tambahAkunModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal fade" id="modalTambahAkun" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
-      <form action="/akun/tambah" method="POST" class="modal-content">
+      <!-- KOSONGKAN action agar tidak submit default -->
+      <form id="formTambahAkun" action="" method="POST" class="modal-content" novalidate>
         <div class="modal-header">
           <h5 class="modal-title">Tambah Akun Baru</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
               aria-hidden="true">&times;</span></button>
         </div>
+
         <div class="modal-body">
           <div class="form-group">
             <label>Nama Depan</label>
-            <input type="text" class="form-control" name="nama" required />
+            <input type="text" class="form-control" id="nama_depan" name="nama_depan" required />
+            <small class="text-danger d-block" data-error="nama_depan"></small>
           </div>
+
           <div class="form-group">
             <label>Nama Belakang</label>
-            <input type="text" class="form-control" name="nama" required />
+            <input type="text" class="form-control" id="nama_belakang" name="nama_belakang" />
+            <small class="text-danger d-block" data-error="nama_belakang"></small>
           </div>
+
           <div class="form-group">
             <label>Username</label>
-            <input type="text" class="form-control" name="username" required />
+            <input type="text" class="form-control" id="username" name="username" required />
+            <small class="text-danger d-block" data-error="username"></small>
           </div>
+
           <div class="form-group">
             <label>Password</label>
-            <input type="password" class="form-control" name="password" minlength="6" required />
+            <input type="password" class="form-control" id="password" name="password" minlength="6" required />
             <small class="text-muted">Minimal 6 karakter.</small>
+            <small class="text-danger d-block" data-error="password"></small>
           </div>
+
           <div class="form-group">
             <label>Role</label>
-            <select class="form-control" name="role" required>
-              <option value="petugas">Petugas</option>
-              <option value="admin">Admin</option>
-              <option value="viewer">Viewer</option>
+            <select class="form-control" id="role" name="role" required>
+              <option value="PETUGAS">Petugas</option>
+              <option value="ADMIN">Admin</option>
+              <option value="VIEWER">Viewer</option>
             </select>
+            <small class="text-danger d-block" data-error="role"></small>
           </div>
+
           <div class="form-group">
             <label>Status</label>
-            <select class="form-control" name="status" required>
-              <option value="aktif">Aktif</option>
-              <option value="nonaktif">Nonaktif</option>
+            <select class="form-control" id="status" name="status" required>
+              <option value="AKTIF">Aktif</option>
+              <option value="NONAKTIF">Nonaktif</option>
             </select>
+            <small class="text-danger d-block" data-error="status"></small>
           </div>
         </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-success">Simpan</button>
+          <button type="submit" id="btnSimpanAkun" class="btn btn-success">Simpan</button>
         </div>
       </form>
     </div>
   </div>
+
 
   <!-- SB Admin 2 JS -->
   <script src="/vendor/jquery/jquery.min.js"></script>
@@ -379,32 +395,35 @@
         try {
           const res = await fetch('/akun', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
-          const data = await res.json();
+
+          // Coba baca sebagai text lalu parse ke JSON agar tidak meledak
+          const raw = await res.text();
+          let data = {};
+          try { data = raw ? JSON.parse(raw) : {}; } catch { data = {}; }
 
           if (!res.ok || !data.ok) {
-            // kalau backend mengirim field spesifik
-            if (data && data.field && data.message) {
+            if (data.field && data.message) {
               showErr(data.field, data.message);
-            } else if (data && data.message) {
-              // fallback: taruh di username
+            } else if (data.message) {
               showErr('username', data.message);
             } else {
-              alert('Gagal menyimpan akun.');
+              // tampilkan status dari server bila ada (mis. 401/403/500)
+              alert(`Gagal menyimpan akun. Status: ${res.status}`);
             }
-            btn.disabled = false; btn.textContent = original;
             return;
           }
 
-          // Sukses
+          // === SUKSES ===
           $('#modalTambahAkun').modal('hide');
 
-          // ===== Opsi simple: reload halaman =====
+          // kalau mau simple reload aja
           // window.location.reload(); return;
 
-          // ===== Opsi tanpa reload: append baris =====
+          if (!tbody) { window.location.reload(); return; }
+
           const roleBadge = (r) => {
             const m = { ADMIN: 'danger', PETUGAS: 'info', VIEWER: 'secondary' };
             return `<span class="badge badge-${m[r] || 'secondary'}">${r}</span>`;
@@ -415,30 +434,38 @@
           };
 
           const nomor = (tbody.querySelectorAll('tr').length + 1);
-          const namaLengkap = `${payload.nama_depan}${payload.nama_belakang ? ' ' + payload.nama_belakang : ''}`;
+          const namaLengkap = `${payload.nama_depan}${payload.nama_belakang ? ' ' + payload.nama_belakang : ''}`.trim();
 
           const row = document.createElement('tr');
-          row.innerHTML = `
-        <td>${nomor}</td>
-        <td>${namaLengkap}</td>
-        <td class="text-center">${roleBadge(payload.role)}</td>
-        <td class="text-center">${statusBadge(payload.status)}</td>
-        <td class="text-center">
-          <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-secondary"><i class="fas fa-user-slash"></i></button>
-          <button class="btn btn-sm btn-primary"><i class="fas fa-key"></i></button>
-          <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-        </td>
-      `;
-          tbody.appendChild(row);
+          row.setAttribute('data-role', payload.role.toLowerCase());
+          row.setAttribute('data-status', payload.status.toLowerCase());
+          row.setAttribute('data-keyword', `${namaLengkap} ${payload.username}`.toLowerCase());
 
-          btn.disabled = false; btn.textContent = original;
+          // Lengkapi 6 kolom sesuai header
+          row.innerHTML = `
+  <td class="text-center">${nomor}</td>
+  <td>${namaLengkap}</td>
+  <td><code>${payload.username}</code></td>
+  <td class="text-center">${roleBadge(payload.role)}</td>
+  <td class="text-center">${statusBadge(payload.status)}</td>
+  <td class="text-nowrap text-center">
+    <button class="btn btn-sm btn-warning mr-1" title="Edit"><i class="fas fa-edit"></i></button>
+    <button class="btn btn-sm btn-outline-secondary mr-1" title="Toggle Aktif"><i class="fas fa-user-slash"></i></button>
+    <button class="btn btn-sm btn-outline-primary mr-1" title="Reset Password"><i class="fas fa-key"></i></button>
+    <button class="btn btn-sm btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+  </td>
+`;
+          tbody.appendChild(row);
 
         } catch (err) {
           console.error(err);
           alert('Terjadi kesalahan jaringan/server.');
-          btn.disabled = false; btn.textContent = original;
+        } finally {
+          // apapun yang terjadi, tombol dibalikin normal
+          btn.disabled = false;
+          btn.textContent = 'Simpan';
         }
+
       });
     })();
   </script>

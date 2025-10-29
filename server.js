@@ -45,27 +45,50 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Tambahkan middleware untuk autentikasi & otorisasi
+// ✅ Middleware untuk autentikasi & otorisasi (ramah AJAX)
 function requireLogin(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect("/login");
+  if (req.session?.user) return next();
+
+  // Jika request berasal dari fetch/AJAX
+  if (req.xhr || req.headers.accept?.includes('application/json')) {
+    return res.status(401).json({
+      ok: false,
+      message: 'Harus login terlebih dahulu.'
+    });
   }
-  next();
+
+  // Kalau bukan AJAX, redirect biasa
+  return res.redirect('/login');
 }
 
 function requireRole(...roles) {
   return (req, res, next) => {
-    if (!req.session.user) {
-      return res.redirect("/login");
+    if (!req.session?.user) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(401).json({
+          ok: false,
+          message: 'Harus login terlebih dahulu.'
+        });
+      }
+      return res.redirect('/login');
     }
+
     if (!roles.includes(req.session.user.role)) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(403).json({
+          ok: false,
+          message: 'Tidak memiliki hak akses.'
+        });
+      }
       return res
         .status(403)
-        .send("Akses ditolak: Anda tidak memiliki izin untuk halaman ini.");
+        .send('Akses ditolak: Anda tidak memiliki izin untuk halaman ini.');
     }
+
     next();
   };
 }
+
 // ✅ Akhir tambahan middleware
 
 // Middleware untuk static files
