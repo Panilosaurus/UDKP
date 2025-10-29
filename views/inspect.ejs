@@ -145,9 +145,10 @@
                             <a id="btnBack" href="/" class="btn btn-soft mr-2">
                                 <i class="fas fa-arrow-left mr-1"></i> Kembali
                             </a>
-                            <a id="btnPrint" href="javascript:void(0)" class="btn btn-outline-secondary mr-2">
-                                <i class="fas fa-print mr-1"></i> Cetak
+                            <a id="btnPrint" href="javascript:void(0)" class="btn btn-success mr-2">
+                                <i class="fas fa-file-pdf mr-1"></i> Export PDF
                             </a>
+
                             <a id="btnOpenDoc" href="#" target="_blank" class="btn btn-primary">
                                 <i class="fas fa-link mr-1"></i> Buka Dokumen
                             </a>
@@ -619,6 +620,10 @@
 
     <!-- Scroll to Top Button-->
     <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+    <!-- jsPDF Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.3/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <!-- Core JS -->
 
@@ -961,35 +966,11 @@
     </script>
 
 
+<!-- jsPDF Core -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-
-    <script>
-        btnPrint.addEventListener("click", function () {
-            // Sembunyikan elemen-elemen yang tidak perlu saat print
-            const navbar = document.querySelector("nav.navbar");
-            const breadcrumb = document.querySelector(".breadcrumb");
-            const btnBack = document.querySelector("#btnBack");
-            const btnOpenDoc = document.querySelector("#btnOpenDoc");
-            const btnPrint = document.querySelector("#btnPrint");
-            const sidebar = document.querySelector("#accordionSidebar");
-            const footer = document.querySelector("footer");
-
-            if (navbar) navbar.style.display = "none";
-            if (breadcrumb) breadcrumb.style.display = "none";
-            if (btnBack) btnBack.style.display = "none";
-            if (btnOpenDoc) btnOpenDoc.style.display = "none";
-            if (btnPrint) btnPrint.style.display = "none";
-            if (sidebar) sidebar.style.display = "none";
-            if (footer) footer.style.display = "none";
-
-            // Jalankan print
-            window.print();
-
-            // Reload supaya elemen muncul lagi
-            location.reload();
-        });
-    </script>
-
+<!-- jsPDF AutoTable Plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script>
         document.getElementById("btnCopyLink").addEventListener("click", function (e) {
             e.preventDefault();
@@ -1031,76 +1012,159 @@
         }
     </script>
 
-    <script>
-        const allData = <%- JSON.stringify(typeof allData !== "undefined" ? allData : [data]) %>;
 
-        // Fungsi bikin tabel rekap (seperti di index)
-        function generatePrintView() {
-            let html = `
-    <h2>Rekapitulasi Pelaksanaan UDKP Tahun 2025</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>NO</th>
-          <th>Nama Instansi</th>
-          <th>Jenis Ujian</th>
-          <th>Jumlah Peserta</th>
-          <th>Tanggal Pelaksanaan</th>
-          <th>Status</th>
-          <th>Dokumen</th>
-          <th>Petugas CAT</th>
-          <th>Nilai Tertinggi (UPKP)</th>
-          <th>Nilai Terendah (UPKP)</th>
-          <th>Lulus PG (UD I/II)</th>
-          <th>Tidak Lulus PG (UD I/II)</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
 
-            let index = 1;
-            allData.forEach((instansi) => {
-                const rows = instansi.groupData || [instansi];
-                const rowspan = rows.length;
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById('btnPrint');
+        btn.addEventListener('click', async () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
 
-                rows.forEach((ujian, i) => {
-                    html += `<tr>`;
+            const data = <%- JSON.stringify(data) %>;
+            const group = data.groupData || [data];
 
-                    if (i === 0) {
-                        html += `
-          <td rowspan="${rowspan}">${index}</td>
-          <td rowspan="${rowspan}">${instansi.instansi || "—"}</td>
-        `;
-                    }
+            // === Header ===
+            const logo = new Image();
+            logo.src = '/img/logo-bkn.jpg';
+            await new Promise(r => { logo.onload = r; });
 
-                    html += `
-        <td>${ujian.jenis_ujian || "—"}</td>
-        <td>${ujian.jumlah_peserta ?? "—"}</td>
-        <td>${ujian.tanggal_pelaksanaan || instansi.tanggal_pelaksanaan || "—"}</td>
-        <td>${ujian.status || instansi.status || "—"}</td>
-        <td>${instansi.dokumen ? "Link Dokumen" : "—"}</td>
-        <td>${instansi.petugas_cat || "—"}</td>
-        <td>${ujian.nilai_tertinggi_pg ?? "—"}</td>
-        <td>${ujian.nilai_terendah_pg ?? "—"}</td>
-        <td>${ujian.jumlah_lulus_pg ?? "—"}</td>
-        <td>${ujian.jumlah_tidak_lulus_pg ?? "—"}</td>
-      `;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
 
-                    html += `</tr>`;
-                });
+            // Ambil bulan & tahun sekarang
+            const bulanList = [
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const now = new Date();
+            const bulanNama = bulanList[now.getMonth()];
+            const tahun = now.getFullYear();
 
-                index++;
+            // Buat judul dinamis
+            doc.text(`Rekapitulasi Pelaksanaan Uji Kompetensi ${bulanNama} ${tahun}`, 420, 40, { align: 'center' });
+
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Instansi: ${data.instansi || '-'}`, 420, 55, { align: 'center' });
+            doc.line(40, 62, 800, 62);
+
+            // === Data Tabel ===
+            const headers = [[
+                "No", "Nama Instansi", "Jenis Ujian", "Jumlah Peserta", "Tanggal Pelaksanaan",
+                "Status", "Dokumen", "Petugas CAT", "Nilai Tertinggi", "Nilai Terendah",
+                "Lulus PG", "Tidak Lulus PG"
+            ]];
+
+            const rows = group.map((r, i) => [
+                i + 1,
+                data.instansi || "—",
+                r.jenis_ujian || "—",
+                r.jumlah_peserta ?? "—",
+                r.tanggal_pelaksanaan || data.tanggal_pelaksanaan || "—",
+                r.status || data.status || "—",
+                data.dokumen ? "Link Dokumen" : "—",
+                data.petugas_cat || "—",
+                r.nilai_tertinggi_pg ?? "—",
+                r.nilai_terendah_pg ?? "—",
+                r.jumlah_lulus_pg ?? "—",
+                r.jumlah_tidak_lulus_pg ?? "—"
+            ]);
+
+            // === Hitung total
+            const totalPeserta = group.reduce((a, b) => a + (+b.jumlah_peserta || 0), 0);
+            const totalLulus = group.reduce((a, b) => a + (+b.jumlah_lulus_pg || 0), 0);
+            const totalTidak = group.reduce((a, b) => a + (+b.jumlah_tidak_lulus_pg || 0), 0);
+
+            // === Render tabel
+            doc.autoTable({
+                head: headers,
+                body: rows,
+                startY: 80,
+                theme: 'grid',
+                styles: { fontSize: 8, halign: 'center', valign: 'middle', lineColor: [0, 0, 0], lineWidth: 0.1 },
+                headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: 'bold' },
+                foot: [[
+                    { content: 'TOTAL', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold', fillColor: [230, 230, 230], textColor: [0, 0, 0] } },
+                    { content: totalPeserta.toString(), colSpan: 1, styles: { halign: 'center', fillColor: [230, 230, 230], textColor: [0, 0, 0] } },
+                    { content: '', colSpan: 6, styles: { fillColor: [230, 230, 230] } },
+                    { content: totalLulus.toString(), colSpan: 1, styles: { halign: 'center', fillColor: [230, 230, 230], textColor: [0, 0, 0] } },
+                    { content: totalTidak.toString(), colSpan: 1, styles: { halign: 'center', fillColor: [230, 230, 230], textColor: [0, 0, 0] } }
+                ]]
             });
 
-            html += `</tbody></table>`;
-            document.querySelector("#printView").innerHTML = html;
-        }
+            let currentY = doc.lastAutoTable.finalY + 25;
 
-        // Jalankan otomatis sebelum cetak
-        window.addEventListener("beforeprint", generatePrintView);
-    </script>
+            // === Ringkasan Nilai UPKP ===
+            try {
+                const maxNilai = Math.max(...group.map(r => +r.nilai_tertinggi_pg || 0));
+                const minNilai = Math.min(...group.map(r => +r.nilai_terendah_pg || 9999));
+                const totalLulus = group.reduce((a, b) => a + (+b.jumlah_lulus_pg || 0), 0);
+                const totalTidak = group.reduce((a, b) => a + (+b.jumlah_tidak_lulus_pg || 0), 0);
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.text("Ringkasan Nilai Uji Kompetensi", 420, currentY, { align: 'center' });
+
+                // Buat tabel ringkasan kecil
+                const ringkasanHead = [["Nilai Tertinggi (UPKP)", "Nilai Terendah (UPKP)", "Lulus PG", "Tidak Lulus PG"]];
+                const ringkasanBody = [[
+                    maxNilai > 0 ? maxNilai : "-",
+                    minNilai < 9999 ? minNilai : "-",
+                    totalLulus || "-",
+                    totalTidak || "-"
+                ]];
+
+                doc.autoTable({
+                    head: ringkasanHead,
+                    body: ringkasanBody,
+                    startY: currentY + 10,
+                    theme: 'grid',
+                    styles: { fontSize: 10, halign: 'center', valign: 'middle' },
+                    headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0] },
+                    bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
+                    margin: { left: 200, right: 200 },
+                });
+
+                currentY = doc.lastAutoTable.finalY + 30; // beri jarak sebelum grafik
+            } catch (err) {
+                console.warn("⚠️ Gagal tampilkan ringkasan nilai:", err);
+            }
 
 
+            // === Grafik Nilai & Lulus PG ===
+            try {
+                const chart1 = document.getElementById('chartNilai');
+                const chart2 = document.getElementById('chartLulusTidakLulus');
+                if (chart1 && chart2) {
+                    const img1 = chart1.toDataURL('image/png', 1.0);
+                    const img2 = chart2.toDataURL('image/png', 1.0);
+                    const pdfW = doc.internal.pageSize.getWidth();
+                    const chartW = (pdfW - 80) / 2;
+                    const chartH = 130;
+
+                    if (currentY + chartH > 520) { doc.addPage(); currentY = 60; }
+
+                    doc.setFontSize(12);
+                    doc.text("Grafik Nilai UPKP & Lulus PG", 420, currentY - 10, { align: 'center' });
+                    doc.addImage(img1, 'PNG', 30, currentY, chartW, chartH);
+                    doc.addImage(img2, 'PNG', 50 + chartW, currentY, chartW, chartH);
+                }
+            } catch (err) {
+                console.warn("⚠️ Grafik gagal dimuat:", err);
+            }
+
+            // === Footer
+            const today = new Date();
+            const tgl = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            doc.setFontSize(9);
+            doc.text(`Dicetak dari Sistem Laporan Uji Kompetensi — ${tgl}`, 420, doc.internal.pageSize.height - 30, { align: 'center' });
+
+            window.open(doc.output('bloburl'), '_blank');
+        });
+    });
+</script>
 
 </body>
 
