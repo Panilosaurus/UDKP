@@ -1061,37 +1061,6 @@ app.post('/update-status', async (req, res) => {
   }
 });
 
-app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
-  try {
-    const [rows] = await db.promise().query(`
-      SELECT
-        id_akun AS id,
-        username,
-        nama_depan,
-        nama_belakang,
-        role,
-        status
-      FROM akun
-      ORDER BY id_akun ASC
-    `);
-
-    // di GET /akun
-    const users = rows.map(u => ({
-      id: u.id,
-      username: u.username,
-      nama: (`${u.nama_depan || ''} ${u.nama_belakang || ''}`).trim() || '-',
-      role: (u.role || 'viewer').toLowerCase(),
-      status: (u.status || 'nonaktif').toLowerCase(),
-    }));
-
-
-    res.render("akun", { users });
-  } catch (err) {
-    console.error("GET /akun error:", err);
-    res.status(500).send("Gagal memuat halaman akun");
-  }
-});
-
 // TAMBAH AKUN (dipanggil oleh modal via fetch/Ajax)
 app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
@@ -1160,6 +1129,38 @@ app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   }
 });
 
+
+app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(`
+      SELECT
+        id_akun AS id,
+        username,
+        nama_depan,
+        nama_belakang,
+        role,
+        status
+      FROM akun
+      ORDER BY id_akun ASC
+    `);
+// Gabungkan agar aman: kirim semua data yang dibutuhkan EJS
+    const users = rows.map((u) => ({
+      id: u.id,
+      username: u.username,
+      // kirim nama depan dan belakang terpisah untuk modal edit
+      nama_depan: u.nama_depan || "",
+      nama_belakang: u.nama_belakang || "",
+      // gabungkan untuk ditampilkan di tabel
+      nama: `${u.nama_depan || ""} ${u.nama_belakang || ""}`.trim() || "-",
+      role: (u.role || "viewer").toLowerCase(),
+      status: (u.status || "nonaktif").toLowerCase(),
+    }));
+    res.render("akun", { users });
+  } catch (err) {
+    console.error("GET /akun error:", err);
+    res.status(500).send("Gagal memuat halaman akun");
+  }
+});
 // TOGGLE AKTIF/NONAKTIF AKUN
 app.post("/akun/toggle/:id", requireLogin, requireRole("admin"), async (req, res) => {
   try {
@@ -1254,4 +1255,37 @@ app.post("/akun/delete/:id", requireLogin, requireRole("admin"), async (req, res
   }
 });
 
+// UPDATE AKUN (dipanggil dari modal Edit Akun)
+app.put("/akun/:id", requireLogin, requireRole("admin"), async (req, res) => {
+   console.log("🔥 PUT /akun/:id diterima:", req.params.id, req.body);
+  try {
+    const { id } = req.params;
+    const { nama_depan, nama_belakang, role, status, password } = req.body;
 
+    // Validasi sederhana
+    if (!nama_depan) {
+      return res.status(400).json({ ok: false, message: "Nama depan wajib diisi." });
+    }
+
+    // Siapkan SQL dan parameter
+    let sql, params;
+    if (password && password.length >= 6) {
+      // Jika password diisi → update termasuk password
+      const bcrypt = require("bcryptjs");
+      const hashed = await bcrypt.hash(password, 10);
+      sql = `UPDATE akun SET nama_depan=?, nama_belakang=?, role=?, status=?, password=? WHERE id_akun=?`;
+      params = [nama_depan, nama_belakang, role, status, hashed, id];
+    } else {
+      // Jika password kosong → jangan ubah password
+      sql = `UPDATE akun SET nama_depan=?, nama_belakang=?, role=?, status=? WHERE id_akun=?`;
+      params = [nama_depan, nama_belakang, role, status, id];
+    }
+
+    await db.promise().query(sql, params);
+
+    return res.json({ ok: true, message: "Akun berhasil diperbarui." });
+  } catch (err) {
+    console.error("PUT /akun/:id error:", err);
+    return res.status(500).json({ ok: false, message: "Kesalahan server." });
+  }
+});
