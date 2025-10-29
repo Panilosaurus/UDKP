@@ -19,6 +19,32 @@ const db = mysql.createConnection({
   dateStrings: true,
 });
 
+// 🟩 Tambahan: pastikan tabel login_log ada
+async function ensureLoginLogTable() {
+  try {
+    await db.promise().query(`
+      CREATE TABLE IF NOT EXISTS login_log (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
+        username VARCHAR(100) NULL,
+        ip VARCHAR(100) NOT NULL,
+        user_agent TEXT,
+        success TINYINT(1) NOT NULL,
+        reason VARCHAR(100) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (user_id, created_at),
+        INDEX (username, created_at),
+        INDEX (success, created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    console.log("✅ login_log table ready");
+  } catch (e) {
+    console.error("❌ ensureLoginLogTable error:", e);
+  }
+}
+ensureLoginLogTable();
+// 🟩 Akhir tambahan
+
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 
@@ -110,6 +136,18 @@ app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+// === Tambahkan helper log login di atas route ===
+async function logLogin({ user_id = null, username = null, ip, ua, success, reason }) {
+  try {
+    await db.promise().query(
+      `INSERT INTO login_log (user_id, username, ip, user_agent, success, reason)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [user_id, username, ip, ua, success ? 1 : 0, reason]
+    );
+  } catch (err) {
+    console.error("logLogin error:", err);
+  }
+}
 
 // Route utama → ambil data dari tabel
 app.get("/", async (req, res) => {
@@ -321,16 +359,19 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// LOGIN
-// LOGIN
+// === Route login dengan pencatatan ===
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip || req.socket.remoteAddress;
+    const ua = req.headers["user-agent"] || "unknown";
+
     const [rows] = await db
       .promise()
       .query("SELECT * FROM akun WHERE username = ?", [username]);
 
     if (!rows.length) {
+      await logLogin({ username, ip, ua, success: false, reason: "USERNAME_NOT_FOUND" });
       return res.render("login", {
         modal: { type: "error", title: "Login Gagal", message: "Username tidak ditemukan." },
       });
@@ -340,6 +381,7 @@ app.post("/login", async (req, res) => {
 
     // Blokir user nonaktif
     if (user.status && user.status.toLowerCase() === "nonaktif") {
+      await logLogin({ user_id: user.id_akun, username, ip, ua, success: false, reason: "NONAKTIF" });
       return res.render("login", {
         modal: { type: "error", title: "Akun Nonaktif", message: "Hubungi admin untuk mengaktifkan akun Anda." },
       });
@@ -347,6 +389,7 @@ app.post("/login", async (req, res) => {
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
+      await logLogin({ user_id: user.id_akun, username, ip, ua, success: false, reason: "PASSWORD_MISMATCH" });
       return res.render("login", {
         modal: { type: "error", title: "Login Gagal", message: "Password salah." },
       });
@@ -357,9 +400,12 @@ app.post("/login", async (req, res) => {
       id: user.id_akun,
       username: user.username,
       nama: `${user.nama_depan || ""} ${user.nama_belakang || ""}`.trim(),
-      role: user.role,        // <-- penting
-      status: user.status     // <-- penting
+      role: user.role,
+      status: user.status,
     };
+
+    // Catat login sukses
+    await logLogin({ user_id: user.id_akun, username, ip, ua, success: true, reason: "OK" });
 
     return res.redirect("/");
   } catch (err) {
@@ -369,6 +415,7 @@ app.post("/login", async (req, res) => {
     });
   }
 });
+
 
 
 // HAPUS DATA
@@ -1143,7 +1190,7 @@ app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
       FROM akun
       ORDER BY id_akun ASC
     `);
-// Gabungkan agar aman: kirim semua data yang dibutuhkan EJS
+    // Gabungkan agar aman: kirim semua data yang dibutuhkan EJS
     const users = rows.map((u) => ({
       id: u.id,
       username: u.username,
@@ -1257,7 +1304,7 @@ app.post("/akun/delete/:id", requireLogin, requireRole("admin"), async (req, res
 
 // UPDATE AKUN (dipanggil dari modal Edit Akun)
 app.put("/akun/:id", requireLogin, requireRole("admin"), async (req, res) => {
-   console.log("🔥 PUT /akun/:id diterima:", req.params.id, req.body);
+  console.log("🔥 PUT /akun/:id diterima:", req.params.id, req.body);
   try {
     const { id } = req.params;
     const { nama_depan, nama_belakang, role, status, password } = req.body;
@@ -1287,5 +1334,49 @@ app.put("/akun/:id", requireLogin, requireRole("admin"), async (req, res) => {
   } catch (err) {
     console.error("PUT /akun/:id error:", err);
     return res.status(500).json({ ok: false, message: "Kesalahan server." });
+  }
+});
+
+// =======================================================
+// 📜 Endpoint: Riwayat Login (JSON untuk admin)
+// =======================================================
+app.get("/akun/logs", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const { q = "", success = "", page = "1", limit = "20" } = req.query;
+    const p = Math.max(parseInt(page), 1);
+    const l = Math.min(Math.max(parseInt(limit), 1), 200);
+    const where = [];
+    const params = [];
+
+    if (q) {
+      where.push("(username LIKE ? OR ip LIKE ? OR reason LIKE ?)");
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    if (success === "1" || success === "0") {
+      where.push("success = ?");
+      params.push(Number(success));
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const [[{ total }]] = await db
+      .promise()
+      .query(`SELECT COUNT(*) AS total FROM login_log ${whereSql}`, params);
+
+    const [rows] = await db
+      .promise()
+      .query(
+        `SELECT id, user_id, username, ip, user_agent, success, reason, created_at
+         FROM login_log
+         ${whereSql}
+         ORDER BY created_at DESC
+         LIMIT ? OFFSET ?`,
+        [...params, l, (p - 1) * l]
+      );
+
+    res.json({ ok: true, rows, total, page: p, limit: l });
+  } catch (err) {
+    console.error("GET /akun/logs error:", err);
+    res.status(500).json({ ok: false, message: "Gagal memuat log login." });
   }
 });

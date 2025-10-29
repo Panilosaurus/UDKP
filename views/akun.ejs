@@ -91,12 +91,18 @@
               <h1 class="h3 mb-0 text-gray-800">Manajemen Akun</h1>
               <p class="text-muted mt-1 mb-0">Kelola pengguna yang memiliki akses ke sistem UDKP.</p>
             </div>
+
             <div class="text-right">
               <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#modalTambahAkun">
                 <i class="fas fa-user-plus fa-sm text-white-50 mr-1"></i>
                 Tambah Akun
               </button>
+
+              <button class="btn btn-outline-secondary shadow-sm ml-2" data-toggle="modal" data-target="#modalLogLogin">
+                <i class="fas fa-history fa-sm mr-1"></i> Riwayat Login
+              </button>
             </div>
+
           </div>
 
           <!-- Filters -->
@@ -189,9 +195,11 @@
                           <!-- Aksi: Edit / Toggle Aktif / Reset Password / Hapus -->
                           <td class="text-nowrap">
                             <!-- Edit (buka modal Edit Akun) -->
-                            <button type="button" class="btn btn-sm btn-warning mr-1 btnEditAkun" title="Edit" data-id="<%= u.id %>"
-                              data-nama-depan="<%= u.nama_depan %>" data-nama-belakang="<%= u.nama_belakang %>" data-username="<%= u.username %>"
-                              data-role="<%= (u.role || '').toUpperCase() %>" data-status="<%= (u.status || '').toUpperCase() %>">
+                            <button type="button" class="btn btn-sm btn-warning mr-1 btnEditAkun" title="Edit"
+                              data-id="<%= u.id %>" data-nama-depan="<%= u.nama_depan %>"
+                              data-nama-belakang="<%= u.nama_belakang %>" data-username="<%= u.username %>"
+                              data-role="<%= (u.role || '').toUpperCase() %>"
+                              data-status="<%= (u.status || '').toUpperCase() %>">
                               <i class="fas fa-edit"></i>
                             </button>
 
@@ -335,34 +343,34 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-  
+
         <div class="modal-body">
           <input type="hidden" id="edit_id" name="id" />
-  
+
           <div class="form-group">
             <label>Nama Depan</label>
             <input type="text" class="form-control" id="edit_nama_depan" name="nama_depan" required />
             <small class="text-danger d-block" data-error="nama_depan"></small>
           </div>
-  
+
           <div class="form-group">
             <label>Nama Belakang</label>
             <input type="text" class="form-control" id="edit_nama_belakang" name="nama_belakang" />
             <small class="text-danger d-block" data-error="nama_belakang"></small>
           </div>
-  
+
           <div class="form-group">
             <label>Username</label>
             <input type="text" class="form-control" id="edit_username" name="username" disabled />
             <small class="text-muted">Username tidak bisa diubah.</small>
           </div>
-  
+
           <div class="form-group">
             <label>Password Baru</label>
             <input type="password" class="form-control" id="edit_password" name="password" minlength="6" />
             <small class="text-muted">Kosongkan jika tidak ingin mengubah password.</small>
           </div>
-  
+
           <div class="form-group">
             <label>Role</label>
             <select class="form-control" id="edit_role" name="role" required>
@@ -372,7 +380,7 @@
             </select>
           </div>
         </div>
-  
+
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-dismiss="modal">Batal</button>
           <button type="submit" id="btnUpdateAkun" class="btn btn-warning">Update</button>
@@ -380,6 +388,66 @@
       </form>
     </div>
   </div>
+
+  <!-- Modal: Riwayat Login -->
+  <div class="modal fade" id="modalLogLogin" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-history mr-2"></i>Riwayat Login</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form class="form-row mb-3">
+            <div class="col-md-4">
+              <input id="logQ" type="text" class="form-control" placeholder="Cari username / IP / alasan...">
+            </div>
+            <div class="col-md-3">
+              <select id="logSuccess" class="form-control">
+                <option value="">Semua</option>
+                <option value="1">Sukses</option>
+                <option value="0">Gagal</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-primary btn-block" id="btnFilterLog">
+                <i class="fas fa-search mr-1"></i>Filter
+              </button>
+            </div>
+          </form>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th style="width:160px">Waktu</th>
+                  <th>Username</th>
+                  <th>IP</th>
+                  <th>UA (Browser)</th>
+                  <th style="width:90px">Status</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyLoginLog">
+                <tr>
+                  <td colspan="6" class="text-center text-muted">Belum ada data</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <small id="logInfo" class="text-muted"></small>
+            <div>
+              <button class="btn btn-light btn-sm" id="prevLog">&laquo; Prev</button>
+              <button class="btn btn-light btn-sm" id="nextLog">Next &raquo;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -533,18 +601,18 @@
       });
     })();
   </script>
-<script>
-  $(document).on('click', '.btnEditAkun', function () {
-    $('#edit_id').val($(this).data('id'));
-    $('#edit_nama_depan').val($(this).data('nama-depan'));
-    $('#edit_nama_belakang').val($(this).data('nama-belakang'));
-    $('#edit_username').val($(this).data('username'));
-    $('#edit_role').val($(this).data('role')); // role masih dipakai
-    $('#edit_password').val('');
-    $('#modalEditAkun').modal('show');
-  });
+  <script>
+    $(document).on('click', '.btnEditAkun', function () {
+      $('#edit_id').val($(this).data('id'));
+      $('#edit_nama_depan').val($(this).data('nama-depan'));
+      $('#edit_nama_belakang').val($(this).data('nama-belakang'));
+      $('#edit_username').val($(this).data('username'));
+      $('#edit_role').val($(this).data('role')); // role masih dipakai
+      $('#edit_password').val('');
+      $('#modalEditAkun').modal('show');
+    });
 
-  $(document).on('click', '.btnEditAkun', function () {
+    $(document).on('click', '.btnEditAkun', function () {
       $('#edit_id').val($(this).data('id'));
       $('#edit_nama_depan').val($(this).data('nama-depan'));
       $('#edit_nama_belakang').val($(this).data('nama-belakang'));
@@ -629,7 +697,7 @@
         btn.prop('disabled', false).text('Update');
       }
     });
-</script>
+  </script>
 
 
   <script>
@@ -766,6 +834,73 @@
         }
       });
     });
+  </script>
+
+  <script>
+    (function () {
+      let page = 1, limit = 10;
+
+      async function loadLogs() {
+        const q = document.getElementById('logQ').value.trim();
+        const success = document.getElementById('logSuccess').value;
+        const params = new URLSearchParams({ page, limit });
+        if (q) params.append('q', q);
+        if (success !== '') params.append('success', success);
+
+        const res = await fetch('/akun/logs?' + params.toString(), { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        const tbody = document.getElementById('tbodyLoginLog');
+
+        if (!res.ok || !data.ok) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Gagal memuat log.</td></tr>`;
+          return;
+        }
+
+        if (!data.rows.length) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Tidak ada data login.</td></tr>`;
+          document.getElementById('logInfo').textContent = '';
+          return;
+        }
+
+        tbody.innerHTML = data.rows.map(r => `
+      <tr>
+        <td><code>${new Date(r.created_at).toLocaleString()}</code></td>
+        <td>${r.username || '-'}</td>
+        <td><code>${r.ip}</code></td>
+        <td title="${(r.user_agent || '').replace(/"/g, '&quot;')}">
+          ${(r.user_agent || '').slice(0, 40)}${(r.user_agent || '').length > 40 ? '…' : ''}
+        </td>
+        <td class="text-center">
+          <span class="badge ${r.success ? 'badge-success' : 'badge-danger'}">${r.success ? 'Sukses' : 'Gagal'}</span>
+        </td>
+        <td>${r.reason || '-'}</td>
+      </tr>
+    `).join('');
+
+        const start = (data.page - 1) * data.limit + 1;
+        const end = Math.min(data.page * data.limit, data.total);
+        document.getElementById('logInfo').textContent =
+          `Menampilkan ${start}–${end} dari ${data.total} log.`;
+        document.getElementById('prevLog').disabled = (page <= 1);
+        document.getElementById('nextLog').disabled = (end >= data.total);
+      }
+
+      $('#modalLogLogin').on('show.bs.modal', function () {
+        page = 1;
+        loadLogs();
+      });
+
+      document.getElementById('btnFilterLog').addEventListener('click', function () {
+        page = 1;
+        loadLogs();
+      });
+      document.getElementById('prevLog').addEventListener('click', function () {
+        if (page > 1) { page--; loadLogs(); }
+      });
+      document.getElementById('nextLog').addEventListener('click', function () {
+        page++; loadLogs();
+      });
+    })();
   </script>
 
 </body>
