@@ -263,7 +263,11 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Nama Lengkap</label>
+            <label>Nama Depan</label>
+            <input type="text" class="form-control" name="nama" required />
+          </div>
+          <div class="form-group">
+            <label>Nama Belakang</label>
             <input type="text" class="form-control" name="nama" required />
           </div>
           <div class="form-group">
@@ -330,6 +334,116 @@
       filterTable();
     }
   </script>
+
+  <script>
+    (function () {
+      const form = document.getElementById('formTambahAkun');
+      const btn = document.getElementById('btnSimpanAkun');
+      const tbody = document.getElementById('tbodyAkun');
+
+      $('#modalTambahAkun').on('show.bs.modal', function () {
+        form.reset();
+        clearMsgs();
+      });
+
+      function clearMsgs() {
+        document.querySelectorAll('[data-error]').forEach(el => el.textContent = '');
+      }
+      function showErr(name, msg) {
+        const el = document.querySelector(`[data-error="${name}"]`);
+        if (el) el.textContent = msg || '';
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearMsgs();
+
+        const payload = {
+          nama_depan: document.getElementById('nama_depan').value.trim(),
+          nama_belakang: document.getElementById('nama_belakang').value.trim(),
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value,
+          role: (document.getElementById('role').value || 'VIEWER').toUpperCase(),
+          status: (document.getElementById('status').value || 'AKTIF').toUpperCase()
+        };
+
+        // ✅ Validasi yang benar
+        if (!payload.nama_depan) return showErr('nama_depan', 'Nama depan wajib diisi');
+        if (!payload.username) return showErr('username', 'Username wajib diisi');
+        if (!payload.password || payload.password.length < 6)
+          return showErr('password', 'Password minimal 6 karakter');
+
+        const original = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+        try {
+          const res = await fetch('/akun', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.ok) {
+            // kalau backend mengirim field spesifik
+            if (data && data.field && data.message) {
+              showErr(data.field, data.message);
+            } else if (data && data.message) {
+              // fallback: taruh di username
+              showErr('username', data.message);
+            } else {
+              alert('Gagal menyimpan akun.');
+            }
+            btn.disabled = false; btn.textContent = original;
+            return;
+          }
+
+          // Sukses
+          $('#modalTambahAkun').modal('hide');
+
+          // ===== Opsi simple: reload halaman =====
+          // window.location.reload(); return;
+
+          // ===== Opsi tanpa reload: append baris =====
+          const roleBadge = (r) => {
+            const m = { ADMIN: 'danger', PETUGAS: 'info', VIEWER: 'secondary' };
+            return `<span class="badge badge-${m[r] || 'secondary'}">${r}</span>`;
+          };
+          const statusBadge = (s) => {
+            const m = { AKTIF: 'success', NONAKTIF: 'secondary' };
+            return `<span class="badge badge-${m[s] || 'secondary'}">${s === 'AKTIF' ? 'Aktif' : 'Nonaktif'}</span>`;
+          };
+
+          const nomor = (tbody.querySelectorAll('tr').length + 1);
+          const namaLengkap = `${payload.nama_depan}${payload.nama_belakang ? ' ' + payload.nama_belakang : ''}`;
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+        <td>${nomor}</td>
+        <td>${namaLengkap}</td>
+        <td class="text-center">${roleBadge(payload.role)}</td>
+        <td class="text-center">${statusBadge(payload.status)}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-secondary"><i class="fas fa-user-slash"></i></button>
+          <button class="btn btn-sm btn-primary"><i class="fas fa-key"></i></button>
+          <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+        </td>
+      `;
+          tbody.appendChild(row);
+
+          btn.disabled = false; btn.textContent = original;
+
+        } catch (err) {
+          console.error(err);
+          alert('Terjadi kesalahan jaringan/server.');
+          btn.disabled = false; btn.textContent = original;
+        }
+      });
+    })();
+  </script>
+
+
 </body>
 
 </html>
