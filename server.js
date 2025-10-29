@@ -1061,37 +1061,6 @@ app.post('/update-status', async (req, res) => {
   }
 });
 
-app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
-  try {
-    const [rows] = await db.promise().query(`
-      SELECT
-        id_akun AS id,
-        username,
-        nama_depan,
-        nama_belakang,
-        role,
-        status
-      FROM akun
-      ORDER BY id_akun ASC
-    `);
-
-    // di GET /akun
-    const users = rows.map(u => ({
-      id: u.id,
-      username: u.username,
-      nama: (`${u.nama_depan || ''} ${u.nama_belakang || ''}`).trim() || '-',
-      role: (u.role || 'viewer').toLowerCase(),
-      status: (u.status || 'nonaktif').toLowerCase(),
-    }));
-
-
-    res.render("akun", { users });
-  } catch (err) {
-    console.error("GET /akun error:", err);
-    res.status(500).send("Gagal memuat halaman akun");
-  }
-});
-
 // TAMBAH AKUN (dipanggil oleh modal via fetch/Ajax)
 app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
@@ -1288,6 +1257,7 @@ app.post("/akun/delete/:id", requireLogin, requireRole("admin"), async (req, res
 
 // UPDATE AKUN (dipanggil dari modal Edit Akun)
 app.put("/akun/:id", requireLogin, requireRole("admin"), async (req, res) => {
+   console.log("🔥 PUT /akun/:id diterima:", req.params.id, req.body);
   try {
     const { id } = req.params;
     const { nama_depan, nama_belakang, role, status, password } = req.body;

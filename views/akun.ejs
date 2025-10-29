@@ -370,14 +370,6 @@
               <option value="VIEWER">Viewer</option>
             </select>
           </div>
-  
-          <div class="form-group">
-            <label>Status</label>
-            <select class="form-control" id="edit_status" name="status" required>
-              <option value="AKTIF">Aktif</option>
-              <option value="NONAKTIF">Nonaktif</option>
-            </select>
-          </div>
         </div>
   
         <div class="modal-footer">
@@ -542,43 +534,57 @@
   </script>
 <script>
   $(document).on('click', '.btnEditAkun', function () {
-    const depan = $(this).data('nama-depan');
-    const belakang = $(this).data('nama-belakang');
-    console.log("DEBUG nama depan:", depan, "nama belakang:", belakang);
-    const id = $(this).data('id');
-    const namaDepan = $(this).data('nama-depan');
-    const namaBelakang = $(this).data('nama-belakang');
-    const username = $(this).data('username');
-    const role = $(this).data('role');
-    const status = $(this).data('status');
-
     $('#edit_id').val($(this).data('id'));
     $('#edit_nama_depan').val($(this).data('nama-depan'));
     $('#edit_nama_belakang').val($(this).data('nama-belakang'));
     $('#edit_username').val($(this).data('username'));
-    $('#edit_role').val($(this).data('role'));     // value opsi: ADMIN/PETUGAS/VIEWER
-    $('#edit_status').val($(this).data('status')); // value opsi: AKTIF/NONAKTIF
+    $('#edit_role').val($(this).data('role')); // role masih dipakai
     $('#edit_password').val('');
     $('#modalEditAkun').modal('show');
   });
 
-  $('#formEditAkun').on('submit', async function (e) {
+  $(document).on('click', '.btnEditAkun', function () {
+      $('#edit_id').val($(this).data('id'));
+      $('#edit_nama_depan').val($(this).data('nama-depan'));
+      $('#edit_nama_belakang').val($(this).data('nama-belakang'));
+      $('#edit_username').val($(this).data('username'));
+      $('#edit_role').val($(this).data('role'));
+      $('#edit_password').val('');
+      $('#modalEditAkun').modal('show');
+    });
+
+    $('#formEditAkun').on('submit', async function (e) {
       e.preventDefault();
 
       const id = $('#edit_id').val();
+      const namaDepan = $('#edit_nama_depan').val().trim();
+      const namaBelakang = $('#edit_nama_belakang').val().trim();
+
       const payload = {
-        nama_depan: $('#edit_nama_depan').val().trim(),
-        nama_belakang: $('#edit_nama_belakang').val().trim(),
+        nama_depan: namaDepan,
+        nama_belakang: namaBelakang,
         password: $('#edit_password').val(),
-        role: $('#edit_role').val().toUpperCase(),
-        status: $('#edit_status').val().toUpperCase()
+        role: $('#edit_role').val().toUpperCase()
       };
 
-      if (!payload.nama_depan) {
+      // 🧩 Validasi input
+      if (!namaDepan && !namaBelakang) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'Peringatan',
+          text: 'Nama depan dan nama belakang wajib diisi.'
+        });
+      } else if (!namaDepan) {
         return Swal.fire({
           icon: 'warning',
           title: 'Peringatan',
           text: 'Nama depan wajib diisi.'
+        });
+      } else if (!namaBelakang) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'Peringatan',
+          text: 'Nama belakang wajib diisi.'
         });
       }
 
@@ -589,7 +595,8 @@
         const res = await fetch(`/akun/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          credentials: 'same-origin'
         });
 
         const data = await res.json();
@@ -623,63 +630,7 @@
     });
 </script>
 
-<script>
-  // Saat klik tombol edit → isi field (sudah kamu punya)
-  $(document).on('click', '.btnEditAkun', function () {
-    $('#edit_id').val($(this).data('id'));
-    $('#edit_nama_depan').val($(this).data('nama-depan'));
-    $('#edit_nama_belakang').val($(this).data('nama-belakang'));
-    $('#edit_username').val($(this).data('username'));
-    $('#edit_role').val($(this).data('role'));
-    $('#edit_status').val($(this).data('status'));
-    $('#edit_password').val('');
-    $('#modalEditAkun').modal('show');
-  });
 
-  // Saat form edit dikirim
-  $('#formEditAkun').on('submit', async function (e) {
-    e.preventDefault();
-
-    const id = $('#edit_id').val();
-    const payload = {
-      nama_depan: $('#edit_nama_depan').val().trim(),
-      nama_belakang: $('#edit_nama_belakang').val().trim(),
-      password: $('#edit_password').val(),
-      role: $('#edit_role').val().toUpperCase(),
-      status: $('#edit_status').val().toUpperCase()
-    };
-
-    if (!payload.nama_depan) {
-      alert('Nama depan wajib diisi.');
-      return;
-    }
-
-    const btn = $('#btnUpdateAkun');
-    btn.prop('disabled', true).text('Menyimpan...');
-
-    try {
-      const res = await fetch(`/akun/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-
-      if (data.ok) {
-        alert('✅ ' + data.message);
-        location.reload();
-      } else {
-        alert('⚠️ ' + (data.message || 'Gagal memperbarui akun.'));
-      }
-    } catch (err) {
-      console.error(err);
-      alert('❌ Terjadi kesalahan koneksi atau server.');
-    } finally {
-      btn.prop('disabled', false).text('Update');
-    }
-  });
-</script>
   <script>
     (function () {
       // Helper untuk ganti class badge
@@ -815,9 +766,6 @@
       });
     });
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 
 </body>
 
