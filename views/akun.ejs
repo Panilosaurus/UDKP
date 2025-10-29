@@ -196,13 +196,15 @@
 
 
                             <!-- Toggle Aktif/Nonaktif -->
-                            <form action="/akun/toggle/<%= u.id %>" method="POST" class="d-inline">
+                            <!-- Toggle Aktif/Nonaktif -->
+                            <form action="/akun/toggle/<%= u.id %>" method="POST" class="d-inline form-toggle-akun">
                               <button type="submit"
                                 class="btn btn-sm <%= u.status === 'aktif' ? 'btn-outline-secondary' : 'btn-outline-success' %> mr-1"
                                 title="Toggle Aktif">
                                 <i class="fas <%= u.status === 'aktif' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
                               </button>
                             </form>
+
 
                             <!-- Reset Password (akan set ke default di backend) -->
                             <form action="/akun/reset-password/<%= u.id %>" method="POST" class="d-inline"
@@ -213,12 +215,13 @@
                             </form>
 
                             <!-- Hapus -->
-                            <form action="/akun/delete/<%= u.id %>" method="POST" class="d-inline"
-                              onsubmit="return confirm('Hapus akun <%= u.username %>? Tindakan ini tidak dapat dibatalkan.');">
+                            <form action="/akun/delete/<%= u.id %>" method="POST" class="d-inline form-hapus-akun">
                               <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
                                 <i class="fas fa-trash"></i>
                               </button>
                             </form>
+
+
                           </td>
                         </tr>
                         <% }) %>
@@ -677,6 +680,144 @@
     }
   });
 </script>
+  <script>
+    (function () {
+      // Helper untuk ganti class badge
+      function setBadge(el, active) {
+        el.classList.remove('badge-success', 'badge-secondary');
+        el.classList.add(active ? 'badge-success' : 'badge-secondary');
+        el.textContent = active ? 'Aktif' : 'Nonaktif';
+      }
+
+      // Helper untuk ganti tampilan tombol toggle (ikon & warna)
+      function setToggleBtn(btn, active) {
+        btn.classList.remove('btn-outline-secondary', 'btn-outline-success');
+        // Jika status AKTIF, maka tombol menunjukkan aksi "nonaktifkan" (slash)
+        if (active) {
+          btn.classList.add('btn-outline-secondary');
+          btn.querySelector('i').classList.remove('fa-user-check');
+          btn.querySelector('i').classList.add('fa-user-slash');
+        } else {
+          // Jika status NONAKTIF, tombol menunjukkan aksi "aktifkan" (check)
+          btn.classList.add('btn-outline-success');
+          btn.querySelector('i').classList.remove('fa-user-slash');
+          btn.querySelector('i').classList.add('fa-user-check');
+        }
+      }
+
+      document.querySelectorAll('.form-toggle-akun').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const row = form.closest('tr');
+          const username = row.querySelector('code')?.textContent?.trim() || 'pengguna ini';
+          const statusCell = row.querySelector('td:nth-child(5) span'); // kolom Status
+          const btn = form.querySelector('button');
+
+          try {
+            const res = await fetch(form.action, {
+              method: 'POST',
+              headers: { 'Accept': 'application/json' } // minta JSON
+            });
+
+            // Server akan mengembalikan JSON { ok: true, status: 'AKTIF' | 'NONAKTIF' }
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || !data.ok) {
+              throw new Error(data.message || `Gagal mengubah status akun ${username}.`);
+            }
+
+            const isActive = String(data.status).toUpperCase() === 'AKTIF';
+
+            // Update UI: badge status, tombol, dan atribut filter
+            if (statusCell) setBadge(statusCell, isActive);
+            setToggleBtn(btn, isActive);
+            row.setAttribute('data-status', isActive ? 'aktif' : 'nonaktif');
+
+            await Swal.fire({
+              icon: 'success',
+              title: 'Berhasil',
+              text: `Status akun ${username} diubah menjadi ${isActive ? 'Aktif' : 'Nonaktif'}.`,
+              timer: 1800,
+              showConfirmButton: false
+            });
+          } catch (err) {
+            console.error(err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal',
+              text: err.message || 'Terjadi kesalahan saat mengubah status.'
+            });
+          }
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    document.querySelectorAll('.form-hapus-akun').forEach(form => {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const row = form.closest('tr');
+        const username = row.querySelector('code')?.textContent?.trim() || 'pengguna ini';
+
+        // 🟠 Konfirmasi hapus
+        const result = await Swal.fire({
+          title: 'Yakin ingin menghapus akun?',
+          html: `Akun <b>${username}</b> akan dihapus dan tindakan ini <b>tidak dapat dibatalkan</b>.`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Ya, hapus',
+          cancelButtonText: 'Batal',
+          reverseButtons: true
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+          const res = await fetch(form.action, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' }
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.ok) {
+            // ✅ Pesan sukses
+            await Swal.fire({
+              icon: 'success',
+              title: 'Berhasil',
+              text: 'Akun berhasil dihapus!',
+              timer: 2000,
+              showConfirmButton: false
+            });
+
+            // Hapus baris dari tabel tanpa reload
+            row.remove();
+
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal',
+              text: data.message || 'Gagal menghapus akun.'
+            });
+          }
+        } catch (err) {
+          console.error(err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan',
+            text: 'Terjadi kesalahan koneksi ke server.'
+          });
+        }
+      });
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 </body>
 

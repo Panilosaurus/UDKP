@@ -1061,6 +1061,37 @@ app.post('/update-status', async (req, res) => {
   }
 });
 
+app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(`
+      SELECT
+        id_akun AS id,
+        username,
+        nama_depan,
+        nama_belakang,
+        role,
+        status
+      FROM akun
+      ORDER BY id_akun ASC
+    `);
+
+    // di GET /akun
+    const users = rows.map(u => ({
+      id: u.id,
+      username: u.username,
+      nama: (`${u.nama_depan || ''} ${u.nama_belakang || ''}`).trim() || '-',
+      role: (u.role || 'viewer').toLowerCase(),
+      status: (u.status || 'nonaktif').toLowerCase(),
+    }));
+
+
+    res.render("akun", { users });
+  } catch (err) {
+    console.error("GET /akun error:", err);
+    res.status(500).send("Gagal memuat halaman akun");
+  }
+});
+
 // TAMBAH AKUN (dipanggil oleh modal via fetch/Ajax)
 app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
@@ -1129,6 +1160,7 @@ app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   }
 });
 
+
 app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
     const [rows] = await db.promise().query(`
@@ -1142,8 +1174,7 @@ app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
       FROM akun
       ORDER BY id_akun ASC
     `);
-
-    // Gabungkan agar aman: kirim semua data yang dibutuhkan EJS
+// Gabungkan agar aman: kirim semua data yang dibutuhkan EJS
     const users = rows.map((u) => ({
       id: u.id,
       username: u.username,
@@ -1159,6 +1190,99 @@ app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   } catch (err) {
     console.error("GET /akun error:", err);
     res.status(500).send("Gagal memuat halaman akun");
+  }
+});
+// TOGGLE AKTIF/NONAKTIF AKUN
+app.post("/akun/toggle/:id", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Ambil status sekarang
+    const [rows] = await db.promise().query(
+      "SELECT status FROM akun WHERE id_akun = ? LIMIT 1",
+      [id]
+    );
+    if (!rows.length) {
+      return res.status(404).send("Akun tidak ditemukan.");
+    }
+
+    const curr = String(rows[0].status || "NONAKTIF").toUpperCase();
+    const next = curr === "AKTIF" ? "NONAKTIF" : "AKTIF";
+
+    // Update ke status baru
+    await db.promise().query(
+      "UPDATE akun SET status = ? WHERE id_akun = ?",
+      [next, id]
+    );
+
+    // Jika dipanggil lewat fetch/AJAX, balas JSON; kalau tidak, refresh halaman
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({ ok: true, status: next });
+    }
+    return res.redirect("/akun");
+  } catch (e) {
+    console.error("POST /akun/toggle error:", e);
+    return res.status(500).send("Gagal mengubah status akun.");
+  }
+});
+
+// HAPUS AKUN
+app.post("/akun/delete/:id", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Cegah hapus diri sendiri
+    if (String(req.session.user?.id) === String(id)) {
+      const msg = "Tidak dapat menghapus akun yang sedang dipakai (diri sendiri).";
+      if (req.xhr || req.headers.accept?.includes("application/json")) {
+        return res.status(400).json({ ok: false, message: msg });
+      }
+      return res.status(400).send(msg);
+    }
+
+    // Cek akun ada & ambil rolenya
+    const [rows] = await db.promise().query(
+      "SELECT id_akun, role FROM akun WHERE id_akun = ? LIMIT 1",
+      [id]
+    );
+    if (!rows.length) {
+      const msg = "Akun tidak ditemukan.";
+      if (req.xhr || req.headers.accept?.includes("application/json")) {
+        return res.status(404).json({ ok: false, message: msg });
+      }
+      return res.status(404).send(msg);
+    }
+
+    const role = String(rows[0].role || "").toUpperCase();
+
+    // Jika yang dihapus ADMIN, pastikan bukan admin terakhir
+    if (role === "ADMIN") {
+      const [cnt] = await db.promise().query(
+        "SELECT COUNT(*) AS c FROM akun WHERE UPPER(role) = 'ADMIN'"
+      );
+      if ((cnt[0]?.c || 0) <= 1) {
+        const msg = "Tidak bisa menghapus admin terakhir.";
+        if (req.xhr || req.headers.accept?.includes("application/json")) {
+          return res.status(400).json({ ok: false, message: msg });
+        }
+        return res.status(400).send(msg);
+      }
+    }
+
+    // Eksekusi hapus
+    await db.promise().query("DELETE FROM akun WHERE id_akun = ?", [id]);
+
+    // Balasan sesuai tipe request
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({ ok: true, deleted: Number(id) });
+    }
+    return res.redirect("/akun");
+  } catch (e) {
+    console.error("POST /akun/delete error:", e);
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.status(500).json({ ok: false, message: "Gagal menghapus akun." });
+    }
+    return res.status(500).send("Gagal menghapus akun.");
   }
 });
 
