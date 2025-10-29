@@ -30,17 +30,74 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+app.use((req, res, next) => {
+  res.locals.nama = (req.session?.user?.nama) || "Guest";
+  res.locals.role = (req.session?.user?.role) || null;   // <-- tambahkan
+  res.locals.status = (req.session?.user?.status) || null;   // <-- opsional
+  next();
+});
+
+// Simpan nama user agar bisa diakses di semua halaman EJS
 app.use((req, res, next) => {
   res.locals.nama =
     (req.session && req.session.user && req.session.user.nama) || "Guest";
   next();
 });
+
+// ✅ Middleware untuk autentikasi & otorisasi (ramah AJAX)
+function requireLogin(req, res, next) {
+  if (req.session?.user) return next();
+
+  // Jika request berasal dari fetch/AJAX
+  if (req.xhr || req.headers.accept?.includes('application/json')) {
+    return res.status(401).json({
+      ok: false,
+      message: 'Harus login terlebih dahulu.'
+    });
+  }
+
+  // Kalau bukan AJAX, redirect biasa
+  return res.redirect('/login');
+}
+
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.session?.user) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(401).json({
+          ok: false,
+          message: 'Harus login terlebih dahulu.'
+        });
+      }
+      return res.redirect('/login');
+    }
+
+    if (!roles.includes(req.session.user.role)) {
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(403).json({
+          ok: false,
+          message: 'Tidak memiliki hak akses.'
+        });
+      }
+      return res
+        .status(403)
+        .send('Akses ditolak: Anda tidak memiliki izin untuk halaman ini.');
+    }
+
+    next();
+  };
+}
+
+// ✅ Akhir tambahan middleware
+
 // Middleware untuk static files
 app.use(express.static(path.join(__dirname, "public")));
 
 // View engine pakai EJS
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+
 
 // Route utama → ambil data dari tabel
 app.get("/", async (req, res) => {
@@ -253,6 +310,7 @@ app.post("/register", async (req, res) => {
 });
 
 // LOGIN
+// LOGIN
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -262,43 +320,44 @@ app.post("/login", async (req, res) => {
 
     if (!rows.length) {
       return res.render("login", {
-        modal: {
-          type: "error",
-          title: "Login Gagal",
-          message: "Username tidak ditemukan.",
-        },
+        modal: { type: "error", title: "Login Gagal", message: "Username tidak ditemukan." },
       });
     }
 
     const user = rows[0];
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
+
+    // Blokir user nonaktif
+    if (user.status && user.status.toLowerCase() === "nonaktif") {
       return res.render("login", {
-        modal: {
-          type: "error",
-          title: "Login Gagal",
-          message: "Password salah.",
-        },
+        modal: { type: "error", title: "Akun Nonaktif", message: "Hubungi admin untuk mengaktifkan akun Anda." },
       });
     }
 
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.render("login", {
+        modal: { type: "error", title: "Login Gagal", message: "Password salah." },
+      });
+    }
+
+    // ✅ simpan lengkap, termasuk role & status
     req.session.user = {
       id: user.id_akun,
       username: user.username,
       nama: `${user.nama_depan || ""} ${user.nama_belakang || ""}`.trim(),
+      role: user.role,        // <-- penting
+      status: user.status     // <-- penting
     };
+
     return res.redirect("/");
   } catch (err) {
     console.error(err);
     res.render("login", {
-      modal: {
-        type: "error",
-        title: "Kesalahan Server",
-        message: "Terjadi kesalahan. Coba lagi nanti.",
-      },
+      modal: { type: "error", title: "Kesalahan Server", message: "Terjadi kesalahan. Coba lagi nanti." },
     });
   }
 });
+
 
 // HAPUS DATA
 app.delete("/hapus/:id", (req, res) => {
@@ -981,26 +1040,111 @@ app.post('/update-status/:groupId', async (req, res) => {
 app.post('/update-status', async (req, res) => {
   try {
     const { group_id, status } = req.body;
-    if (!group_id || !status) return res.status(400).json({ success:false, message:'Data tidak lengkap.' });
+    if (!group_id || !status) return res.status(400).json({ success: false, message: 'Data tidak lengkap.' });
     await db.promise().query('UPDATE tabel SET status=? WHERE group_id=?', [status, group_id]);
-    res.json({ success:true });
+    res.json({ success: true });
   } catch (e) {
     console.error('❌ update-status:', e);
-    res.status(500).json({ success:false, message:'Kesalahan server.' });
+    res.status(500).json({ success: false, message: 'Kesalahan server.' });
   }
 });
 
-// Manajemen Akun – list akun sederhana
-app.get('/akun', async (req, res) => {
+app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
   try {
-    const [rows] = await db.promise().query(
-      'SELECT id_akun, username, nama_depan, nama_belakang FROM akun ORDER BY id_akun DESC'
-    );
-    res.render('akun', { users: rows });
+    const [rows] = await db.promise().query(`
+      SELECT
+        id_akun AS id,
+        username,
+        nama_depan,
+        nama_belakang,
+        role,
+        status
+      FROM akun
+      ORDER BY id_akun ASC
+    `);
+
+    const users = rows.map(u => ({
+      id: u.id,
+      username: u.username,
+      nama: (`${u.nama_depan || ''} ${u.nama_belakang || ''}`).trim() || '-',
+      role: u.role || 'viewer',
+      status: u.status || 'nonaktif',
+    }));
+
+    res.render("akun", { users });
   } catch (err) {
-    console.error('GET /akun', err);
-    res.status(500).send('Gagal memuat halaman akun');
+    console.error("GET /akun error:", err);
+    res.status(500).send("Gagal memuat halaman akun");
   }
 });
+
+// TAMBAH AKUN (dipanggil oleh modal via fetch/Ajax)
+app.post("/akun", requireLogin, requireRole("admin"), async (req, res) => {
+  try {
+    let {
+      nama_depan = "",
+      nama_belakang = "",
+      username = "",
+      password = "",
+      role = "VIEWER",
+      status = "AKTIF",
+    } = req.body;
+
+    // Normalisasi
+    nama_depan = nama_depan.trim();
+    nama_belakang = nama_belakang.trim();
+    username = username.trim();
+    role = (role || "").toUpperCase();
+    status = (status || "").toUpperCase();
+
+    // Validasi sederhana
+    if (!nama_depan) {
+      return res.status(400).json({ ok: false, field: "nama_depan", message: "Nama depan wajib diisi." });
+    }
+    if (!username) {
+      return res.status(400).json({ ok: false, field: "username", message: "Username wajib diisi." });
+    }
+    if (!password || password.length < 6) {
+      return res.status(400).json({ ok: false, field: "password", message: "Password minimal 6 karakter." });
+    }
+    const ROLE_OK = ["ADMIN", "PETUGAS", "VIEWER"];
+    const STATUS_OK = ["AKTIF", "NONAKTIF"];
+    if (!ROLE_OK.includes(role)) role = "VIEWER";
+    if (!STATUS_OK.includes(status)) status = "AKTIF";
+
+    // Cek username unik
+    const [exist] = await db.promise().query(
+      "SELECT id_akun FROM akun WHERE username = ?",
+      [username]
+    );
+    if (exist.length) {
+      return res.status(409).json({ ok: false, field: "username", message: "Username sudah terdaftar." });
+    }
+
+    // Hash password & simpan
+    const hashed = await bcrypt.hash(password, 10);
+    const [result] = await db.promise().query(
+      `INSERT INTO akun (username, password, nama_depan, nama_belakang, role, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [username, hashed, nama_depan, nama_belakang, role, status]
+    );
+
+    return res.json({
+      ok: true,
+      akun: {
+        id: result.insertId,
+        username,
+        nama_depan,
+        nama_belakang,
+        role,
+        status
+      }
+    });
+  } catch (err) {
+    console.error("POST /akun error:", err);
+    return res.status(500).json({ ok: false, message: "Kesalahan server." });
+  }
+});
+
 
 
