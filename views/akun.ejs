@@ -161,7 +161,8 @@
                   <tbody id="tbodyAkun">
                     <% if (Array.isArray(users) && users.length) { %>
                       <% users.forEach(function(u, i) { %>
-                        <tr>
+                        <tr data-role="<%= u.role %>" data-status="<%= u.status %>"
+                          data-keyword="<%= (u.nama + ' ' + u.username).toLowerCase() %>">
                           <td class="text-center">
                             <%= i + 1 %>
                           </td>
