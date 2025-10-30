@@ -774,9 +774,10 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>Nama Instansi</label>
-                                        <select id="nama_instansi" class="form-control" name="nama_instansi" required>
+                                        <select id="edit_nama_instansi" name="nama_instansi" class="form-control" required>
                                             <option value="">-- Pilih Instansi --</option>
                                         </select>
+
                                         <div class="invalid-feedback">Nama Instansi wajib dipilih.</div>
 
                                     </div>
@@ -937,9 +938,10 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>Nama Instansi</label>
-                                        <select id="edit_nama_instansi" class="form-control" name="nama_instansi" required>
+                                        <select id="nama_instansi" name="nama_instansi" class="form-control" required>
                                             <option value="">-- Pilih Instansi --</option>
                                         </select>
+
                                         <div class="invalid-feedback">Nama Instansi wajib dipilih.</div>
 
                                     </div>
@@ -1319,6 +1321,33 @@
                     thead { display: table-header-group; }
                     tfoot { display: table-row-group; }
                 }
+                /* 🔹 Buat tampilan Select2 seperti input teks */
+                .select2-container--default .select2-selection--single {
+                    height: 38px !important;
+                    border: 1px solid #ced4da !important;
+                    border-radius: 0.375rem !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    padding-left: 0.5rem !important;
+                }
+
+                /* 🔹 Hilangkan “panah dropdown” agar seperti input */
+                .select2-container--default .select2-selection__arrow {
+                    display: none !important;
+                }
+
+                /* 🔹 Placeholder tampil lebih halus */
+                .select2-selection__placeholder {
+                    color: #6c757d !important;
+                    font-style: italic;
+                }
+
+                /* 🔹 Saat user klik, ubah border agar sama seperti input fokus Bootstrap */
+                .select2-container--default.select2-container--focus .select2-selection--single {
+                    border-color: #86b7fe !important;
+                    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+                }
+
             </style>
 
             <!-- Footer -->
@@ -1691,6 +1720,9 @@
 
                 // langsung aktifkan logika sesuai jenis ujian
                 toggleFieldsByJenis(jenis);
+
+                const data = $(this).data();
+                $('#edit_nama_instansi').val(data.instansiId).trigger('change');
             });
 
             // Pastikan juga form tambah sinkron tiap kali modal dibuka
@@ -1729,6 +1761,7 @@
 
     <!-- Chart Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    
 
     <script>
         $(document).ready(function () {
@@ -3816,7 +3849,11 @@
         }
     });
 </script>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const role = "<%= role %>";
@@ -3864,6 +3901,70 @@
     // Jalankan saat modal dibuka
     $('#inputDataModal, #editDataModal').on('show.bs.modal', loadInstansiOptions);
 </script>
+
+<script>
+    $(document).ready(async function () {
+
+        // 🔹 Muat daftar instansi dari server
+        async function loadInstansiOptions() {
+            const res = await fetch('/instansi');
+            const data = await res.json();
+            const selects = ['#nama_instansi', '#edit_nama_instansi'];
+            selects.forEach(sel => {
+                const selectElem = $(sel);
+                selectElem.empty().append('<option value="">-- Pilih Instansi --</option>');
+                data.forEach(row => {
+                    selectElem.append(`<option value="${row.id_instansi}">${row.nama_instansi}</option>`);
+                });
+            });
+        }
+
+        await loadInstansiOptions();
+
+       $('#nama_instansi').select2({
+            placeholder: 'Ketik nama instansi...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#inputDataModal'),
+            minimumResultsForSearch: 0,
+            language: { noResults: () => "Instansi tidak ditemukan" }
+        });
+
+        $('#edit_nama_instansi').select2({
+            placeholder: 'Ketik nama instansi...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#editDataModal'),
+            minimumResultsForSearch: 0,
+            language: { noResults: () => "Instansi tidak ditemukan" }
+        });
+
+
+        // 🔹 Buka dropdown langsung saat field fokus
+        $(document).on('focus', '.select2-selection--single', function (e) {
+            const select = $(this).closest('.select2-container').prev('select');
+            if (!select.prop('disabled')) {
+                select.select2('open');
+            }
+        });
+
+        // 🔹 Fokus langsung ke kolom ketik Select2
+        $(document).on('select2:open', () => {
+            const searchField = document.querySelector('.select2-search__field');
+            if (searchField) searchField.focus();
+        });
+
+        // 🔹 Saat tombol Edit ditekan
+        $(document).on('click', '.btn-edit', function () {
+            const data = $(this).data();
+            $('#edit_tanggal_pelaksanaan').val(data.tanggal);
+            $('#edit_status_pelaksanaan').val(data.status);
+            $('#edit_link_dokumen').val(data.dokumen);
+            $('#edit_nama_instansi').val(data.instansiId).trigger('change'); // set instansi terpilih
+        });
+    });
+</script>
+
 
 </body>
 
