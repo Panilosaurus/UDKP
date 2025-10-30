@@ -153,42 +153,47 @@ async function logLogin({ user_id = null, username = null, ip, ua, success, reas
 app.get("/", async (req, res) => {
   try {
     const search = req.query.q ? `%${req.query.q}%` : "%";
+
+    // ✅ Ambil data utama dengan JOIN instansi
     const [results] = await db.promise().query(
       `
-    SELECT 
-      id,
-      instansi,
-      jenis_ujian,
-      jumlah_peserta,
-      DATE_FORMAT(tanggal_pelaksanaan, '%Y-%m-%d') AS tanggal_pelaksanaan,
-      status,
-      dokumen,
-      petugas_cat,
-      nilai_tertinggi_pg,
-      nilai_terendah_pg,
-      jumlah_lulus_pg,
-      jumlah_tidak_lulus_pg,
-      group_id
-    FROM tabel
-    WHERE instansi LIKE ? 
-       OR jenis_ujian LIKE ? 
-       OR status LIKE ?
-    ORDER BY instansi ASC, tanggal_pelaksanaan DESC
-    `,
+      SELECT 
+        t.id,
+        t.id_instansi,
+        i.nama_instansi AS instansi,
+        t.jenis_ujian,
+        t.jumlah_peserta,
+        DATE_FORMAT(t.tanggal_pelaksanaan, '%Y-%m-%d') AS tanggal_pelaksanaan,
+        t.status,
+        t.dokumen,
+        t.petugas_cat,
+        t.nilai_tertinggi_pg,
+        t.nilai_terendah_pg,
+        t.jumlah_lulus_pg,
+        t.jumlah_tidak_lulus_pg,
+        t.group_id
+      FROM tabel t
+      LEFT JOIN instansi i ON t.id_instansi = i.id_instansi
+      WHERE i.nama_instansi LIKE ? 
+         OR t.jenis_ujian LIKE ? 
+         OR t.status LIKE ?
+      ORDER BY i.nama_instansi ASC, t.tanggal_pelaksanaan DESC
+      `,
       [search, search, search]
     );
 
-    // grupkan berdasarkan group_id
+    // ✅ grupkan berdasarkan group_id
     const grouped = {};
     results.forEach((row) => {
       const key = row.group_id || `${row.instansi}-${row.tanggal_pelaksanaan}`;
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(row);
     });
+
     // Normalizer
     const norm = (s) => (s || "").trim().toUpperCase().replace(/\s+/g, " ");
 
-    // Hitung per grup (bukan per baris)
+    // ✅ Hitung per grup (bukan per baris)
     let countUpkp = 0,
       countUd1 = 0,
       countUd2 = 0;
@@ -200,7 +205,6 @@ app.get("/", async (req, res) => {
 
       rows.forEach((row) => {
         const jenis = norm(row.jenis_ujian);
-
         if (jenis.includes("UPKP")) {
           hasUPKP = true; // UPKP + REMED UPKP
         } else if (jenis.includes("UD TK. II")) {
@@ -215,7 +219,7 @@ app.get("/", async (req, res) => {
       if (hasUD2) countUd2++;
     });
 
-    // ubah jadi array
+    // ✅ ubah jadi array
     const groupedArray = Object.entries(grouped).map(([key, rows]) => ({
       group_id: key,
       instansi: rows[0].instansi,
@@ -226,10 +230,9 @@ app.get("/", async (req, res) => {
       rows,
     }));
 
-    // pagination setelah grup
-    const limit = parseInt(req.query.limit) || 10; // ✅ tambahkan ini
-    const page = parseInt(req.query.page) || 1; // ✅ dan ini
-
+    // ✅ pagination setelah grup
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
     const totalGroups = groupedArray.length;
     const totalPages = Math.ceil(totalGroups / limit);
     const startEntry = (page - 1) * limit + 1;
@@ -238,32 +241,35 @@ app.get("/", async (req, res) => {
       (page - 1) * limit,
       page * limit
     );
-    // 🔹 Hitung total per instansi
+
+    // ✅ Hitung total per instansi (gunakan JOIN)
     const [rekapInstansi] = await db.promise().query(`
-  SELECT 
-    instansi,
-    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UPKP','REMED UPKP') THEN 1 ELSE 0 END) AS total_upkp,
-    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UD TK. I','REMED UD TK. I') THEN 1 ELSE 0 END) AS total_ud1,
-    SUM(CASE WHEN TRIM(jenis_ujian) IN ('UD TK. II','REMED UD TK. II') THEN 1 ELSE 0 END) AS total_ud2
-  FROM tabel
-  GROUP BY instansi
-  ORDER BY instansi ASC
-`);
+      SELECT 
+        i.nama_instansi AS instansi,
+        SUM(CASE WHEN TRIM(t.jenis_ujian) IN ('UPKP','REMED UPKP') THEN 1 ELSE 0 END) AS total_upkp,
+        SUM(CASE WHEN TRIM(t.jenis_ujian) IN ('UD TK. I','REMED UD TK. I') THEN 1 ELSE 0 END) AS total_ud1,
+        SUM(CASE WHEN TRIM(t.jenis_ujian) IN ('UD TK. II','REMED UD TK. II') THEN 1 ELSE 0 END) AS total_ud2
+      FROM tabel t
+      LEFT JOIN instansi i ON t.id_instansi = i.id_instansi
+      GROUP BY i.nama_instansi
+      ORDER BY i.nama_instansi ASC
+    `);
 
-    // 🔹 Ambil nilai tertinggi dan terendah dari semua jenis ujian
+    // ✅ Ambil nilai tertinggi dan terendah dari semua jenis ujian
     const [nilaiMinMax] = await db.promise().query(`
-  SELECT
-    GREATEST(
-      IFNULL(MAX(nilai_tertinggi_pg), 0),
-      IFNULL(MAX(jumlah_lulus_pg), 0)
-    ) AS nilai_tertinggi,
-    LEAST(
-      IFNULL(MIN(nilai_terendah_pg), 999999),
-      IFNULL(MIN(jumlah_tidak_lulus_pg), 999999)
-    ) AS nilai_terendah
-  FROM tabel
-`);
+      SELECT
+        GREATEST(
+          IFNULL(MAX(nilai_tertinggi_pg), 0),
+          IFNULL(MAX(jumlah_lulus_pg), 0)
+        ) AS nilai_tertinggi,
+        LEAST(
+          IFNULL(MIN(nilai_terendah_pg), 999999),
+          IFNULL(MIN(jumlah_tidak_lulus_pg), 999999)
+        ) AS nilai_terendah
+      FROM tabel
+    `);
 
+    // ✅ Render ke halaman index.ejs
     res.render("index", {
       groupedData: paginatedGroups,
       nama: req.session.user ? req.session.user.nama : "Guest",
@@ -272,7 +278,7 @@ app.get("/", async (req, res) => {
       totalGroups,
       startEntry,
       endEntry,
-      limit, // ✅ kirimkan ke view
+      limit,
       query: req.query.q || "",
       countUpkp,
       countUd1,
@@ -285,6 +291,7 @@ app.get("/", async (req, res) => {
     res.status(500).send("Terjadi kesalahan server");
   }
 });
+
 
 // -------------------- LOGIN & REGISTER --------------------
 
@@ -452,7 +459,7 @@ app.listen(port, () => {
 
 app.post("/tambah", upload.none(), async (req, res) => {
   const {
-    nama_instansi,
+    nama_instansi, // sekarang berisi id_instansi dari <select>
     group_id,
     tgl_pelaksanaan,
     status_pelaksanaan,
@@ -480,10 +487,10 @@ app.post("/tambah", upload.none(), async (req, res) => {
       ? group_id.trim()
       : Math.random().toString(36).substring(2, 10);
 
-  // ✅ SQL hanya menyimpan field yang masih dipakai
+  // ✅ Kolom disesuaikan ke struktur baru (id_instansi)
   const sql = `
     INSERT INTO tabel (
-      instansi, group_id, jenis_ujian, jumlah_peserta,
+      id_instansi, group_id, jenis_ujian, jumlah_peserta,
       tanggal_pelaksanaan, status, dokumen, petugas_cat
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -499,7 +506,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
     // Hanya push jika ada nilai jumlah peserta
     if (jumlahPeserta) {
       inserts.push([
-        nama_instansi,
+        parseInt(nama_instansi), // ✅ gunakan id_instansi (bukan nama)
         finalGroupId,
         ujian,
         jumlahPeserta,
@@ -531,7 +538,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
       html: "<p>Data berhasil disimpan.</p>",
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error insert:", err);
     res.status(500).json({
       status: "error",
       title: "Kesalahan Server",
@@ -539,6 +546,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
     });
   }
 });
+
 
 
 
@@ -585,22 +593,25 @@ app.get("/search", async (req, res) => {
     const { q = "", startDate, endDate } = req.query;
     const noFilter = !q && !startDate && !endDate;
 
+    // ✅ Gunakan JOIN ke tabel instansi
     let query = `
       SELECT 
-        id,
-        instansi,
-        group_id,
-        jenis_ujian,
-        jumlah_peserta,
-        DATE_FORMAT(tanggal_pelaksanaan, '%Y-%m-%d') AS tanggal_pelaksanaan,
-        status,
-        dokumen,
-        petugas_cat,
-        nilai_tertinggi_pg,
-        nilai_terendah_pg,
-        jumlah_lulus_pg,
-        jumlah_tidak_lulus_pg
-      FROM tabel
+        t.id,
+        t.id_instansi,
+        i.nama_instansi AS instansi,
+        t.group_id,
+        t.jenis_ujian,
+        t.jumlah_peserta,
+        DATE_FORMAT(t.tanggal_pelaksanaan, '%Y-%m-%d') AS tanggal_pelaksanaan,
+        t.status,
+        t.dokumen,
+        t.petugas_cat,
+        t.nilai_tertinggi_pg,
+        t.nilai_terendah_pg,
+        t.jumlah_lulus_pg,
+        t.jumlah_tidak_lulus_pg
+      FROM tabel t
+      LEFT JOIN instansi i ON t.id_instansi = i.id_instansi
     `;
     const params = [];
 
@@ -609,17 +620,18 @@ app.get("/search", async (req, res) => {
       const where = [];
 
       if (q) {
+        // ✅ Pencarian berlaku pada nama_instansi (bukan kolom instansi lagi)
         where.push(`(
-          instansi LIKE ? OR
-          jenis_ujian LIKE ? OR
-          status LIKE ? OR
-          dokumen LIKE ? OR
-          petugas_cat LIKE ? OR
-          CAST(nilai_tertinggi_pg AS CHAR) LIKE ? OR
-          CAST(nilai_terendah_pg AS CHAR) LIKE ? OR
-          CAST(jumlah_lulus_pg AS CHAR) LIKE ? OR
-          CAST(jumlah_tidak_lulus_pg AS CHAR) LIKE ? OR
-          CAST(jumlah_peserta AS CHAR) LIKE ?
+          i.nama_instansi LIKE ? OR
+          t.jenis_ujian LIKE ? OR
+          t.status LIKE ? OR
+          t.dokumen LIKE ? OR
+          t.petugas_cat LIKE ? OR
+          CAST(t.nilai_tertinggi_pg AS CHAR) LIKE ? OR
+          CAST(t.nilai_terendah_pg AS CHAR) LIKE ? OR
+          CAST(t.jumlah_lulus_pg AS CHAR) LIKE ? OR
+          CAST(t.jumlah_tidak_lulus_pg AS CHAR) LIKE ? OR
+          CAST(t.jumlah_peserta AS CHAR) LIKE ?
         )`);
         params.push(
           keyword,
@@ -635,24 +647,25 @@ app.get("/search", async (req, res) => {
         );
       }
 
+      // ✅ Filter tanggal: awal saja atau range
       if (startDate && !endDate) {
         where.push(
-          `MONTH(tanggal_pelaksanaan) = MONTH(?) AND YEAR(tanggal_pelaksanaan) = YEAR(?)`
+          `MONTH(t.tanggal_pelaksanaan) = MONTH(?) AND YEAR(t.tanggal_pelaksanaan) = YEAR(?)`
         );
         params.push(startDate, startDate);
       } else if (startDate && endDate) {
-        where.push(`tanggal_pelaksanaan BETWEEN ? AND ?`);
+        where.push(`t.tanggal_pelaksanaan BETWEEN ? AND ?`);
         params.push(startDate, endDate);
       }
 
       query += " WHERE " + where.join(" AND ");
     }
 
-    query += " ORDER BY instansi ASC, tanggal_pelaksanaan DESC";
+    query += " ORDER BY i.nama_instansi ASC, t.tanggal_pelaksanaan DESC";
 
     const [results] = await db.promise().query(query, params);
 
-    // Grouping
+    // ✅ Grouping tetap sama
     const groupedMap = {};
     for (const row of results) {
       const key =
@@ -675,7 +688,7 @@ app.get("/search", async (req, res) => {
 
     const groupedData = Object.values(groupedMap);
 
-    // ✅ Render partial EJS via Express callback (tidak double response)
+    // ✅ Render partial EJS ke HTML dan kirim via JSON
     res.render("partials/tableBodyFlat", { groupedData }, (err, html) => {
       if (err) {
         console.error("❌ Gagal render partial:", err);
@@ -688,11 +701,13 @@ app.get("/search", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error di /search:", err);
-    res
-      .status(500)
-      .json({ status: "error", message: "Gagal melakukan pencarian" });
+    res.status(500).json({
+      status: "error",
+      message: "Gagal melakukan pencarian",
+    });
   }
 });
+
 
 // ✅ pastikan ini app.post, bukan pp.post
 app.post("/update/:id", upload.none(), async (req, res) => {
@@ -700,15 +715,19 @@ app.post("/update/:id", upload.none(), async (req, res) => {
     console.log("📩 BODY DITERIMA:", req.body);
 
     const {
-      nama_instansi,
+      nama_instansi, // sekarang berisi ID instansi dari select
       tgl_pelaksanaan,
       status_pelaksanaan,
-      link_dokumen,          // ⬅️ ambil dari body!
+      link_dokumen,
       group_id,
     } = req.body;
 
-    // 1) Validasi field wajib (tanpa link)
-    if (!nama_instansi?.trim() || !tgl_pelaksanaan?.trim() || !status_pelaksanaan?.trim()) {
+    // 1) Validasi field wajib
+    if (
+      !nama_instansi?.trim() ||
+      !tgl_pelaksanaan?.trim() ||
+      !status_pelaksanaan?.trim()
+    ) {
       console.warn("⚠️ Validasi gagal: form edit tidak lengkap.");
       return res.json({
         status: "warning",
@@ -717,7 +736,7 @@ app.post("/update/:id", upload.none(), async (req, res) => {
       });
     }
 
-    // 2) Link opsional; jika diisi harus valid
+    // 2) Validasi link Google Drive (opsional)
     const link = (link_dokumen || "").trim();
     const isGDrive = /^https?:\/\/(drive|docs)\.google\.com\//.test(link);
     if (link && !isGDrive) {
@@ -727,37 +746,31 @@ app.post("/update/:id", upload.none(), async (req, res) => {
         html: "<p>Jika diisi, gunakan URL berbagi Google (drive/docs) yang benar.</p>",
       });
     }
-
-    // ⬇️ jika kosong, simpan null
     const finalLink = link || null;
 
-    // 🧾 lanjutkan proses update seperti biasa
+    // 3) Ambil data lama (untuk petugas)
     const [oldData] = await db
       .promise()
-      .query("SELECT petugas_cat FROM tabel WHERE group_id=? LIMIT 1", [group_id]);
+      .query("SELECT petugas_cat FROM tabel WHERE group_id=? LIMIT 1", [
+        group_id,
+      ]);
 
     // === KUMPULKAN PETUGAS DARI FORM EDIT ===
     let petugasRaw = [];
-
-    // Ambil semua field petugas dari form (dinamis)
     for (const key in req.body) {
       if (key.startsWith("edit_petugas_")) {
         const val = (req.body[key] ?? "").trim();
         if (val) petugasRaw.push(val);
       }
     }
-
-    // Tambahkan juga array petugas_cat[] jika ada
     if (req.body.petugas_cat) {
       const input = req.body.petugas_cat;
-      if (Array.isArray(input)) petugasRaw.push(...input.map(v => (v ?? "").trim()));
+      if (Array.isArray(input))
+        petugasRaw.push(...input.map((v) => (v ?? "").trim()));
       else petugasRaw.push((input ?? "").trim());
     }
-
-    // Bersihkan & unikkan
     petugasRaw = [...new Set(petugasRaw.filter(Boolean))];
 
-    // ✅ VALIDASI: Minimal 1 petugas CAT wajib diisi
     if (petugasRaw.length < 1) {
       return res.json({
         status: "warning",
@@ -766,80 +779,107 @@ app.post("/update/:id", upload.none(), async (req, res) => {
       });
     }
 
-    // Jika lolos validasi → simpan hasil akhirnya
     const finalPetugas = petugasRaw.join(", ");
 
-    // --- VALIDASI: jika mau set ke "Selesai" pastikan kolom wajib terisi sesuai jenis & peserta>0 ---
-    if (status_pelaksanaan === 'Selesai') {
-      // tarik angka dari body (pakai helper toNumOrNull kamu kalau mau)
-      const jmlUPKP = Number(req.body['jumlah_peserta_0'] || 0);
-      const jmlUD1 = Number(req.body['jumlah_peserta_1'] || 0);
-      const jmlUD2 = Number(req.body['jumlah_peserta_2'] || 0);
-      const jmlRemUPKP = Number(req.body['jumlah_peserta_3'] || 0);
-      const jmlRemUD1 = Number(req.body['jumlah_peserta_4'] || 0);
-      const jmlRemUD2 = Number(req.body['jumlah_peserta_5'] || 0);
+    // 4) Validasi tambahan untuk status "Selesai"
+    if (status_pelaksanaan === "Selesai") {
+      const jmlUPKP = Number(req.body["jumlah_peserta_0"] || 0);
+      const jmlUD1 = Number(req.body["jumlah_peserta_1"] || 0);
+      const jmlUD2 = Number(req.body["jumlah_peserta_2"] || 0);
+      const jmlRemUPKP = Number(req.body["jumlah_peserta_3"] || 0);
+      const jmlRemUD1 = Number(req.body["jumlah_peserta_4"] || 0);
+      const jmlRemUD2 = Number(req.body["jumlah_peserta_5"] || 0);
 
-      const maxUPKP = req.body['nilai_tertinggi_0'];
-      const minUPKP = req.body['nilai_terendah_0'];
-      const maxRemUPKP = req.body['nilai_tertinggi_3'];
-      const minRemUPKP = req.body['nilai_terendah_3'];
+      const maxUPKP = req.body["nilai_tertinggi_0"];
+      const minUPKP = req.body["nilai_terendah_0"];
+      const maxRemUPKP = req.body["nilai_tertinggi_3"];
+      const minRemUPKP = req.body["nilai_terendah_3"];
 
-      const lulusUD1 = req.body['jumlah_lulus_pg_1'];
-      const gagalUD1 = req.body['jumlah_tidak_lulus_pg_1'];
-      const lulusUD2 = req.body['jumlah_lulus_pg_2'];
-      const gagalUD2 = req.body['jumlah_tidak_lulus_pg_2'];
-      const lulusRemUD1 = req.body['jumlah_lulus_pg_4'];
-      const gagalRemUD1 = req.body['jumlah_tidak_lulus_pg_4'];
-      const lulusRemUD2 = req.body['jumlah_lulus_pg_5'];
-      const gagalRemUD2 = req.body['jumlah_tidak_lulus_pg_5'];
+      const lulusUD1 = req.body["jumlah_lulus_pg_1"];
+      const gagalUD1 = req.body["jumlah_tidak_lulus_pg_1"];
+      const lulusUD2 = req.body["jumlah_lulus_pg_2"];
+      const gagalUD2 = req.body["jumlah_tidak_lulus_pg_2"];
+      const lulusRemUD1 = req.body["jumlah_lulus_pg_4"];
+      const gagalRemUD1 = req.body["jumlah_tidak_lulus_pg_4"];
+      const lulusRemUD2 = req.body["jumlah_lulus_pg_5"];
+      const gagalRemUD2 = req.body["jumlah_tidak_lulus_pg_5"];
 
       let msgs = [];
-      if (jmlUPKP > 0 && (!maxUPKP || !minUPKP)) msgs.push('• <b>UPKP</b>: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>');
-      if (jmlRemUPKP > 0 && (!maxRemUPKP || !minRemUPKP)) msgs.push('• <b>REMED UPKP</b>: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>');
-
-      if (jmlUD1 > 0 && (!lulusUD1 || !gagalUD1)) msgs.push('• <b>UD TK. I</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
-      if (jmlUD2 > 0 && (!lulusUD2 || !gagalUD2)) msgs.push('• <b>UD TK. II</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
-      if (jmlRemUD1 > 0 && (!lulusRemUD1 || !gagalRemUD1)) msgs.push('• <b>REMED UD TK. I</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
-      if (jmlRemUD2 > 0 && (!lulusRemUD2 || !gagalRemUD2)) msgs.push('• <b>REMED UD TK. II</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>');
+      if (jmlUPKP > 0 && (!maxUPKP || !minUPKP))
+        msgs.push(
+          "• <b>UPKP</b>: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>"
+        );
+      if (jmlRemUPKP > 0 && (!maxRemUPKP || !minRemUPKP))
+        msgs.push(
+          "• <b>REMED UPKP</b>: isi <b>Nilai Tertinggi</b> & <b>Nilai Terendah</b>"
+        );
+      if (jmlUD1 > 0 && (!lulusUD1 || !gagalUD1))
+        msgs.push(
+          "• <b>UD TK. I</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>"
+        );
+      if (jmlUD2 > 0 && (!lulusUD2 || !gagalUD2))
+        msgs.push(
+          "• <b>UD TK. II</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>"
+        );
+      if (jmlRemUD1 > 0 && (!lulusRemUD1 || !gagalRemUD1))
+        msgs.push(
+          "• <b>REMED UD TK. I</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>"
+        );
+      if (jmlRemUD2 > 0 && (!lulusRemUD2 || !gagalRemUD2))
+        msgs.push(
+          "• <b>REMED UD TK. II</b>: isi <b>Jumlah Lulus</b> & <b>Tidak Lulus</b>"
+        );
 
       if (msgs.length) {
         return res.json({
-          status: 'warning',
-          title: 'Belum bisa diselesaikan',
+          status: "warning",
+          title: "Belum bisa diselesaikan",
           html: `<p>Untuk mengubah status menjadi <b>Selesai</b>, lengkapi dulu kolom berikut:</p>
-             <div>${msgs.join('<br>')}</div>`
+                 <div>${msgs.join("<br>")}</div>`,
         });
       }
     }
 
-
-
-    const jenisList = ["UPKP", "UD TK. I", "UD TK. II", "REMED UPKP", "REMED UD TK. I", "REMED UD TK. II"];
-
-    function toNumOrNull(v) { return (v === undefined || v === "") ? null : Number(v); }
+    // 5) Lanjut update tiap jenis ujian
+    const jenisList = [
+      "UPKP",
+      "UD TK. I",
+      "UD TK. II",
+      "REMED UPKP",
+      "REMED UD TK. I",
+      "REMED UD TK. II",
+    ];
+    const toNumOrNull = (v) => (v === undefined || v === "" ? null : Number(v));
+    const id_instansi = parseInt(nama_instansi); // ✅ gunakan id_instansi
 
     for (let i = 0; i < jenisList.length; i++) {
       const jenis = jenisList[i];
-
       const inJumlah = req.body[`jumlah_peserta_${i}`];
       const inNilaiMax = req.body[`nilai_tertinggi_${i}`];
       const inNilaiMin = req.body[`nilai_terendah_${i}`];
       const inLulus = req.body[`jumlah_lulus_pg_${i}`];
       const inTidakLulus = req.body[`jumlah_tidak_lulus_pg_${i}`];
 
-      const isUPKP = (jenis === "UPKP" || jenis === "REMED UPKP");
-      const filledForUPKP = (inJumlah || inNilaiMax || inNilaiMin);
-      const filledForUD = (inJumlah || inLulus || inTidakLulus);
+      const isUPKP = jenis === "UPKP" || jenis === "REMED UPKP";
+      const filledForUPKP = inJumlah || inNilaiMax || inNilaiMin;
+      const filledForUD = inJumlah || inLulus || inTidakLulus;
 
-      const [oldRow] = await db.promise().query(
-        "SELECT * FROM tabel WHERE group_id=? AND jenis_ujian=? LIMIT 1",
-        [group_id, jenis]
-      );
+      const [oldRow] = await db
+        .promise()
+        .query(
+          "SELECT * FROM tabel WHERE group_id=? AND jenis_ujian=? LIMIT 1",
+          [group_id, jenis]
+        );
 
-      if (oldRow.length === 0 && !(isUPKP ? filledForUPKP : filledForUD)) continue;
-
+      if (oldRow.length === 0 && !(isUPKP ? filledForUPKP : filledForUD))
+        continue;
       if (oldRow.length > 0 && !(isUPKP ? filledForUPKP : filledForUD)) {
-        await db.promise().query("DELETE FROM tabel WHERE group_id=? AND jenis_ujian=?", [group_id, jenis]);
+        await db
+          .promise()
+          .query("DELETE FROM tabel WHERE group_id=? AND jenis_ujian=?", [
+            group_id,
+            jenis,
+          ]);
         continue;
       }
 
@@ -853,61 +893,103 @@ app.post("/update/:id", upload.none(), async (req, res) => {
         if (isUPKP) {
           await db.promise().query(
             `UPDATE tabel SET 
-               instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
+               id_instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
                status=?, dokumen=?, petugas_cat=?,
                nilai_tertinggi_pg=?, nilai_terendah_pg=?
              WHERE group_id=? AND jenis_ujian=?`,
-            [nama_instansi, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, finalLink, finalPetugas,
-              nilai_tertinggi_pg, nilai_terendah_pg,
-              group_id, jenis]
+            [
+              id_instansi,
+              jumlah_peserta,
+              tgl_pelaksanaan,
+              status_pelaksanaan,
+              finalLink,
+              finalPetugas,
+              nilai_tertinggi_pg,
+              nilai_terendah_pg,
+              group_id,
+              jenis,
+            ]
           );
         } else {
           await db.promise().query(
             `UPDATE tabel SET 
-               instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
+               id_instansi=?, jumlah_peserta=?, tanggal_pelaksanaan=?, 
                status=?, dokumen=?, petugas_cat=?,
                jumlah_lulus_pg=?, jumlah_tidak_lulus_pg=?
              WHERE group_id=? AND jenis_ujian=?`,
-            [nama_instansi, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, finalLink, finalPetugas,
-              jumlah_lulus_pg, jumlah_tidak_lulus_pg,  // <-- perhatikan nama variabelmu
-              group_id, jenis]
+            [
+              id_instansi,
+              jumlah_peserta,
+              tgl_pelaksanaan,
+              status_pelaksanaan,
+              finalLink,
+              finalPetugas,
+              jumlah_lulus_pg,
+              jumlah_tidak_lulus_pg,
+              group_id,
+              jenis,
+            ]
           );
         }
       } else {
         if (isUPKP) {
           await db.promise().query(
             `INSERT INTO tabel 
-              (instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
+              (id_instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
                status, dokumen, petugas_cat, nilai_tertinggi_pg, nilai_terendah_pg)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [nama_instansi, group_id, jenis, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, finalLink, finalPetugas,
-              nilai_tertinggi_pg, nilai_terendah_pg]
+            [
+              id_instansi,
+              group_id,
+              jenis,
+              jumlah_peserta,
+              tgl_pelaksanaan,
+              status_pelaksanaan,
+              finalLink,
+              finalPetugas,
+              nilai_tertinggi_pg,
+              nilai_terendah_pg,
+            ]
           );
         } else {
           await db.promise().query(
             `INSERT INTO tabel 
-              (instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
+              (id_instansi, group_id, jenis_ujian, jumlah_peserta, tanggal_pelaksanaan, 
                status, dokumen, petugas_cat, jumlah_lulus_pg, jumlah_tidak_lulus_pg)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [nama_instansi, group_id, jenis, jumlah_peserta, tgl_pelaksanaan,
-              status_pelaksanaan, finalLink, finalPetugas,
-              jumlah_lulus_pg, jumlah_tidak_lulus_pg]
+            [
+              id_instansi,
+              group_id,
+              jenis,
+              jumlah_peserta,
+              tgl_pelaksanaan,
+              status_pelaksanaan,
+              finalLink,
+              finalPetugas,
+              jumlah_lulus_pg,
+              jumlah_tidak_lulus_pg,
+            ]
           );
         }
       }
     }
 
     console.log("✅ Update sukses:", group_id);
-    return res.json({ status: "success", title: "Berhasil!", html: "<p>Data berhasil diperbarui.</p>" });
-
+    return res.json({
+      status: "success",
+      title: "Berhasil!",
+      html: "<p>Data berhasil diperbarui.</p>",
+    });
   } catch (err) {
     console.error("❌ Gagal update data:", err);
-    return res.status(500).json({ status: "error", title: "Gagal!", message: "Terjadi kesalahan saat menyimpan data." });
+    return res.status(500).json({
+      status: "error",
+      title: "Gagal!",
+      message: "Terjadi kesalahan saat menyimpan data.",
+    });
   }
 });
+
 
 app.get("/get-nilai/:groupId", async (req, res) => {
   const { groupId } = req.params;
@@ -1438,5 +1520,16 @@ app.get("/akun/login-log", requireRole("admin"), async (req, res) => {
   } catch (err) {
     console.error("❌ /akun/login-log error:", err);
     res.status(500).json({ ok: false, message: "Gagal ambil data log." });
+  }
+});
+
+// API untuk ambil daftar instansi
+app.get("/instansi", async (req, res) => {
+  try {
+    const [rows] = await db.promise().query("SELECT id_instansi, nama_instansi FROM instansi ORDER BY nama_instansi ASC");
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Gagal ambil instansi:", err);
+    res.status(500).json({ error: "Gagal mengambil data instansi" });
   }
 });

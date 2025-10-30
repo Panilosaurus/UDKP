@@ -774,9 +774,11 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>Nama Instansi</label>
-                                        <input type="text" id="edit_nama_instansi" class="form-control"
-                                            name="nama_instansi" placeholder="contoh: BKD Prov. X" required>
-                                        <div class="invalid-feedback">Nama Instansi wajib diisi.</div>
+                                        <select id="nama_instansi" class="form-control" name="nama_instansi" required>
+                                            <option value="">-- Pilih Instansi --</option>
+                                        </select>
+                                        <div class="invalid-feedback">Nama Instansi wajib dipilih.</div>
+
                                     </div>
                                 </div>
 
@@ -935,9 +937,11 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>Nama Instansi</label>
-                                        <input type="text" id="nama_instansi" class="form-control" name="nama_instansi"
-                                            placeholder="contoh: BKD Prov. X" required>
-                                        <div class="invalid-feedback">Nama Instansi wajib diisi.</div>
+                                        <select id="edit_nama_instansi" class="form-control" name="nama_instansi" required>
+                                            <option value="">-- Pilih Instansi --</option>
+                                        </select>
+                                        <div class="invalid-feedback">Nama Instansi wajib dipilih.</div>
+
                                     </div>
                                 </div>
 
@@ -3832,6 +3836,33 @@
             });
         }
     });
+</script>
+<script>
+    async function loadInstansiOptions() {
+        try {
+            const res = await fetch('/instansi');
+            const data = await res.json();
+            const selectTambah = document.getElementById('nama_instansi');
+            const selectEdit = document.getElementById('edit_nama_instansi');
+            if (!selectTambah || !selectEdit) return;
+
+            // Bersihkan dan isi ulang
+            [selectTambah, selectEdit].forEach(select => {
+                select.innerHTML = '<option value="">-- Pilih Instansi --</option>';
+                data.forEach(row => {
+                    const opt = document.createElement('option');
+                    opt.value = row.id_instansi;
+                    opt.textContent = row.nama_instansi;
+                    select.appendChild(opt);
+                });
+            });
+        } catch (err) {
+            console.error('❌ Gagal load instansi:', err);
+        }
+    }
+
+    // Jalankan saat modal dibuka
+    $('#inputDataModal, #editDataModal').on('show.bs.modal', loadInstansiOptions);
 </script>
 
 </body>
