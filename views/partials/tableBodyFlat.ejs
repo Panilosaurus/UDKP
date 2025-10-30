@@ -1,142 +1,177 @@
 <% if (!groupedData || groupedData.length===0) { %>
-        <tr>
-            <td colspan="13" class="text-center">Belum ada data</td>
-        </tr>
-        <% } else { %>
-            <% groupedData.forEach((group, gIndex)=> { %>
-                <% group.rows.forEach((row, rIndex)=> { %>
-                    <tr class="data-row" data-jenis="<%= (row.jenis_ujian || '').toString() %>"
-                        data-peserta="<%= Number(row.jumlah_peserta || 0) %>" data-lulus="<%= Number(row.jumlah_lulus_pg || 0) %>"
-                        data-tidak="<%= Number(row.jumlah_tidak_lulus_pg || 0) %>">
-                        <% if (rIndex===0) { %>
-                            <td rowspan="<%= group.rows.length %>" class="text-center align-middle">
-                                <%= gIndex + 1 %>
-                            </td>
-                            <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
-                                <%= group.instansi %>
-                            </td>
-                            <% } %>
-                                <td class="align-middle text-center">
-                                    <% const ujian=(row.jenis_ujian || '' ).toUpperCase(); 
-                                    let bgColor='#f0f0f0' , textColor='#555' ; 
-                                    if(ujian.includes('UPKP') && !ujian.includes('REMED')) { bgColor='#fde2e1' ; textColor='#b71c1c' ; 
-                                    } else if(ujian.includes('UD TK. II') && !ujian.includes('REMED')) { bgColor='#fff5cc' ; textColor='#a67c00' ; 
-                                    } else if(ujian.includes('UD TK. I') && !ujian.includes('REMED')) { bgColor='#cedfce' ; textColor='#1b5e20' ; 
-                                    } else if (ujian.includes('REMED UPKP')) { bgColor='#e3f2fd' ; textColor='#0d47a1' ; 
-                                    } else if (ujian.includes('REMED UD TK. II')) { bgColor='#e0f7fa' ; textColor='#006064' ; 
-                                    } else if (ujian.includes('REMED UD TK. I')) {bgColor='#f3e5f5' ; textColor='#6a1b9a' ; } %>
-                                        <span class="badge"
-                                            style="background-color:<%= bgColor %>; color:<%= textColor %>; padding:6px 12px; border-radius:10px;">
-                                            <%= row.jenis_ujian || '—' %>
-                                        </span>
-                                </td>
-                                <td class="align-middle text-center">
-                                    <%= row.jumlah_peserta %>
-                                </td>
-                                <% if (rIndex===0) { %>
-                                    <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
-                                        <%= group.tanggal_pelaksanaan || '-' %>
+    <tr>
+        <td colspan="13" class="text-center">Belum ada data</td>
+    </tr>
+    <% } else { %>
+        <% groupedData.forEach((group, gIndex)=> { %>
+            <% group.rows.forEach((row, rIndex)=> { %>
+                <tr class="data-row" data-jenis="<%= (row.jenis_ujian || '').toString() %>"
+                    data-peserta="<%= Number(row.jumlah_peserta || 0) %>"
+                    data-lulus="<%= Number(row.jumlah_lulus_pg || 0) %>"
+                    data-tidak="<%= Number(row.jumlah_tidak_lulus_pg || 0) %>">
 
-                                    </td>
-                                    <!-- Status (badge warna) -->
-                                    <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
-                                        <span
-                                            class="badge badge-<%= group.status.toLowerCase().includes('selesai') ? 'success' : group.status.toLowerCase().includes('menunggu') ? 'warning' : 'info' %>">
-                                            <%= group.status %>
+                    <% if (rIndex===0) { %>
+                        <td rowspan="<%= group.rows.length %>" class="text-center align-middle">
+                            <%= gIndex + 1 %>
+                        </td>
+                        <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
+                            <%= group.instansi %>
+                        </td>
+                        <% } %>
+
+                            <!-- Jenis Ujian -->
+                            <td class="align-middle text-center">
+                                <% 
+                                const ujian=(row.jenis_ujian || '' ).toUpperCase(); 
+                                let bgColor='#f0f0f0' ,textColor='#555' ; 
+                                if (ujian.includes('UPKP') && !ujian.includes('REMED')) {bgColor='#fde2e1' ; textColor='#b71c1c' ; } 
+                                else if (ujian.includes('UD TK. II') &&!ujian.includes('REMED')) { bgColor='#fff5cc' ; textColor='#a67c00' ; } 
+                                else if(ujian.includes('UD TK. I') && !ujian.includes('REMED')) { bgColor='#cedfce' ; textColor='#1b5e20' ; } 
+                                else if (ujian.includes('REMED UPKP')) { bgColor='#e3f2fd' ;textColor='#0d47a1' ; } 
+                                else if (ujian.includes('REMED UD TK. II')) {bgColor='#e0f7fa' ; textColor='#006064' ; } 
+                                else if (ujian.includes('REMED UD TK.I')) { bgColor='#f3e5f5' ; textColor='#6a1b9a' ; } %>
+                                    <span class="badge"
+                                        style="background-color:<%= bgColor %>; color:<%= textColor %>; padding:6px 12px; border-radius:10px;">
+                                        <%= row.jenis_ujian || '—' %>
+                                    </span>
+                            </td>
+
+                            <td class="align-middle text-center">
+                                <%= row.jumlah_peserta %>
+                            </td>
+
+                            <% if (rIndex===0) { %>
+                                <!-- Tanggal Pelaksanaan -->
+                                <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
+                                    <%= group.tanggal_pelaksanaan || '-' %>
+                                </td>
+
+                                <!-- Status -->
+                                <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
+                                    <select class="form-control form-control-sm status-inline text-center fw-semibold"
+                                        data-group-id="<%= group.rows[0].group_id %>"
+                                        data-old="<%= group.status || '' %>" style="min-width: 160px;">
+                                        <option value="Persiapan Administrasi"
+                                            <%=group.status==="Persiapan Administrasi" ? "selected" : "" %>>
+                                            Persiapan Administrasi
+                                        </option>
+                                        <option value="Menunggu Pelaksanaan" <%=group.status==="Menunggu Pelaksanaan"
+                                            ? "selected" : "" %>>
+                                            Menunggu Pelaksanaan
+                                        </option>
+                                        <option value="Selesai" <%=group.status==="Selesai" ? "selected" : "" %>>
+                                            Selesai
+                                        </option>
+                                    </select>
+                                </td>
+
+                                <!-- Dokumen -->
+                                <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
+                                    <% if (group.dokumen && group.dokumen.startsWith('http')) { %>
+                                        <a href="<%= group.dokumen %>" target="_blank">Link Dokumen</a>
+                                        <% } else { %>
+                                            <%= group.dokumen || '-' %>
+                                                <% } %>
+                                </td>
+
+                                <!-- Petugas CAT -->
+                                <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
+                                    <% if (group.petugas_cat) { group.petugas_cat.split(',').forEach(p=> { %>
+                                        <span class="badge badge-primary">
+                                            <%= p.trim() %>
                                         </span>
+                                        <% }) } else { %> - <% } %>
+                                </td>
+                                <% } %>
+
+                                    <!-- Nilai -->
+                                    <td class="align-middle text-center">
+                                        <%= row.nilai_tertinggi_pg || '-' %>
                                     </td>
-                                    <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
-                                        <% if (group.dokumen && group.dokumen.startsWith('http')) { %>
-                                            <a href="<%= group.dokumen %>" target="_blank">Link Dokumen</a>
-                                            <% } else { %>
-                                                <%= group.dokumen || '-' %>
-                                                    <% } %>
+                                    <td class="align-middle text-center">
+                                        <%= row.nilai_terendah_pg || '-' %>
                                     </td>
-                                    <!-- Petugas CAT -->
-                                    <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
-                                        <% if (group.petugas_cat) { group.petugas_cat.split(',').forEach(p=> { %>
-                                            <span class="badge badge-primary">
-                                                <%= p.trim() %>
-                                            </span>
-                                            <% }) } else { %> - <% } %>
+                                    <td class="align-middle text-center">
+                                        <%= row.jumlah_lulus_pg || '-' %>
                                     </td>
-                                    
-                                    <% } %>
-                                        <td class="align-middle text-center">
-                                            <%= row.nilai_tertinggi_pg || '-' %>
-                                        </td>
-                                        <td class="align-middle text-center">
-                                            <%= row.nilai_terendah_pg || '-' %>
-                                        </td>
-                                        <td class="align-middle text-center">
-                                            <%= row.jumlah_lulus_pg || '-' %>
-                                        </td>
-                                        <td class="align-middle text-center">
-                                            <%= row.jumlah_tidak_lulus_pg || '-' %>
-                                        </td>
-                                        <% if (rIndex===0) { %>
-                                            <td class="text-center align-middle" rowspan="<%= group.rows.length %>">
-                                                <div class="d-flex flex-column justify-content-center align-items-center gap-2">
-                                                    <!-- 🔹 Baris pertama: 3 tombol kecil -->
-                                                    <div class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
-                                                        <a class="btn btn-sm btn-info" href="/inspect/<%= group.rows.map(r => r.id).join(',') %>"
-                                                            title="Inspect">
-                                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                    <td class="align-middle text-center">
+                                        <%= row.jumlah_tidak_lulus_pg || '-' %>
+                                    </td>
+
+                                    <% if (rIndex===0) { %>
+                                        <!-- Tombol Aksi -->
+                                        <td class="text-center align-middle" rowspan="<%= group.rows.length %>">
+                                            <div
+                                                class="d-flex flex-column justify-content-center align-items-center gap-2">
+                                                <!-- Baris pertama: tombol kecil -->
+                                                <div
+                                                    class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
+                                                    <a class="btn btn-sm btn-info"
+                                                        href="/inspect/<%= group.rows.map(r => r.id).join(',') %>"
+                                                        title="Inspect">
+                                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                                    </a>
+
+                                                    <% function rowByType(arr, t) { if (!Array.isArray(arr)) return {};
+                                                        for (var i=0; i < arr.length; i++) { if (arr[i] &&
+                                                        arr[i].jenis_ujian===t) return arr[i]; } return {}; } var
+                                                        upkp=rowByType(group.rows, 'UPKP' ); var
+                                                        remedUpkp=rowByType(group.rows, 'REMED UPKP' ); var
+                                                        ud1=rowByType(group.rows, 'UD TK. I' ); var
+                                                        ud2=rowByType(group.rows, 'UD TK. II' ); var
+                                                        rud1=rowByType(group.rows, 'REMED UD TK. I' ); var
+                                                        rud2=rowByType(group.rows, 'REMED UD TK. II' ); let tgl='' ; if
+                                                        (group.tanggal_pelaksanaan) { try { const d=new
+                                                        Date(group.tanggal_pelaksanaan);
+                                                        tgl=d.toISOString().split('T')[0]; } catch (e) { tgl='' ; } }
+                                                        function v(x) { return (x===null || x===undefined) ? '' : x; }
+                                                        %>
+
+                                                        <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit"
+                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
+                                                            data-tanggal="<%= tgl %>"
+                                                            data-instansi="<%= v(group.instansi) %>"
+                                                            data-jumlah-upkp="<%= (group.rows.find(r => r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
+                                                            data-jumlah-ud1="<%= (group.rows.find(r => r.jenis_ujian === 'UD TK. I') || {}).jumlah_peserta || '' %>"
+                                                            data-jumlah-ud2="<%= (group.rows.find(r => r.jenis_ujian === 'UD TK. II') || {}).jumlah_peserta || '' %>"
+                                                            data-jumlah-remed-upkp="<%= (group.rows.find(r => r.jenis_ujian === 'REMED UPKP') || {}).jumlah_peserta || '' %>"
+                                                            data-jumlah-remed-ud1="<%= (group.rows.find(r => r.jenis_ujian === 'REMED UD TK. I') || {}).jumlah_peserta || '' %>"
+                                                            data-jumlah-remed-ud2="<%= (group.rows.find(r => r.jenis_ujian === 'REMED UD TK. II') || {}).jumlah_peserta || '' %>"
+                                                            data-status="<%= v(group.status) %>"
+                                                            data-dokumen="<%= v(group.dokumen) %>"
+                                                            data-petugas="<%= v(group.petugas_cat) %>"
+                                                            data-nilai-tertinggi="<%= v(upkp.nilai_tertinggi_pg) %>"
+                                                            data-nilai-terendah="<%= v(upkp.nilai_terendah_pg) %>"
+                                                            data-nilai-tertinggi-remed="<%= v(remedUpkp.nilai_tertinggi_pg) %>"
+                                                            data-nilai-terendah-remed="<%= v(remedUpkp.nilai_terendah_pg) %>"
+                                                            data-lulus-ud1="<%= v(ud1.jumlah_lulus_pg) %>"
+                                                            data-tidak-lulus-ud1="<%= v(ud1.jumlah_tidak_lulus_pg) %>"
+                                                            data-lulus-ud2="<%= v(ud2.jumlah_lulus_pg) %>"
+                                                            data-tidak-lulus-ud2="<%= v(ud2.jumlah_tidak_lulus_pg) %>"
+                                                            data-lulus-remed-ud1="<%= v(rud1.jumlah_lulus_pg) %>"
+                                                            data-tidak-lulus-remed-ud1="<%= v(rud1.jumlah_tidak_lulus_pg) %>"
+                                                            data-lulus-remed-ud2="<%= v(rud2.jumlah_lulus_pg) %>"
+                                                            data-tidak-lulus-remed-ud2="<%= v(rud2.jumlah_tidak_lulus_pg) %>"
+                                                            data-group-id="<%= group.rows[0].group_id %>">
+                                                            <i class="fas fa-edit"></i>
                                                         </a>
-                                        
-                                                        <% function rowByType(arr, t) { if (!Array.isArray(arr)) return {}; for (var i=0; i < arr.length; i++) {
-                                                            if (arr[i] && arr[i].jenis_ujian===t) return arr[i]; } return {}; } var
-                                                            upkp=rowByType(group.rows, 'UPKP' ); var remedUpkp=rowByType(group.rows, 'REMED UPKP' ); var
-                                                            ud1=rowByType(group.rows, 'UD TK. I' ); var ud2=rowByType(group.rows, 'UD TK. II' ); var
-                                                            rud1=rowByType(group.rows, 'REMED UD TK. I' ); var rud2=rowByType(group.rows, 'REMED UD TK. II' );
-                                                            let tgl='' ; if (group.tanggal_pelaksanaan) { try { const d=new Date(group.tanggal_pelaksanaan);
-                                                            tgl=d.toISOString().split('T')[0]; } catch (e) { tgl='' ; } } function v(x){ return (x===null ||
-                                                            x===undefined) ? '' : x; } %>
-                                        
-                                                            <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit"
-                                                                data-id="<%= group.rows.map(r => r.id).join(',') %>" data-tanggal="<%= tgl %>"
-                                                                data-instansi="<%= v(group.instansi) %>"
-                                                                data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
-                                                                data-jumlah-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. I') || {}).jumlah_peserta || '' %>"
-                                                                data-jumlah-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. II') || {}).jumlah_peserta || '' %>"
-                                                                data-jumlah-remed-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UPKP') || {}).jumlah_peserta || '' %>"
-                                                                data-jumlah-remed-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. I') || {}).jumlah_peserta || '' %>"
-                                                                data-jumlah-remed-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. II') || {}).jumlah_peserta || '' %>"
-                                                                data-status="<%= v(group.status) %>" data-dokumen="<%= v(group.dokumen) %>"
-                                                                data-petugas="<%= v(group.petugas_cat) %>"
-                                                                data-nilai-tertinggi="<%= v(upkp.nilai_tertinggi_pg) %>"
-                                                                data-nilai-terendah="<%= v(upkp.nilai_terendah_pg) %>"
-                                                                data-nilai-tertinggi-remed="<%= v(remedUpkp.nilai_tertinggi_pg) %>"
-                                                                data-nilai-terendah-remed="<%= v(remedUpkp.nilai_terendah_pg) %>"
-                                                                data-lulus-ud1="<%= v(ud1.jumlah_lulus_pg) %>"
-                                                                data-tidak-lulus-ud1="<%= v(ud1.jumlah_tidak_lulus_pg) %>"
-                                                                data-lulus-ud2="<%= v(ud2.jumlah_lulus_pg) %>"
-                                                                data-tidak-lulus-ud2="<%= v(ud2.jumlah_tidak_lulus_pg) %>"
-                                                                data-lulus-remed-ud1="<%= v(rud1.jumlah_lulus_pg) %>"
-                                                                data-tidak-lulus-remed-ud1="<%= v(rud1.jumlah_tidak_lulus_pg) %>"
-                                                                data-lulus-remed-ud2="<%= v(rud2.jumlah_lulus_pg) %>"
-                                                                data-group-id="<%= group.rows[0].group_id %>"
-                                                                data-tidak-lulus-remed-ud2="<%= v(rud2.jumlah_tidak_lulus_pg) %>"> <i class="fas fa-edit"></i>
-                                                            </a>
-                                        
-                                        
-                                                            <button type="button" class="btn btn-sm btn-danger btn-delete"
-                                                                data-id="<%= group.rows.map(r => r.id).join(',') %>" title="Hapus">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                    </div>
-                                        
-                                                    <button type="button" class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
-                                                        data-group-id="<%= group.rows[0].group_id %>">
-                                                        Input Nilai
-                                                    </button>
-                                        
-                                                </div>
-                                            </td>
-                                            <% } %>
-                    </tr>
-                    
-                    <% }) %>
-                        <% }) %>
-                            <% } %>
 
+                                                        <button type="button" class="btn btn-sm btn-danger btn-delete"
+                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
+                                                            title="Hapus">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                </div>
+
+                                                <button type="button"
+                                                    class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
+                                                    data-group-id="<%= group.rows[0].group_id %>">
+                                                    Input Nilai
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <% } %>
+                </tr>
+                <% }) %>
+                    <% }) %>
+                        <% } %>
