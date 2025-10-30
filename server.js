@@ -1380,3 +1380,63 @@ app.get("/akun/logs", requireLogin, requireRole("admin"), async (req, res) => {
     res.status(500).json({ ok: false, message: "Gagal memuat log login." });
   }
 });
+
+// 📄 Riwayat login (untuk modal di /akun)
+app.get("/akun/login-log", requireRole("admin"), async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    const success = req.query.success; // '1' | '0' | '' (semua)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const where = [];
+    const params = [];
+
+    if (q) {
+      where.push(`(username LIKE ? OR ip LIKE ? OR reason LIKE ? OR user_agent LIKE ?)`);
+      const like = `%${q}%`;
+      params.push(like, like, like, like);
+    }
+
+    if (success === "1" || success === "0") {
+      where.push(`success = ?`);
+      params.push(success === "1" ? 1 : 0);
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    // hitung total
+    const [countRows] = await db
+      .promise()
+      .query(`SELECT COUNT(*) AS jml FROM login_log ${whereSql}`, params);
+    const total = countRows[0].jml;
+
+    // ambil data
+    const [rows] = await db
+      .promise()
+      .query(
+        `
+        SELECT id, user_id, username, ip, user_agent, success, reason,
+               DATE_FORMAT(created_at, '%m/%d/%Y, %r') AS created_at_fmt
+        FROM login_log
+        ${whereSql}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
+        `,
+        [...params, limit, offset]
+      );
+
+    res.json({
+      ok: true,
+      data: rows,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    console.error("❌ /akun/login-log error:", err);
+    res.status(500).json({ ok: false, message: "Gagal ambil data log." });
+  }
+});

@@ -409,11 +409,6 @@
                 <option value="0">Gagal</option>
               </select>
             </div>
-            <div class="col-md-2">
-              <button type="button" class="btn btn-primary btn-block" id="btnFilterLog">
-                <i class="fas fa-search mr-1"></i>Filter
-              </button>
-            </div>
           </form>
 
           <div class="table-responsive">
@@ -902,6 +897,129 @@
       });
     })();
   </script>
+
+  <script>
+    (function () {
+      const tbody = document.getElementById('tbodyLoginLog');
+      const info = document.getElementById('logInfo');
+      const btnPrev = document.getElementById('prevLog');
+      const btnNext = document.getElementById('nextLog');
+      const inpQ = document.getElementById('logQ');
+      const selSuccess = document.getElementById('logSuccess');
+
+      let currentPage = 1;
+      const limit = 10;
+      let totalPages = 1;
+
+      // --- debounce supaya gak spam fetch pas ngetik ---
+      let typingTimer = null;
+      const DEBOUNCE_MS = 350;
+      function debounceLoad(page = 1) {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => loadLogs(page), DEBOUNCE_MS);
+      }
+
+      async function loadLogs(page = 1) {
+        const q = (inpQ.value || '').trim();
+        const success = selSuccess.value; // '' | '1' | '0'
+
+        const params = new URLSearchParams({
+          page: page,
+          limit: limit
+        });
+        if (q) params.append('q', q);
+        if (success !== '') params.append('success', success);
+
+        try {
+          const res = await fetch('/akun/login-log?' + params.toString(), {
+            headers: { 'Accept': 'application/json' }
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.message || 'Gagal load data');
+
+          currentPage = data.page;
+          totalPages = data.totalPages;
+
+          // bersihkan tbody
+          tbody.innerHTML = '';
+
+          if (!data.data.length) {
+            tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="text-center text-muted">Tidak ada log.</td>
+            </tr>
+          `;
+          } else {
+            data.data.forEach((row) => {
+              const tr = document.createElement('tr');
+
+              const badge = row.success
+                ? '<span class="badge badge-success">Sukses</span>'
+                : '<span class="badge badge-danger">Gagal</span>';
+
+              tr.innerHTML = `
+              <td style="white-space:nowrap;">${row.created_at_fmt || ''}</td>
+              <td>${row.username || '-'}</td>
+              <td>${row.ip || '-'}</td>
+              <td style="max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${row.user_agent || ''}">
+                ${row.user_agent || '-'}
+              </td>
+              <td class="text-center">${badge}</td>
+              <td>${row.reason || '-'}</td>
+            `;
+              tbody.appendChild(tr);
+            });
+          }
+
+          // info bawah
+          const start = (data.page - 1) * data.limit + 1;
+          const end = Math.min(data.page * data.limit, data.total);
+          info.textContent = `Menampilkan ${start}-${end} dari ${data.total} log.`;
+
+          // kontrol tombol
+          btnPrev.disabled = (currentPage <= 1);
+          btnNext.disabled = (currentPage >= totalPages);
+
+        } catch (err) {
+          console.error(err);
+          tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-danger">Gagal memuat data.</td>
+          </tr>
+        `;
+          info.textContent = '';
+        }
+      }
+
+      // 🔎 ngetik → langsung cari (dengan debounce)
+      inpQ.addEventListener('input', function () {
+        debounceLoad(1);
+      });
+
+      // 🟢 pilih dropdown → langsung cari
+      selSuccess.addEventListener('change', function () {
+        loadLogs(1);
+      });
+
+      // prev / next
+      btnPrev.addEventListener('click', function () {
+        if (currentPage > 1) {
+          loadLogs(currentPage - 1);
+        }
+      });
+      btnNext.addEventListener('click', function () {
+        if (currentPage < totalPages) {
+          loadLogs(currentPage + 1);
+        }
+      });
+
+      // pas modal dibuka → load halaman 1
+      $('#modalLogLogin').on('shown.bs.modal', function () {
+        loadLogs(1);
+      });
+    })();
+  </script>
+
 
 </body>
 
