@@ -176,7 +176,7 @@
                           <td><code><%= u.username %></code></td>
 
                           <!-- Role -->
-                          <td>
+                          <td class="text-center">
                             <span
                               class="badge <%= u.role === 'admin' ? 'badge-danger' : (u.role === 'petugas' ? 'badge-info' : 'badge-secondary') %>">
                               <%= (u.role || '' ).toUpperCase() %>
@@ -184,7 +184,7 @@
                           </td>
 
                           <!-- Status -->
-                          <td>
+                          <td class="text-center">
                             <% if (u.status==='aktif' ) { %>
                               <span class="badge badge-success">Aktif</span>
                               <% } else { %>
@@ -192,8 +192,8 @@
                                 <% } %>
                           </td>
 
-                          <!-- Aksi: Edit / Toggle Aktif / Reset Password / Hapus -->
-                          <td class="text-nowrap">
+                          <!-- Aksi -->
+                          <td class="text-nowrap text-center">
                             <!-- Edit (buka modal Edit Akun) -->
                             <button type="button" class="btn btn-sm btn-warning mr-1 btnEditAkun" title="Edit"
                               data-id="<%= u.id %>" data-nama-depan="<%= u.nama_depan %>"
@@ -211,15 +211,6 @@
                                 class="btn btn-sm <%= u.status === 'aktif' ? 'btn-outline-secondary' : 'btn-outline-success' %> mr-1"
                                 title="Toggle Aktif">
                                 <i class="fas <%= u.status === 'aktif' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
-                              </button>
-                            </form>
-
-
-                            <!-- Reset Password (akan set ke default di backend) -->
-                            <form action="/akun/reset-password/<%= u.id %>" method="POST" class="d-inline"
-                              onsubmit="return confirm('Reset password untuk <%= u.username %>?');">
-                              <button type="submit" class="btn btn-sm btn-outline-primary mr-1" title="Reset Password">
-                                <i class="fas fa-key"></i>
                               </button>
                             </form>
 
@@ -510,7 +501,6 @@
           status: (document.getElementById('status').value || 'AKTIF').toUpperCase()
         };
 
-        // ✅ Validasi yang benar
         if (!payload.nama_depan) return showErr('nama_depan', 'Nama depan wajib diisi');
         if (!payload.username) return showErr('username', 'Username wajib diisi');
         if (!payload.password || payload.password.length < 6)
@@ -526,7 +516,6 @@
             body: JSON.stringify(payload)
           });
 
-          // Coba baca sebagai text lalu parse ke JSON agar tidak meledak
           const raw = await res.text();
           let data = {};
           try { data = raw ? JSON.parse(raw) : {}; } catch { data = {}; }
@@ -537,7 +526,6 @@
             } else if (data.message) {
               showErr('username', data.message);
             } else {
-              // tampilkan status dari server bila ada (mis. 401/403/500)
               alert(`Gagal menyimpan akun. Status: ${res.status}`);
             }
             return;
@@ -546,10 +534,15 @@
           // === SUKSES ===
           $('#modalTambahAkun').modal('hide');
 
-          // kalau mau simple reload aja
-          // window.location.reload(); return;
+          await Swal.fire({
+            icon: 'success',
+            title: 'Akun berhasil ditambahkan!',
+            text: `${payload.username} (${payload.role}) telah ditambahkan ke daftar akun.`,
+            showConfirmButton: false,
+            timer: 1500
+          });
 
-          if (!tbody) { window.location.reload(); return; }
+          if (!tbody) { location.reload(); return; }
 
           const roleBadge = (r) => {
             const m = { ADMIN: 'danger', PETUGAS: 'info', VIEWER: 'secondary' };
@@ -562,40 +555,113 @@
 
           const nomor = (tbody.querySelectorAll('tr').length + 1);
           const namaLengkap = `${payload.nama_depan}${payload.nama_belakang ? ' ' + payload.nama_belakang : ''}`.trim();
+          const newId = (data && data.akun && data.akun.id) ? data.akun.id : '';
 
           const row = document.createElement('tr');
           row.setAttribute('data-role', payload.role.toLowerCase());
           row.setAttribute('data-status', payload.status.toLowerCase());
           row.setAttribute('data-keyword', `${namaLengkap} ${payload.username}`.toLowerCase());
 
-          // Lengkapi 6 kolom sesuai header
           row.innerHTML = `
-  <td class="text-center">${nomor}</td>
-  <td>${namaLengkap}</td>
-  <td><code>${payload.username}</code></td>
-  <td class="text-center">${roleBadge(payload.role)}</td>
-  <td class="text-center">${statusBadge(payload.status)}</td>
-  <td class="text-nowrap text-center">
-    <button class="btn btn-sm btn-warning mr-1" title="Edit"><i class="fas fa-edit"></i></button>
-    <button class="btn btn-sm btn-outline-secondary mr-1" title="Toggle Aktif"><i class="fas fa-user-slash"></i></button>
-    <button class="btn btn-sm btn-outline-primary mr-1" title="Reset Password"><i class="fas fa-key"></i></button>
-    <button class="btn btn-sm btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
-  </td>
-`;
+        <td class="text-center">${nomor}</td>
+        <td>${namaLengkap}</td>
+        <td><code>${payload.username}</code></td>
+        <td class="text-center">${roleBadge(payload.role)}</td>
+        <td class="text-center">${statusBadge(payload.status)}</td>
+        <td class="text-nowrap text-center">
+          <button type="button"
+            class="btn btn-sm btn-warning mr-1 btnEditAkun"
+            title="Edit"
+            data-id="${newId}"
+            data-nama-depan="${payload.nama_depan}"
+            data-nama-belakang="${payload.nama_belakang}"
+            data-username="${payload.username}"
+            data-role="${payload.role}"
+            data-status="${payload.status}">
+            <i class="fas fa-edit"></i>
+          </button>
+
+          <form action="/akun/toggle/${newId}" method="POST" class="d-inline form-toggle-akun">
+            <button type="submit"
+              class="btn btn-sm ${payload.status === 'AKTIF' ? 'btn-outline-secondary' : 'btn-outline-success'} mr-1"
+              title="Toggle Aktif">
+              <i class="fas ${payload.status === 'AKTIF' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+            </button>
+          </form>
+
+          <form action="/akun/delete/${newId}" method="POST" class="d-inline form-hapus-akun">
+            <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </td>
+      `;
           tbody.appendChild(row);
 
         } catch (err) {
           console.error(err);
           alert('Terjadi kesalahan jaringan/server.');
         } finally {
-          // apapun yang terjadi, tombol dibalikin normal
           btn.disabled = false;
           btn.textContent = 'Simpan';
         }
-
       });
+
+      // 🔥 EVENT DELEGATION agar baris baru juga aktif
+      document.addEventListener('submit', async function (e) {
+        const form = e.target;
+        // toggle status
+        if (form.classList.contains('form-toggle-akun')) {
+          e.preventDefault();
+          try {
+            const res = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json' } });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.message);
+            const row = form.closest('tr');
+            const badge = row.querySelector('td:nth-child(5) span');
+            const btn = form.querySelector('button i');
+            if (badge) {
+              badge.textContent = data.status === 'AKTIF' ? 'Aktif' : 'Nonaktif';
+              badge.className = `badge badge-${data.status === 'AKTIF' ? 'success' : 'secondary'}`;
+            }
+            btn.className = `fas ${data.status === 'AKTIF' ? 'fa-user-slash' : 'fa-user-check'}`;
+            Swal.fire({ icon: 'success', title: 'Status diubah', timer: 1200, showConfirmButton: false });
+          } catch (err) {
+            Swal.fire('Gagal', err.message || 'Gagal mengubah status.', 'error');
+          }
+        }
+
+        // hapus akun
+        if (form.classList.contains('form-hapus-akun')) {
+          e.preventDefault();
+          const row = form.closest('tr');
+          const username = row.querySelector('code')?.textContent || '';
+          const confirm = await Swal.fire({
+            title: 'Hapus akun?',
+            html: `Akun <b>${username}</b> akan dihapus.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal'
+          });
+          if (!confirm.isConfirmed) return;
+
+          try {
+            const res = await fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json' } });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.message);
+            row.remove();
+            Swal.fire({ icon: 'success', title: 'Akun terhapus', timer: 1200, showConfirmButton: false });
+          } catch (err) {
+            Swal.fire('Gagal', err.message || 'Tidak dapat menghapus akun.', 'error');
+          }
+        }
+      });
+
     })();
   </script>
+
+
   <script>
     $(document).on('click', '.btnEditAkun', function () {
       $('#edit_id').val($(this).data('id'));
