@@ -1141,11 +1141,24 @@ app.post('/update-status/:groupId', async (req, res) => {
       `
       SELECT id, jenis_ujian, jumlah_peserta,
              nilai_tertinggi_pg, nilai_terendah_pg,
-             jumlah_lulus_pg, jumlah_tidak_lulus_pg
+             jumlah_lulus_pg, jumlah_tidak_lulus_pg,
+             tanggal_pelaksanaan, dokumen, petugas_cat
       FROM tabel
       WHERE group_id = ?
-      AND jumlah_peserta IS NOT NULL
-      AND jumlah_peserta > 0
+        AND jumlah_peserta IS NOT NULL
+        AND jumlah_peserta > 0
+      `,
+      [groupId]
+    );
+
+    // ambil 1 baris apa pun dari grup ini (buat cek field umum),
+    // jaga-jaga kalau semua peserta = 0 (jadi nggak keambil di query di atas)
+    const [oneRowAll] = await db.promise().query(
+      `
+      SELECT tanggal_pelaksanaan, dokumen, petugas_cat
+      FROM tabel
+      WHERE group_id = ?
+      LIMIT 1
       `,
       [groupId]
     );
@@ -1155,6 +1168,7 @@ app.post('/update-status/:groupId', async (req, res) => {
 
     const missing = []; // kumpulkan pesan kekurangan per jenis
 
+    // --- VALIDASI PER-JENIS (kode lama kamu) ---
     for (const r of rows) {
       const jenis = (r.jenis_ujian || '').toUpperCase();
 
@@ -1175,6 +1189,22 @@ app.post('/update-status/:groupId', async (req, res) => {
       // jenis lain (kalau ada) diabaikan
     }
 
+    // --- VALIDASI FIELD UMUM (tgl, dokumen, petugas) ---
+    if (oneRowAll && oneRowAll.length > 0) {
+      const base = oneRowAll[0];
+
+      const generalMissing = [];
+      if (!filled(base.tanggal_pelaksanaan)) generalMissing.push('Tanggal Pelaksanaan');
+      if (!filled(base.dokumen)) generalMissing.push('Dokumen (Link Google Drive)');
+      if (!filled(base.petugas_cat)) generalMissing.push('Petugas CAT');
+
+      if (generalMissing.length > 0) {
+        // kita join ke array missing lama biar muncul di popup yg sama
+        missing.push(`• Lengkapi dulu: <b>${generalMissing.join(', ')}</b>`);
+      }
+    }
+
+    // kalau ada yang kurang -> kirim pesan error seperti biasa
     if (missing.length > 0) {
       return res.status(400).json({
         status: 'error',
@@ -1192,6 +1222,7 @@ app.post('/update-status/:groupId', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'Gagal memperbarui status.' });
   }
 });
+
 
 app.post('/update-status', async (req, res) => {
   try {
