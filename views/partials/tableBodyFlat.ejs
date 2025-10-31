@@ -100,47 +100,47 @@
                                     <% if (rIndex===0) { %>
                                         <!-- Tombol Aksi -->
                                         <td class="text-center align-middle" rowspan="<%= group.rows.length %>">
-                                            <div
-                                                class="d-flex flex-column justify-content-center align-items-center gap-2">
+                                            <div class="d-flex flex-column justify-content-center align-items-center gap-2">
                                                 <!-- Baris pertama: tombol kecil -->
-                                                <div
-                                                    class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
-                                                    <a class="btn btn-sm btn-info"
-                                                        href="/inspect/<%= group.rows.map(r => r.id).join(',') %>"
+                                                <div class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
+                                    
+                                                    <!-- Tombol Inspect selalu aktif untuk semua -->
+                                                    <a class="btn btn-sm btn-info" href="/inspect/<%= group.rows.map(r => r.id).join(',') %>"
                                                         title="Inspect">
                                                         <i class="fa-solid fa-magnifying-glass"></i>
                                                     </a>
-
-                                                    <% function rowByType(arr, t) { 
-                                                        if (!Array.isArray(arr)) return {};
-                                                        for (var i=0; i < arr.length; i++) { if (arr[i] && arr[i].jenis_ujian===t) return arr[i]; } return {}; } 
+                                    
+                                                    <% 
+                                                        function rowByType(arr, t) { 
+                                                            if (!Array.isArray(arr)) return {}; 
+                                                            for (var i=0; i < arr.length; i++) {
+                                                                if (arr[i] && arr[i].jenis_ujian===t) return arr[i]; } 
+                                                            return {}; } 
                                                         var upkp=rowByType(group.rows, 'UPKP' ); 
                                                         var remedUpkp=rowByType(group.rows, 'REMED UPKP' ); 
                                                         var ud1=rowByType(group.rows, 'UD TK. I' ); 
                                                         var ud2=rowByType(group.rows, 'UD TK. II' ); 
                                                         var rud1=rowByType(group.rows, 'REMED UD TK. I' ); 
-                                                        var rud2=rowByType(group.rows, 'REMED UD TK. II' ); 
+                                                        var rud2=rowByType(group.rows, 'REMED UD TK. II' );
                                                         let tgl='' ; if (group.tanggal_pelaksanaan) { 
                                                             try { 
                                                                 const d=new Date(group.tanggal_pelaksanaan);
-                                                                tgl=d.toISOString().split('T')[0]; } catch (e) { tgl='' ; } }
-                                                                function v(x) { return (x===null || x===undefined) ? '' : x; }
-                                                        %>
-
-                                                        <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit"
-                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
-                                                            data-tanggal="<%= tgl %>"
-                                                            data-instansi-id="<%= group.id_instansi %>"
-                                                            data-instansi-nama="<%= v(group.instansi) %>"
-                                                               
+                                                                tgl=d.toISOString().split('T')[0]; } 
+                                                                catch (e) { tgl='' ; } } 
+                                                                function v(x) { return (x===null || x===undefined) ? '' : x; } 
+                                                                const isAdmin=role==='admin' ; %>
+                                    
+                                                        <!-- Tombol Edit -->
+                                                        <a href="#" class="btn btn-sm btn-primary btn-edit <%= !isAdmin ? 'disabled' : '' %>" title="Edit"
+                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>" data-tanggal="<%= tgl %>"
+                                                            data-instansi-id="<%= group.id_instansi %>" data-instansi-nama="<%= v(group.instansi) %>"
                                                             data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
                                                             data-jumlah-ud1="<%= (group.rows.find(r=>r.jenis_ujian === 'UD TK. I') ||{}).jumlah_peserta || '' %>"
                                                             data-jumlah-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. II') ||{}).jumlah_peserta || '' %>"
                                                             data-jumlah-remed-upkp="<%=(group.rows.find(r=> r.jenis_ujian ==='REMED UPKP') || {}).jumlah_peserta || '' %>"
                                                             data-jumlah-remed-ud1="<%= (group.rows.find(r=> r.jenis_ujian=== 'REMED UD TK. I') || {}).jumlah_peserta || '' %>"
                                                             data-jumlah-remed-ud2="<%=(group.rows.find(r=> r.jenis_ujian === 'REMED UD TK. II') || {}).jumlah_peserta || '' %>"
-                                                            data-status="<%= v(group.status) %>"
-                                                            data-dokumen="<%=v(group.dokumen) %>"
+                                                            data-status="<%= v(group.status) %>" data-dokumen="<%=v(group.dokumen) %>"
                                                             data-petugas="<%= (group.petugas_cat)%>"
                                                             data-nilai-tertinggi="<%= v(upkp.nilai_tertinggi_pg) %>"
                                                             data-nilai-terendah="<%= v(upkp.nilai_terendah_pg) %>"
@@ -154,25 +154,30 @@
                                                             data-tidak-lulus-remed-ud1="<%= v(rud1.jumlah_tidak_lulus_pg) %>"
                                                             data-lulus-remed-ud2="<%= v(rud2.jumlah_lulus_pg) %>"
                                                             data-tidak-lulus-remed-ud2=" <%= v(rud2.jumlah_tidak_lulus_pg)%> "
-                                                            data-group-id="<%= group.rows[0].group_id%> "> 
+                                                            data-group-id="<%= group.rows[0].group_id%>"
+                                                            style="<%= !isAdmin ? 'pointer-events:none;opacity:0.6;' : '' %>">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-
-                                                        <button type="button" class="btn btn-sm btn-danger btn-delete"
-                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
-                                                            title="Hapus">
+                                    
+                                                        <!-- Tombol Delete -->
+                                                        <button type="button" class="btn btn-sm btn-danger btn-delete <%= !isAdmin ? 'disabled' : '' %>"
+                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>" title="Hapus"
+                                                            style="<%= !isAdmin ? 'pointer-events:none;opacity:0.6;' : '' %>">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                 </div>
-
+                                    
+                                                <!-- Tombol Input Nilai -->
                                                 <button type="button"
-                                                    class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
-                                                    data-group-id="<%= group.rows[0].group_id %>">
+                                                    class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai <%= !isAdmin ? 'disabled' : '' %>"
+                                                    data-group-id="<%= group.rows[0].group_id %>"
+                                                    style="<%= !isAdmin ? 'pointer-events:none;opacity:0.6;' : '' %>">
                                                     Input Nilai
                                                 </button>
                                             </div>
                                         </td>
                                         <% } %>
+
                 </tr>
                 <% }) %>
                     <% }) %>
