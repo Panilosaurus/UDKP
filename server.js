@@ -557,7 +557,13 @@ app.get("/inspect/:ids", (req, res) => {
   const ids = req.params.ids.split(",").map((id) => Number(id.trim()));
   const placeholders = ids.map(() => "?").join(",");
 
-  const sql = `SELECT * FROM tabel WHERE id IN (${placeholders})`;
+  const sql = `
+    SELECT t.*, i.nama_instansi AS instansi
+    FROM tabel t
+    LEFT JOIN instansi i ON t.id_instansi = i.id_instansi
+    WHERE t.id IN (${placeholders})
+    ORDER BY i.nama_instansi ASC, t.tanggal_pelaksanaan DESC
+  `;
 
   db.query(sql, ids, (err, rows) => {
     if (err) {
@@ -570,23 +576,32 @@ app.get("/inspect/:ids", (req, res) => {
     }
 
     const groupInfo = {
+      // sekarang sudah pasti ada
       instansi: rows[0].instansi,
       tanggal_pelaksanaan: rows[0].tanggal_pelaksanaan,
       status: rows[0].status,
       dokumen: rows[0].dokumen,
       petugas_cat: rows[0].petugas_cat,
+
+      // kumpulan per-baris, tetap sama seperti punyamu
       jenis_ujian: rows.map((r) => r.jenis_ujian),
       jumlah_peserta: rows.map((r) => r.jumlah_peserta),
       nilai_tertinggi_pg: rows.map((r) => r.nilai_tertinggi_pg),
       nilai_terendah_pg: rows.map((r) => r.nilai_terendah_pg),
       jumlah_lulus_pg: rows.map((r) => r.jumlah_lulus_pg),
       jumlah_tidak_lulus_pg: rows.map((r) => r.jumlah_tidak_lulus_pg),
+
       groupData: rows,
     };
 
-    res.render("inspect", { data: groupInfo });
+    res.render("inspect", {
+      data: groupInfo,
+      nama: req.session.user ? req.session.user.nama : "Guest",
+      rows, // kalau nanti butuh looping di EJS
+    });
   });
 });
+
 
 app.get("/search", async (req, res) => {
   try {
