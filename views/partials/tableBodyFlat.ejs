@@ -83,13 +83,18 @@
                                 </td>
                                 <% } %>
 
-                                    <!-- Nilai -->
-                                    <td class="align-middle text-center">
-                                        <%= row.nilai_tertinggi_pg || '-' %>
+                                    <!-- Nilai Tertinggi (UPKP) -->
+                                    <td class="align-middle text-center col-nilai-tertinggi"
+                                        data-nilai-tertinggi="<%= row.nilai_tertinggi_pg || '' %>">
+                                        <%= row.nilai_tertinggi_pg || '—' %>
                                     </td>
-                                    <td class="align-middle text-center">
-                                        <%= row.nilai_terendah_pg || '-' %>
+
+                                    <!-- Nilai Terendah (UPKP) -->
+                                    <td class="align-middle text-center col-nilai-terendah"
+                                        data-nilai-terendah="<%= row.nilai_terendah_pg || '' %>">
+                                        <%= row.nilai_terendah_pg || '—' %>
                                     </td>
+
                                     <td class="align-middle text-center">
                                         <%= row.jumlah_lulus_pg || '-' %>
                                     </td>
@@ -123,8 +128,8 @@
                                                         let tgl='' ; if (group.tanggal_pelaksanaan) { 
                                                             try { 
                                                                 const d=new Date(group.tanggal_pelaksanaan);
-                                                                tgl=d.toISOString().split('T')[0]; } catch (e) { tgl='' ; } }
-                                                                function v(x) { return (x===null || x===undefined) ? '' : x; }
+                                                        tgl=d.toISOString().split('T')[0]; } catch (e) { tgl='' ; } }
+                                                        function v(x) { return (x===null || x===undefined) ? '' : x; }
                                                         %>
 
                                                         <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit"
