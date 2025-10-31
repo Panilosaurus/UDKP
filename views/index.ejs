@@ -281,6 +281,35 @@
                                     </div>
                                 </div>
 
+                                <!-- Kartu Status Pelaksanaan (3 terpisah) -->
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm border-left-success">
+                                        <div class="card-body py-3 text-center">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Selesai</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="cardSelesai">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm border-left-warning">
+                                        <div class="card-body py-3 text-center">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Menunggu Pelaksanaan</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="cardMenunggu">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm border-left-info">
+                                        <div class="card-body py-3 text-center">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Persiapan Administrasi</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="cardPersiapan">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
 
 
@@ -473,28 +502,24 @@
 
                                                                                 <td class="align-middle text-center"
                                                                                     rowspan="<%= group.rows.length %>">
-                                                                                    <select
-                                                                                        class="form-control form-control-sm status-inline d-inline-block w-auto"
+                                                                                    <select 
+                                                                                        class="form-control form-control-sm status-inline d-inline-block w-auto" 
                                                                                         data-group-id="<%= group.group_id %>"
                                                                                         data-old="<%= group.status || '' %>"
-                                                                                        onchange="handleStatusChange(event)">
-                                                                                        <option value="">-- Pilih --
+                                                                                        onchange="handleStatusChange(event)" 
+                                                                                        <%=group.status==='Selesai' ? 'disabled style="background-color:#e9ecef;cursor:not-allowed;" title=\' Status sudah selesai dan tidak dapat diubah\'' : '' %>>
+                                                                                        <option value="">-- Pilih --</option>
+                                                                                        <option value="Persiapan Administrasi" <%=group.status==='Persiapan Administrasi' ? 'selected' : '' %>>
+                                                                                            Persiapan Administrasi
                                                                                         </option>
-                                                                                        <option
-                                                                                            value="Persiapan Administrasi"
-                                                                                            <%=group.status==='Persiapan Administrasi'
-                                                                                            ?'selected':'' %>>Persiapan
-                                                                                            Administrasi</option>
-                                                                                        <option
-                                                                                            value="Menunggu Pelaksanaan"
-                                                                                            <%=group.status==='Menunggu Pelaksanaan'
-                                                                                            ?'selected':'' %>>Menunggu
-                                                                                            Pelaksanaan</option>
-                                                                                        <option value="Selesai"
-                                                                                            <%=group.status==='Selesai'
-                                                                                            ?'selected':'' %>>Selesai
+                                                                                        <option value="Menunggu Pelaksanaan" <%=group.status==='Menunggu Pelaksanaan' ? 'selected' : '' %>>
+                                                                                            Menunggu Pelaksanaan
+                                                                                        </option>
+                                                                                        <option value="Selesai" <%=group.status==='Selesai' ? 'selected' : '' %>>
+                                                                                            Selesai
                                                                                         </option>
                                                                                     </select>
+
                                                                                 </td>
 
                                                                                 <td class="align-middle text-center"
@@ -574,43 +599,26 @@
                                                                                                             class="fa-solid fa-magnifying-glass"></i>
                                                                                                     </a>
 
-                                                                                                    <% function
-                                                                                                        rowByType(arr,
-                                                                                                        t) { if
-                                                                                                        (!Array.isArray(arr))
-                                                                                                        return {}; for
-                                                                                                        (var i=0; i <
-                                                                                                        arr.length; i++)
-                                                                                                        { if (arr[i] &&
-                                                                                                        arr[i].jenis_ujian===t)
-                                                                                                        return arr[i]; }
-                                                                                                        return {}; } var
-                                                                                                        upkp=rowByType(group.rows, 'UPKP'
-                                                                                                        ); var
-                                                                                                        remedUpkp=rowByType(group.rows, 'REMED UPKP'
-                                                                                                        ); var
-                                                                                                        ud1=rowByType(group.rows, 'UD TK. I'
-                                                                                                        ); var
-                                                                                                        ud2=rowByType(group.rows, 'UD TK. II'
-                                                                                                        ); var
-                                                                                                        rud1=rowByType(group.rows, 'REMED UD TK. I'
-                                                                                                        ); var
-                                                                                                        rud2=rowByType(group.rows, 'REMED UD TK. II'
-                                                                                                        ); let tgl='' ;
-                                                                                                        if
-                                                                                                        (group.tanggal_pelaksanaan)
-                                                                                                        { try { const
-                                                                                                        d=new
-                                                                                                        Date(group.tanggal_pelaksanaan);
-                                                                                                        tgl=d.toISOString().split('T')[0];
-                                                                                                        } catch (e) {
-                                                                                                        tgl='' ; } }
-                                                                                                        function v(x){
-                                                                                                        return (x===null
-                                                                                                        ||
-                                                                                                        x===undefined)
-                                                                                                        ? '' : x; } %>
-
+                                                                                                    <% function rowByType(arr,t) { 
+                                                                                                        if(!Array.isArray(arr))return {}; 
+                                                                                                        for(var i=0; i <arr.length; i++) { 
+                                                                                                            if (arr[i] &&arr[i].jenis_ujian===t)return arr[i]; }
+                                                                                                        return {}; } 
+                                                                                                        var upkp=rowByType(group.rows, 'UPKP'); 
+                                                                                                        var remedUpkp=rowByType(group.rows, 'REMED UPKP'); 
+                                                                                                        var ud1=rowByType(group.rows, 'UD TK. I'); 
+                                                                                                        var ud2=rowByType(group.rows, 'UD TK. II'); 
+                                                                                                        var rud1=rowByType(group.rows, 'REMED UD TK. I' ); 
+                                                                                                        var rud2=rowByType(group.rows, 'REMED UD TK. II'); 
+                                                                                                        let tgl='' ;
+                                                                                                        if (group.tanggal_pelaksanaan)  { 
+                                                                                                            try { 
+                                                                                                                const d=new Date(group.tanggal_pelaksanaan);
+                                                                                                                tgl=d.toISOString().split('T')[0];
+                                                                                                            } catch (e) {
+                                                                                                            tgl='' ; } }
+                                                                                                            function v(x){ return (x===null || x===undefined) ? '' : x; } %>
+                                                                                                        <% if (group.status !=='Selesai' ) { %>
                                                                                                         <a href="#"
                                                                                                             class="btn btn-sm btn-primary btn-edit"
                                                                                                             title="Edit"
@@ -644,9 +652,6 @@
                                                                                                             <i
                                                                                                                 class="fas fa-edit"></i>
                                                                                                         </a>
-
-
-
                                                                                                         <button
                                                                                                             type="button"
                                                                                                             class="btn btn-sm btn-danger btn-delete"
@@ -656,13 +661,13 @@
                                                                                                                 class="fas fa-trash"></i>
                                                                                                         </button>
                                                                                                 </div>
-
+                                                                                                
                                                                                                 <button type="button"
                                                                                                     class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
                                                                                                     data-group-id="<%= group.rows[0].group_id %>">
                                                                                                     Edit Nilai
                                                                                                 </button>
-
+                                                                                                <% }%>
                                                                                             </div>
                                                                                         </td>
                                                                                         <% } %>
@@ -2551,7 +2556,7 @@
 
         // === 8. Ringkasan Jumlah (Card Section) ===
         try {
-            const cardCols = document.querySelectorAll('.col-md-2.mb-3, .col-md-3.mb-3');
+            const cardCols = document.querySelectorAll('.col-md-2.mb-3, .col-md-3.mb-3, .col-md-4.mb-3');
             if (cardCols.length > 0) {
                 const tempContainer = document.createElement('div');
                 tempContainer.style.display = 'flex';
@@ -2617,7 +2622,7 @@
         const namaFile = `Laporan_UDKP.pdf`;
         doc.save(namaFile);
     });
-</script>
+    </script>
 
     <script>
         $(function () {
@@ -3254,38 +3259,51 @@
     </script>
     <script>
         function updateSummaryCards(groupedData) {
-            if (!Array.isArray(groupedData)) return;
+                if (!Array.isArray(groupedData)) return;
 
-            // 🔹 Hitung jumlah per jenis ujian
-            const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
-            const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
-            const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
-            const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
+                // 🔹 Hitung jumlah per jenis ujian
+                const allJenis = groupedData.flatMap(g => g.rows.map(r => (r.jenis_ujian || "").toUpperCase().trim()));
+                const countUpkp = allJenis.filter(j => j === "UPKP" || j === "REMED UPKP").length;
+                const countUd1 = allJenis.filter(j => j === "UD TK. I" || j === "REMED UD TK. I").length;
+                const countUd2 = allJenis.filter(j => j === "UD TK. II" || j === "REMED UD TK. II").length;
 
-            // 🔹 Hitung nilai tertinggi & terendah (UPKP & REMED UPKP)
-            let maxNilai = null;
-            let minNilai = null;
-
-            groupedData.forEach(g => {
-                g.rows.forEach(r => {
-                    const jenis = (r.jenis_ujian || "").toUpperCase();
-                    if (jenis.includes("UPKP")) {
-                        const max = parseFloat(r.nilai_tertinggi_pg);
-                        const min = parseFloat(r.nilai_terendah_pg);
-
-                        if (!isNaN(max)) maxNilai = (maxNilai === null) ? max : Math.max(maxNilai, max);
-                        if (!isNaN(min)) minNilai = (minNilai === null) ? min : Math.min(minNilai, min);
-                    }
+                // 🔹 Hitung nilai tertinggi & terendah (UPKP & REMED UPKP)
+                let maxNilai = null;
+                let minNilai = null;
+                groupedData.forEach(g => {
+                    g.rows.forEach(r => {
+                        const jenis = (r.jenis_ujian || "").toUpperCase();
+                        if (jenis.includes("UPKP")) {
+                            const max = parseFloat(r.nilai_tertinggi_pg);
+                            const min = parseFloat(r.nilai_terendah_pg);
+                            if (!isNaN(max)) maxNilai = (maxNilai === null) ? max : Math.max(maxNilai, max);
+                            if (!isNaN(min)) minNilai = (minNilai === null) ? min : Math.min(minNilai, min);
+                        }
+                    });
                 });
-            });
 
-            // 🔹 Tampilkan ke kartu ringkasan
-            document.getElementById("cardUpkp").innerText = countUpkp;
-            document.getElementById("cardUd1").innerText = countUd1;
-            document.getElementById("cardUd2").innerText = countUd2;
-            document.getElementById("cardMax").innerText = (maxNilai !== null) ? maxNilai : "-";
-            document.getElementById("cardMin").innerText = (minNilai !== null) ? minNilai : "-";
-        }
+                // 🔹 Hitung jumlah berdasarkan status
+                let countSelesai = 0, countMenunggu = 0, countPersiapan = 0;
+                groupedData.forEach(g => {
+                    const s = (g.status || '').toLowerCase();
+                    if (s.includes('selesai')) countSelesai++;
+                    else if (s.includes('menunggu')) countMenunggu++;
+                    else if (s.includes('persiapan')) countPersiapan++;
+                });
+
+                // 🔹 Tampilkan ke kartu ringkasan
+                document.getElementById("cardUpkp").innerText = countUpkp;
+                document.getElementById("cardUd1").innerText = countUd1;
+                document.getElementById("cardUd2").innerText = countUd2;
+                document.getElementById("cardMax").innerText = (maxNilai !== null) ? maxNilai : "-";
+                document.getElementById("cardMin").innerText = (minNilai !== null) ? minNilai : "-";
+
+                // 🔹 Update kartu status pelaksanaan
+                document.getElementById("cardSelesai").innerText = countSelesai;
+                document.getElementById("cardMenunggu").innerText = countMenunggu;
+                document.getElementById("cardPersiapan").innerText = countPersiapan;
+            }
+
     </script>
 
     <script>
@@ -3491,6 +3509,7 @@
                         timer: 1000,
                         showConfirmButton: false
                     });
+                    setTimeout(() => window.location.reload(true), 1100);
                 } else {
                     // tampilkan pesan validasi dari server (bisa HTML)
                     $sel.val(oldVal);
@@ -3556,18 +3575,48 @@
                         );
                     }
 
-                    // 3) sinkronkan tombol Edit pada group yang sama (agar modal baca nilai terbaru)
-                    const editBtn = document.querySelector(`.btn-edit[data-group-id="${groupId}"]`);
-                    if (editBtn) editBtn.setAttribute('data-status', newVal);
+                    // 3) sinkronkan tombol Edit & Nilai sesuai status baru
+                    const btnEdit = document.querySelector(`.btn-edit[data-group-id="${groupId}"]`);
+                    const btnNilai = document.querySelector(`.btn-input-nilai[data-group-id="${groupId}"]`);
+                    if (btnEdit && btnNilai) {
+                        if (newVal === 'Selesai') {
+                            btnEdit.style.display = 'none';
+                            btnNilai.style.display = 'none';
+                        } else {
+                            btnEdit.style.display = '';
+                            btnNilai.style.display = '';
+                        }
+                    }
 
                     // 4) toast sukses
                     Swal.fire({
                         icon: 'success',
                         title: 'Tersimpan',
                         text: data.message || 'Status berhasil diperbarui.',
-                        timer: 1000,
-                        showConfirmButton: false
+                        timer: 800,
+                        showConfirmButton: false,
+                        didClose: () => {
+                            console.log("✅ Reload triggered after Swal closed");
+                            try {
+                                window.location.href = window.location.href; // 🟢 paksa reload via assignment
+                            } catch (err) {
+                                console.error("Reload via href failed:", err);
+                                window.location.reload();
+                            }
+                        }
                     });
+
+                    // 🔥 Tambahan pengaman: paksa reload walau Swal gagal tertutup
+                    setTimeout(() => {
+                        console.log("⏱ Reload fallback triggered");
+                        try {
+                            window.location.href = window.location.href; // jalankan reload dari cache-bypass
+                        } catch (err) {
+                            console.error("Reload fallback error:", err);
+                            window.location.reload();
+                        }
+                    }, 1500);
+
                 } else {
                     sel.value = oldVal;
                     Swal.fire('Gagal', data.message || 'Tidak dapat menyimpan status.', 'error');
@@ -3581,6 +3630,7 @@
         };
     </script>
 
+    
     <script>
         (function () {
             try {
@@ -3843,12 +3893,13 @@
                     title: "Akses Ditolak",
                     text: "Anda tidak memiliki izin untuk membuka halaman ini.",
                     confirmButtonText: "Mengerti",
-                    confirmButtonColor: "#3085d6"
+                    confirmButtonColor: "#3085d6",
                 });
             });
         }
     });
 </script>
+
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
