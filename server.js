@@ -149,8 +149,9 @@ async function logLogin({ user_id = null, username = null, ip, ua, success, reas
   }
 }
 
-// Route utama → ambil data dari tabel
-app.get("/", async (req, res) => {
+// Route utama → arahkan ke login jika belum login
+app.get("/", requireLogin, async (req, res) => {
+
   try {
     const search = req.query.q ? `%${req.query.q}%` : "%";
 
