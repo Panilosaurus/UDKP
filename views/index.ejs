@@ -626,7 +626,7 @@
                                                                                                             data-target="#editDataModal"
                                                                                                             data-id="<%= group.rows.map(r => r.id).join(',') %>"
                                                                                                             data-tanggal="<%= tgl %>"
-                                                                                                            data-instansi="<%= v(group.instansi) %>"
+                                                                                                            data-instansi-id="<%= group.rows[0].id_instansi %>"
                                                                                                             data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
                                                                                                             data-jumlah-ud1="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. I') || {}).jumlah_peserta || '' %>"
                                                                                                             data-jumlah-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. II') || {}).jumlah_peserta || '' %>"
@@ -2042,7 +2042,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Ketika tombol edit ditekan
-            $(document).on("click", ".btn-edit", function (e) {
+            $(document).on("click", ".btn-edit", async function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -2051,6 +2051,7 @@
 
                 // Ambil data dari tombol
                 const idGroup = $(this).data('group-id');
+                const instansiId = $(this).data('instansi-id'); // ✅ ambil ID instansi
                 const instansi = $(this).data('instansi');
                 const tanggal = $(this).data('tanggal');
                 const status = $(this).data('status');
@@ -2080,10 +2081,21 @@
 
                 // Masukkan ke dalam modal edit
                 $("#edit_group_id").val(idGroup);
-                $("#edit_nama_instansi").val(instansi);
                 $("#edit_tgl_pelaksanaan").val(tanggal);
                 $("#edit_status_pelaksanaan").val(status);
                 $("#edit_link_dokumen").val(dokumen);
+
+                // ✅ Pastikan value instansi diisi dengan aman (string)
+                const instansiValue = String(instansiId || '');
+                console.log("🧩 Instansi ID untuk select:", instansiValue);
+
+                // Jika Select2 sudah aktif → trigger dengan event khusus
+                const $select = $('#edit_nama_instansi');
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.val(instansiValue).trigger('change.select2');
+                } else {
+                    $select.val(instansiValue).trigger('change');
+                }
 
                 // Isi field jumlah peserta
                 $("input[name='jumlah_peserta_0']").val(jumlahUpkp);
@@ -2115,17 +2127,31 @@
                     const arrPetugas = petugas.split(",").map(p => p.trim());
                     arrPetugas.forEach((nama, i) => {
                         $("#editPetugasCatGroup").append(`
-                    <input type="text" name="petugas_cat_${i}" value="${nama}" class="form-control mb-2">
-                `);
+                        <input type="text" name="petugas_cat_${i}" value="${nama}" class="form-control mb-2">
+                    `);
                     });
                 }
 
                 // Tampilkan modal
                 $('#editDataModal').modal('show');
+                
+                // ✅ Setelah modal benar-benar terbuka, baru isi select2-nya
+                $('#editDataModal').one('shown.bs.modal', function () {
+                    const $select = $('#edit_nama_instansi');
+                    const instansiValue = String(instansiId || '');
+
+                    console.log("🎯 Set value select2 setelah modal tampil:", instansiValue);
+
+                    if ($select.hasClass('select2-hidden-accessible')) {
+                        $select.val(instansiValue).trigger('change.select2');
+                    } else {
+                        $select.val(instansiValue).trigger('change');
+                    }
+                });
             });
         });
-
     </script>
+
     <script>
         $(document).on('click', '.btn-edit', function () {
             const btn = $(this);
