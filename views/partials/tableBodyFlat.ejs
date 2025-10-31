@@ -83,13 +83,18 @@
                                 </td>
                                 <% } %>
 
-                                    <!-- Nilai -->
-                                    <td class="align-middle text-center">
-                                        <%= row.nilai_tertinggi_pg || '-' %>
+                                    <!-- Nilai Tertinggi (UPKP) -->
+                                    <td class="align-middle text-center col-nilai-tertinggi"
+                                        data-nilai-tertinggi="<%= row.nilai_tertinggi_pg || '' %>">
+                                        <%= row.nilai_tertinggi_pg || '—' %>
                                     </td>
-                                    <td class="align-middle text-center">
-                                        <%= row.nilai_terendah_pg || '-' %>
+
+                                    <!-- Nilai Terendah (UPKP) -->
+                                    <td class="align-middle text-center col-nilai-terendah"
+                                        data-nilai-terendah="<%= row.nilai_terendah_pg || '' %>">
+                                        <%= row.nilai_terendah_pg || '—' %>
                                     </td>
+
                                     <td class="align-middle text-center">
                                         <%= row.jumlah_lulus_pg || '-' %>
                                     </td>
@@ -130,10 +135,12 @@
                                                                 function v(x) { return (x===null || x===undefined) ? '' : x; } 
                                                                 const isAdmin=role==='admin' ; %>
                                     
-                                                        <!-- Tombol Edit -->
-                                                        <a href="#" class="btn btn-sm btn-primary btn-edit <%= !isAdmin ? 'disabled' : '' %>" title="Edit"
-                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>" data-tanggal="<%= tgl %>"
-                                                            data-instansi-id="<%= group.id_instansi %>" data-instansi-nama="<%= v(group.instansi) %>"
+                                                        <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit"
+                                                            data-id="<%= group.rows.map(r => r.id).join(',') %>"
+                                                            data-tanggal="<%= tgl %>"
+                                                            data-instansi-id="<%= group.id_instansi %>"
+                                                            data-instansi-nama="<%= v(group.instansi) %>"
+                                                               
                                                             data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
                                                             data-jumlah-ud1="<%= (group.rows.find(r=>r.jenis_ujian === 'UD TK. I') ||{}).jumlah_peserta || '' %>"
                                                             data-jumlah-ud2="<%= (group.rows.find(r=> r.jenis_ujian === 'UD TK. II') ||{}).jumlah_peserta || '' %>"
