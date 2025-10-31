@@ -10,46 +10,87 @@
   <!-- SB Admin 2 CSS -->
   <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
   <link href="/css/sb-admin-2.min.css" rel="stylesheet" />
+  <style>
+  /* halusin animasi */
+  .sidebar {
+    transition: width .2s ease;
+  }
+
+  /* saat sidebar ditutup oleh skrip bawaan SB Admin 2 */
+  body.sidebar-toggled .sidebar {
+    width: 6.5rem !important;
+  }
+
+  /* SEMUA teks sidebar disembunyikan */
+  body.sidebar-toggled .sidebar .sidebar-brand-text,
+  body.sidebar-toggled .sidebar .nav-item .nav-link span,
+  body.sidebar-toggled .sidebar hr.sidebar-divider {
+    display: none !important;
+  }
+
+  /* brand-nya dibikin center lagi */
+  body.sidebar-toggled .sidebar .sidebar-brand {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* icon logo jangan ada jarak kanan */
+  body.sidebar-toggled .sidebar .sidebar-brand-icon {
+    margin-right: 0 !important;
+  }
+
+  /* kecilkan logo dikit biar nggak terlalu tinggi pas mode kecil */
+  body.sidebar-toggled .sidebar .sidebar-brand-icon img {
+    height: 46px;
+    width: auto;
+  }
+</style>
+
+
 </head>
 
 <body id="page-top">
   <!-- Page Wrapper -->
   <div id="wrapper">
     <!-- Sidebar -->
-    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-      <!-- Sidebar - Brand -->
-      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
-        <div class="sidebar-brand-icon rotate-n-15">
-          <i class="fas fa-laugh-wink"></i>
+    <ul class="navbar-nav sidebar sidebar-dark bg-gradient-primary" id="accordionSidebar">
+
+      <!-- Sidebar - Brand (sama seperti dashboard) -->
+      <a class="sidebar-brand d-flex align-items-center justify-content-start px-3" href="/">
+        <div class="sidebar-brand-icon">
+          <img src="/img/logo-bkn.jpg" alt="BKN" width="50" height="60" style="border-radius:10px;">
         </div>
-        <div class="sidebar-brand-text mx-3">UDKP</div>
+        <div class="sidebar-brand-text mx-3">
+          <div class="text-uppercase" style="line-height:1;">KANREG VIII</div>
+        </div>
       </a>
 
-      <!-- Divider -->
-      <hr class="sidebar-divider my-0" />
 
-      <!-- Nav Item - Dashboard -->
+      <!-- Divider -->
+      <hr class="sidebar-divider my-2">
+
+      <!-- Menu -->
       <li class="nav-item">
         <a class="nav-link" href="/">
           <i class="fas fa-fw fa-tachometer-alt"></i>
-          <span>Dashboard</span></a>
+          <span>Dashboard</span>
+        </a>
       </li>
 
-      <!-- Nav Item - Manajemen Akun (active) -->
       <li class="nav-item active">
         <a class="nav-link" href="/akun">
-          <i class="fas fa-users-cog"></i>
-          <span>Manajemen Akun</span></a>
+          <i class="fas fa-users"></i>
+          <span>Manajemen Akun</span>
+        </a>
       </li>
 
-      <!-- Divider -->
-      <hr class="sidebar-divider d-none d-md-block" />
-
-      <!-- Sidebar Toggler (Sidebar) -->
-      <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      <!-- Toggler -->
+      <div class="text-center d-none d-md-inline mt-auto mb-3">
+        <button class="rounded-circle border-0 sidebarToggleBtn" id="sidebarToggle"></button>
       </div>
     </ul>
+
     <!-- End of Sidebar -->
 
     <!-- Content Wrapper -->
@@ -1085,7 +1126,6 @@
       });
     })();
   </script>
-
 
 </body>
 
