@@ -705,16 +705,20 @@ app.get("/search", async (req, res) => {
     const groupedData = Object.values(groupedMap);
 
     // ✅ Render partial EJS ke HTML dan kirim via JSON
-    res.render("partials/tableBodyFlat", { groupedData }, (err, html) => {
-      if (err) {
-        console.error("❌ Gagal render partial:", err);
-        return res.status(500).json({
-          status: "error",
-          message: "Gagal render tabel.",
-        });
+    res.render(
+      "partials/tableBodyFlat",
+      { groupedData, role: req.session.user?.role || null },
+      (err, html) => {
+        if (err) {
+          console.error("❌ Gagal render partial:", err);
+          return res.status(500).json({
+            status: "error",
+            message: "Gagal render tabel.",
+          });
+        }
+        res.json({ html, groupedData });
       }
-      res.json({ html, groupedData });
-    });
+    );
   } catch (err) {
     console.error("❌ Error di /search:", err);
     res.status(500).json({

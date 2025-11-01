@@ -1400,6 +1400,10 @@
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>"<%= role %>"; </script>
+    <script>
+        window.userRole = "<%= role %>";
+    </script>
 
     <script>
         $(document).ready(function () {
@@ -3000,28 +3004,89 @@
         });
     </script>
     <script>
-        async function clearFilter() {
-            document.getElementById('customSearch').value = '';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
+        function applyRoleVisibility() {
+            const currentRole = window.userRole; // 🔑 ambil dari global
 
-            try {
-                const res = await fetch(`/search`, { headers: { "Accept": "application/json" } });
-                const data = await res.json();
+            if (currentRole === "viewer") {
+                // Sembunyikan tombol aksi
+                document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
+                    .forEach(el => { el.style.display = "none"; });
 
-                // Update tabel, grafik, kartu, dan rekap semuanya
-                document.querySelector("#tableBody").innerHTML = data.html;
-                renderCharts(data.groupedData);
-                updateSummaryCards(data.groupedData);
-                loadRekapFromGrouped(data.groupedData);
-                applyRoleVisibility();
-            } catch (err) {
-                console.error("❌ Error reset:", err);
+                // Sembunyikan "Input Data Baru"
+                const inputDataLink = document.querySelector('a[data-target="#inputDataModal"]');
+                if (inputDataLink) inputDataLink.style.display = "none";
+
+                // Sembunyikan menu Manajemen Akun
+                const akunMenu = document.querySelector('a[href="/akun"]');
+                if (akunMenu) akunMenu.style.display = "none";
+
+                // Kunci field input/textarea/submit
+                document.querySelectorAll("input[type='number'], textarea, button[type='submit']")
+                    .forEach(el => { el.disabled = true; });
+
+                // Dropdown status:
+                // - Jika "Selesai": sembunyikan
+                // - Selain itu: tampil tapi tidak bisa diubah (abu-abu)
+                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                    const val = (sel.value || "").trim();
+                    if (val === "Selesai") {
+                        sel.style.display = "none";
+                    } else {
+                        sel.disabled = true;
+                        sel.title = "Hanya admin atau pegawai yang dapat mengubah status";
+                        sel.style.backgroundColor = "#f1f1f1";
+                        sel.style.cursor = "not-allowed";
+                    }
+                });
+            }
+
+            if (currentRole === "pegawai") {
+                // Pegawai: sembunyikan menu akun
+                const akunMenu = document.querySelector('a[href="/akun"]');
+                if (akunMenu) akunMenu.style.display = "none";
+
+                // Pegawai: tidak boleh ubah "Selesai"
+                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                    const val = (sel.value || "").trim();
+                    if (val === "Selesai") {
+                        sel.disabled = true;
+                        sel.title = "Status selesai tidak dapat diubah";
+                        sel.style.backgroundColor = "#f1f1f1";
+                        sel.style.cursor = "not-allowed";
+                    } else {
+                        sel.disabled = false;
+                        sel.style.backgroundColor = "";
+                        sel.style.cursor = "";
+                        sel.removeAttribute("title");
+                    }
+                });
+            }
+
+            if (currentRole === "admin") {
+                // Admin: boleh ubah semua kecuali "Selesai"
+                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                    const val = (sel.value || "").trim();
+                    if (val === "Selesai") {
+                        sel.disabled = true;
+                        sel.title = "Status selesai tidak dapat diubah";
+                        sel.style.backgroundColor = "#f1f1f1";
+                        sel.style.cursor = "not-allowed";
+                    } else {
+                        sel.disabled = false;
+                        sel.style.backgroundColor = "";
+                        sel.style.cursor = "";
+                        sel.removeAttribute("title");
+                    }
+                });
+
+                // Pastikan tombol aksi terlihat untuk admin
+                document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
+                    .forEach(el => { el.style.display = ""; });
             }
         }
-
-
     </script>
+
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -3858,9 +3923,9 @@
         const role = "<%= role %>";
 
         // === Fungsi bantu untuk menerapkan hak akses ===
-        function applyRoleVisibility() {
+       function applyRoleVisibility() {
             if (role === "viewer") {
-                // 🔹 Sembunyikan tombol aksi
+                // 🔹 Sembunyikan tombol aksi (edit, delete, input nilai)
                 document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai").forEach(el => {
                     el.style.display = "none";
                 });
@@ -3873,25 +3938,45 @@
                 const akunMenu = document.querySelector('a[href="/akun"]');
                 if (akunMenu) akunMenu.style.display = "none";
 
-                // 🔹 Nonaktifkan elemen yang bisa ubah data
+                // 🔹 Nonaktifkan input & textarea (tidak perlu ubah ini)
                 document.querySelectorAll("input[type='number'], textarea, button[type='submit']").forEach(el => {
                     el.disabled = true;
                 });
 
-                // 🚫 Disable dropdown status (pakai .status-inline)
+                // 🔹 Sembunyikan dropdown status HANYA jika status sudah "Selesai"
                 document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
-                    sel.disabled = true;
-                    sel.title = "Hanya admin atau pegawai yang dapat mengubah status";
-                    sel.style.backgroundColor = "#f1f1f1"; // tampilan abu-abu
-                    sel.style.cursor = "not-allowed";
+                    const currentStatus = sel.value?.trim();
+                    if (currentStatus === "Selesai") {
+                        sel.style.display = "none";
+                    } else {
+                        // Status lain tetap tampil, tapi tidak bisa diubah
+                        sel.disabled = true;
+                        sel.title = "Hanya admin atau pegawai yang dapat mengubah status";
+                        sel.style.backgroundColor = "#f1f1f1";
+                        sel.style.cursor = "not-allowed";
+                    }
                 });
             }
 
             if (role === "pegawai") {
+                // 🔹 Pegawai tetap tidak bisa akses menu akun
                 const akunMenu = document.querySelector('a[href="/akun"]');
                 if (akunMenu) akunMenu.style.display = "none";
+
+                // 🔹 Pegawai tidak bisa ubah status jika sudah "Selesai"
+                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                    const currentStatus = sel.value?.trim();
+                    if (currentStatus === "Selesai") {
+                        sel.disabled = true;
+                        sel.title = "Status selesai tidak dapat diubah";
+                        sel.style.backgroundColor = "#f1f1f1";
+                        sel.style.cursor = "not-allowed";
+                    }
+                });
             }
         }
+
+
 
         // 🔹 Jalankan saat load pertama
         setTimeout(applyRoleVisibility, 500);
@@ -4039,6 +4124,13 @@
             $('#edit_nama_instansi').val(data.instansiId).trigger('change'); // set instansi terpilih
         });
     });
+</script>
+
+<script>
+    function clearFilter() {
+        // Langsung refresh halaman penuh
+        location.reload();
+    }
 </script>
 
 
