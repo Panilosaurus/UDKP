@@ -23,6 +23,7 @@
 
     <script>
         window.userRole = "<%= role %>";
+        window.isExporting = false;
     </script>
     <!-- DataTables CSS -->
     <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
@@ -3943,108 +3944,6 @@
         }
     })();
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const role = "<%= role %>";
-
-        // === Fungsi bantu untuk menerapkan hak akses & disable status ===
-        function applyRoleVisibility() {
-            document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
-                const currentStatus = (sel.value || "").trim();
-
-                // 🔹 Semua role: jika status sudah "Selesai", harus selalu disable
-                if (currentStatus === "Selesai") {
-                    sel.disabled = true;
-                    sel.title = "Status 'Selesai' tidak dapat diubah";
-                    sel.style.backgroundColor = "#e9ecef";
-                    sel.style.cursor = "not-allowed";
-                    return; // tidak lanjut ke aturan role
-                }
-
-                // 🔹 Role-based rules
-                if (role === "viewer") {
-                    sel.disabled = true;
-                    sel.title = "Hanya admin atau pegawai yang dapat mengubah status";
-                    sel.style.backgroundColor = "#f1f1f1";
-                    sel.style.cursor = "not-allowed";
-                }
-                else if (role === "pegawai") {
-                    sel.disabled = false;
-                    sel.style.cursor = "pointer";
-                    // Tapi jika status selesai sudah di-handle di atas
-                }
-                else if (role === "admin") {
-                    // Admin bisa ubah status kecuali selesai (sudah ditangani di atas)
-                    sel.disabled = false;
-                    sel.style.cursor = "pointer";
-                }
-            });
-
-            // 🔹 Viewer: sembunyikan tombol aksi & menu
-            if (role === "viewer") {
-                document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai").forEach(el => {
-                    el.style.display = "none";
-                });
-
-                const inputDataLink = document.querySelector('a[data-target="#inputDataModal"]');
-                if (inputDataLink) inputDataLink.style.display = "none";
-
-                const akunMenu = document.querySelector('a[href="/akun"]');
-                if (akunMenu) akunMenu.style.display = "none";
-
-                document.querySelectorAll("input[type='number'], textarea, button[type='submit']").forEach(el => {
-                    el.disabled = true;
-                });
-            }
-
-            // 🔹 Pegawai: sembunyikan menu akun
-            if (role === "pegawai") {
-                const akunMenu = document.querySelector('a[href="/akun"]');
-                if (akunMenu) akunMenu.style.display = "none";
-            }
-
-            // 🔹 Admin tetap bisa semuanya, kecuali status "Selesai"
-        }
-
-        // 🔹 Jalankan saat load pertama
-        setTimeout(applyRoleVisibility, 300);
-
-        // 🔹 Jalankan ulang setelah fetch (misal search, update status, dll)
-        const originalFetch = window.fetch;
-        window.fetch = async (...args) => {
-            const response = await originalFetch(...args);
-            // clone response agar bisa dibaca tanpa mengganggu chain
-            const cloned = response.clone();
-            cloned.text().then(() => {
-                setTimeout(applyRoleVisibility, 400);
-            });
-            return response;
-        };
-
-        // 🔹 Cegah akses /akun bagi non-admin
-        const akunMenu = document.querySelector('a[href="/akun"]');
-        if (akunMenu && role !== "admin") {
-            akunMenu.addEventListener("click", function (e) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: "error",
-                    title: "Akses Ditolak",
-                    text: "Anda tidak memiliki izin untuk membuka halaman ini.",
-                    confirmButtonText: "Mengerti",
-                    confirmButtonColor: "#3085d6",
-                });
-            });
-        }
-
-        // 🔹 Pastikan tetap aktif bila tabel diperbarui lewat DOM mutation (fallback)
-        const tbody = document.querySelector("#tableBody") || document.querySelector("#tableBodyFlat");
-        if (tbody) {
-            const observer = new MutationObserver(() => applyRoleVisibility());
-            observer.observe(tbody, { childList: true, subtree: true });
-        }
-    });
-</script>
-
 
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
