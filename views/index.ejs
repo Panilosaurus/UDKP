@@ -21,7 +21,9 @@
     <!-- Bootstrap 5 JS -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
 
-
+    <script>
+        window.userRole = "<%= role %>";
+    </script>
     <!-- DataTables CSS -->
     <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 </head>
@@ -618,7 +620,8 @@
                                                                                                             } catch (e) {
                                                                                                             tgl='' ; } }
                                                                                                             function v(x){ return (x===null || x===undefined) ? '' : x; } %>
-                                                                                                        <% if (group.status !=='Selesai' ) { %>
+                                                                                                        <% if (group.status !=='Selesai' || role==='admin' ) { %>
+
                                                                                                         <a href="#"
                                                                                                             class="btn btn-sm btn-primary btn-edit"
                                                                                                             title="Edit"
@@ -660,8 +663,7 @@
                                                                                                             <i
                                                                                                                 class="fas fa-trash"></i>
                                                                                                         </button>
-                                                                                                </div>
-                                                                                                
+                                                                                                </div>  
                                                                                                 <button type="button"
                                                                                                     class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
                                                                                                     data-group-id="<%= group.rows[0].group_id %>">
@@ -804,7 +806,6 @@
                                             <option value="">-- Pilih --</option>
                                             <option value="Persiapan Administrasi">Persiapan Administrasi</option>
                                             <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
-                                            <option value="Selesai">Selesai</option>
                                         </select>
                                         <div class="invalid-feedback">Status Pelaksanaan wajib dipilih.</div>
                                     </div>
@@ -1401,9 +1402,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>"<%= role %>"; </script>
-    <script>
-        window.userRole = "<%= role %>";
-    </script>
+    
 
     <script>
         $(document).ready(function () {
@@ -3003,88 +3002,114 @@
             );
         });
     </script>
-    <script>
-        function applyRoleVisibility() {
-            const currentRole = window.userRole; // 🔑 ambil dari global
+   <script>
+    function applyRoleVisibility() {
+        const currentRole = window.userRole; // 🔑 ambil dari global
+        if (currentRole === "viewer") {
+            // 🔹 Sembunyikan tombol aksi (Edit, Hapus, Input Nilai)
+            document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
+                .forEach(el => { el.style.display = "none"; });
 
-            if (currentRole === "viewer") {
-                // Sembunyikan tombol aksi
-                document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
-                    .forEach(el => { el.style.display = "none"; });
+            // 🔹 Sembunyikan "Input Data Baru"
+            const inputDataLink = document.querySelector('a[data-target="#inputDataModal"]');
+            if (inputDataLink) inputDataLink.style.display = "none";
 
-                // Sembunyikan "Input Data Baru"
-                const inputDataLink = document.querySelector('a[data-target="#inputDataModal"]');
-                if (inputDataLink) inputDataLink.style.display = "none";
+            // 🔹 Sembunyikan menu Manajemen Akun
+            const akunMenu = document.querySelector('a[href="/akun"]');
+            if (akunMenu) akunMenu.style.display = "none";
 
-                // Sembunyikan menu Manajemen Akun
-                const akunMenu = document.querySelector('a[href="/akun"]');
-                if (akunMenu) akunMenu.style.display = "none";
+            // 🔹 Nonaktifkan semua field input dan tombol submit
+            document.querySelectorAll("input[type='number'], textarea, button[type='submit']")
+                .forEach(el => { el.disabled = true; });
 
-                // Kunci field input/textarea/submit
-                document.querySelectorAll("input[type='number'], textarea, button[type='submit']")
-                    .forEach(el => { el.disabled = true; });
-
-                // Dropdown status:
-                // - Jika "Selesai": sembunyikan
-                // - Selain itu: tampil tapi tidak bisa diubah (abu-abu)
-                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
-                    const val = (sel.value || "").trim();
-                    if (val === "Selesai") {
-                        sel.style.display = "none";
-                    } else {
-                        sel.disabled = true;
-                        sel.title = "Hanya admin atau pegawai yang dapat mengubah status";
-                        sel.style.backgroundColor = "#f1f1f1";
-                        sel.style.cursor = "not-allowed";
-                    }
-                });
-            }
-
-            if (currentRole === "pegawai") {
-                // Pegawai: sembunyikan menu akun
-                const akunMenu = document.querySelector('a[href="/akun"]');
-                if (akunMenu) akunMenu.style.display = "none";
-
-                // Pegawai: tidak boleh ubah "Selesai"
-                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
-                    const val = (sel.value || "").trim();
-                    if (val === "Selesai") {
-                        sel.disabled = true;
-                        sel.title = "Status selesai tidak dapat diubah";
-                        sel.style.backgroundColor = "#f1f1f1";
-                        sel.style.cursor = "not-allowed";
-                    } else {
-                        sel.disabled = false;
-                        sel.style.backgroundColor = "";
-                        sel.style.cursor = "";
-                        sel.removeAttribute("title");
-                    }
-                });
-            }
-
-            if (currentRole === "admin") {
-                // Admin: boleh ubah semua kecuali "Selesai"
-                document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
-                    const val = (sel.value || "").trim();
-                    if (val === "Selesai") {
-                        sel.disabled = true;
-                        sel.title = "Status selesai tidak dapat diubah";
-                        sel.style.backgroundColor = "#f1f1f1";
-                        sel.style.cursor = "not-allowed";
-                    } else {
-                        sel.disabled = false;
-                        sel.style.backgroundColor = "";
-                        sel.style.cursor = "";
-                        sel.removeAttribute("title");
-                    }
-                });
-
-                // Pastikan tombol aksi terlihat untuk admin
-                document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
-                    .forEach(el => { el.style.display = ""; });
-            }
+            // 🔹 Dropdown status:
+            // - Jika "Selesai": sembunyikan
+            // - Selain itu: tampil tapi tidak bisa diubah (abu-abu)
+            document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                const val = (sel.value || "").trim();
+                if (val === "Selesai") {
+                    sel.style.display = "none";
+                } else {
+                    sel.disabled = true;
+                    sel.title = "Hanya admin atau pegawai yang dapat mengubah status";
+                    sel.style.backgroundColor = "#f1f1f1";
+                    sel.style.cursor = "not-allowed";
+                }
+            });
         }
-    </script>
+
+        // ==========================
+        // === ROLE: PEGAWAI ===
+        // ==========================
+        if (currentRole === "pegawai") {
+            // 🔹 Pegawai tidak bisa akses menu akun
+            const akunMenu = document.querySelector('a[href="/akun"]');
+            if (akunMenu) akunMenu.style.display = "none";
+
+            // 🔹 Pegawai tidak bisa ubah status "Selesai"
+            document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                const val = (sel.value || "").trim();
+                if (val === "Selesai") {
+                    sel.disabled = true;
+                    sel.title = "Status selesai tidak dapat diubah";
+                    sel.style.backgroundColor = "#f1f1f1";
+                    sel.style.cursor = "not-allowed";
+                } else {
+                    sel.disabled = false;
+                    sel.style.backgroundColor = "";
+                    sel.style.cursor = "";
+                    sel.removeAttribute("title");
+                }
+            });
+
+            // 🔹 Pegawai tidak boleh hapus/edit/input nilai
+            document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
+                .forEach(el => { el.style.display = "none"; });
+        }
+
+        // ==========================
+        // === ROLE: ADMIN ===
+        // ==========================
+        if (currentRole === "admin") {
+            // 🔹 Admin boleh ubah semua status termasuk "Selesai"
+            document.querySelectorAll(".status-inline, .status-select").forEach(sel => {
+                sel.disabled = false;
+                sel.style.backgroundColor = "";
+                sel.style.cursor = "pointer";
+                sel.removeAttribute("title");
+            });
+
+            // 🔹 Pastikan semua tombol aksi terlihat untuk admin
+            document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
+                .forEach(el => { el.style.display = ""; });
+        }
+    }
+
+    // 🔹 Jalankan otomatis saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", function () {
+        applyRoleVisibility();
+
+        // Jalankan ulang setiap kali hasil AJAX / pencarian selesai
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const response = await originalFetch(...args);
+            const cloned = response.clone();
+            cloned.text().then(() => {
+                setTimeout(applyRoleVisibility, 400);
+            });
+            return response;
+        };
+
+        // Fallback: pantau perubahan DOM tabel agar aturan tetap aktif
+        const tbody = document.querySelector("#tableBody") || document.querySelector("#tableBodyFlat");
+        if (tbody) {
+            const observer = new MutationObserver(() => applyRoleVisibility());
+            observer.observe(tbody, { childList: true, subtree: true });
+        }
+    });
+</script>
+
+
 
 
 
@@ -4143,6 +4168,15 @@
     }
 </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Pastikan fungsi global tersedia
+        if (typeof applyRoleVisibility === "function") {
+            // Jalankan ulang untuk halaman utama
+            setTimeout(applyRoleVisibility, 300);
+        }
+    });
+</script>
 
 </body>
 

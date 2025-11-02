@@ -129,7 +129,7 @@
                                                     } 
                                                     function v(x) { return (x===null || x===undefined) ? '' : x; } // ambil role dari variabel yang dikirim EJS 
                                                     const currentRole=typeof role !=='undefined' ? role : '' ; 
-                                                    const hideActions=['viewer', 'petugas' , 'admin' ].includes(currentRole) && group.status==='Selesai' ; %>
+                                                    const hideActions=['viewer', 'petugas'].includes(currentRole) && group.status==='Selesai' ; %>
                                         
                                                     <% if (!hideActions) { %>
                                                         <!-- 🔹 Tombol Inspect selalu aktif -->
@@ -141,6 +141,7 @@
                                         
                                                             <!-- Tombol Edit -->
                                                             <a href="#" class="btn btn-sm btn-primary btn-edit" title="Edit"
+                                                                data-instansi-id="<%= group.rows[0].id_instansi %>"
                                                                 data-id="<%= group.rows.map(r => r.id).join(',') %>" data-tanggal="<%= tgl %>"
                                                                 data-instansi-id="<%= group.id_instansi %>" data-instansi-nama="<%= v(group.instansi) %>"
                                                                 data-jumlah-upkp="<%= (group.rows.find(r=> r.jenis_ujian === 'UPKP') || {}).jumlah_peserta || '' %>"
