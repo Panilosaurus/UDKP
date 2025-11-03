@@ -235,35 +235,33 @@
 
                           <!-- Aksi -->
                           <td class="text-nowrap text-center">
-                            <!-- Edit (buka modal Edit Akun) -->
-                            <button type="button" class="btn btn-sm btn-warning mr-1 btnEditAkun" title="Edit"
-                              data-id="<%= u.id %>" data-nama-depan="<%= u.nama_depan %>"
-                              data-nama-belakang="<%= u.nama_belakang %>" data-username="<%= u.username %>"
-                              data-role="<%= (u.role || '').toUpperCase() %>"
-                              data-status="<%= (u.status || '').toUpperCase() %>">
-                              <i class="fas fa-edit"></i>
-                            </button>
-
-
-                            <!-- Toggle Aktif/Nonaktif -->
-                            <!-- Toggle Aktif/Nonaktif -->
-                            <form action="/akun/toggle/<%= u.id %>" method="POST" class="d-inline form-toggle-akun">
-                              <button type="submit"
-                                class="btn btn-sm <%= u.status === 'aktif' ? 'btn-outline-secondary' : 'btn-outline-success' %> mr-1"
-                                title="Toggle Aktif">
-                                <i class="fas <%= u.status === 'aktif' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                            <% if (u.role !=='admin' && u.id !==currentUser.id) { %>
+                              <!-- Edit (buka modal Edit Akun) -->
+                              <button type="button" class="btn btn-sm btn-warning mr-1 btnEditAkun" title="Edit" data-id="<%= u.id %>"
+                                data-nama-depan="<%= u.nama_depan %>" data-nama-belakang="<%= u.nama_belakang %>"
+                                data-username="<%= u.username %>" data-role="<%= (u.role || '').toUpperCase() %>"
+                                data-status="<%= (u.status || '').toUpperCase() %>">
+                                <i class="fas fa-edit"></i>
                               </button>
-                            </form>
-
-                            <!-- Hapus -->
-                            <form action="/akun/delete/<%= u.id %>" method="POST" class="d-inline form-hapus-akun">
-                              <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                <i class="fas fa-trash"></i>
-                              </button>
-                            </form>
-
-
+                          
+                              <!-- Toggle Aktif/Nonaktif -->
+                              <form action="/akun/toggle/<%= u.id %>" method="POST" class="d-inline form-toggle-akun">
+                                <button type="submit"
+                                  class="btn btn-sm <%= u.status === 'aktif' ? 'btn-outline-secondary' : 'btn-outline-success' %> mr-1"
+                                  title="Toggle Aktif">
+                                  <i class="fas <%= u.status === 'aktif' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                                </button>
+                              </form>
+                          
+                              <!-- Hapus -->
+                              <form action="/akun/delete/<%= u.id %>" method="POST" class="d-inline form-hapus-akun">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                  <i class="fas fa-trash"></i>
+                                </button>
+                              </form>
+                              <% }%>
                           </td>
+
                         </tr>
                         <% }) %>
                           <% } else { %>
