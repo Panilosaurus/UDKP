@@ -895,14 +895,11 @@ app.post("/update/:id", upload.none(), async (req, res) => {
       if (oldRow.length === 0 && !(isUPKP ? filledForUPKP : filledForUD))
         continue;
       if (oldRow.length > 0 && !(isUPKP ? filledForUPKP : filledForUD)) {
-        await db
-          .promise()
-          .query("DELETE FROM tabel WHERE group_id=? AND jenis_ujian=?", [
-            group_id,
-            jenis,
-          ]);
+        // Kalau semua kosong, jangan hapus, biarkan data tetap ada (tidak di-update)
+        console.log(`ℹData ${jenis} kosong tapi dipertahankan.`);
         continue;
       }
+
 
       const jumlah_peserta = toNumOrNull(inJumlah);
       const nilai_tertinggi_pg = toNumOrNull(inNilaiMax);

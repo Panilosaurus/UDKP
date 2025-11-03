@@ -808,6 +808,7 @@
                                             <option value="">-- Pilih --</option>
                                             <option value="Persiapan Administrasi">Persiapan Administrasi</option>
                                             <option value="Menunggu Pelaksanaan">Menunggu Pelaksanaan</option>
+                                            <option value="Selesai">Selesai</option>
                                         </select>
                                         <div class="invalid-feedback">Status Pelaksanaan wajib dipilih.</div>
                                     </div>
@@ -2704,7 +2705,7 @@
                 return items;
             }
 
-            $('#filterAction').off('change.quick').on('change.quick', function () {
+           $('#filterAction').off('change.quick').on('change.quick', function () {
                 const mode = this.value; // 'highest' | 'lowest' | ''
                 clearHighlight();
                 if (!mode) return;
@@ -2712,25 +2713,34 @@
                 const items = collectCandidates(mode);
                 if (items.length === 0) return;
 
-                // ✅ Cari nilai terbaik secara pasti (menghindari efek loop/skipped row)
+                // Cari nilai terbaik secara pasti (menghindari efek loop/skipped row)
                 const bestVal = items.reduce((acc, it) => {
                     if (acc === null) return it.val;
                     return (mode === 'highest') ? Math.max(acc, it.val) : Math.min(acc, it.val);
                 }, null);
 
-                // Sorot semua baris yang bernilai sama dengan bestVal (kalau ada lebih dari satu)
-                items.forEach(({ val, $tr, $cell }) => {
-                    if (val !== bestVal) return;
-                    $tbody.find('tr').not($tr).css('opacity', '0.4');
-                    $tr.addClass('row-highlight');
+                // Kumpulkan semua baris yang punya nilai terbaik
+                const highlightRows = items.filter(it => it.val === bestVal);
+
+                // Redupkan semua baris terlebih dahulu
+                $tbody.find('tr').css('opacity', '0.4');
+
+                // Highlight semua baris dengan nilai terbaik
+                highlightRows.forEach(({ $tr, $cell }) => {
+                    $tr.css('opacity', '1').addClass('row-highlight');
                     $tr.find('td').css({
                         backgroundColor: mode === 'highest' ? '#fff3cd' : '#d6f5fa',
                         fontWeight: '700'
                     });
                     $cell.addClass('cell-highlight');
-                    $tr[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                 });
+
+                // Scroll ke baris pertama yang di-highlight
+                if (highlightRows.length) {
+                    highlightRows[0].$tr[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             });
+
         });
     </script>
 
@@ -2904,11 +2914,9 @@
                 }
                 // 🔹 Kalau cuma satu → ambil bulan & tahun dari tanggal itu
                 else if (startDate || endDate) {
-                    const selected = startDate || endDate;
-                    const [year, month] = selected.split("-");
-                    params.append("year", year);
-                    params.append("month", month);
-                }
+                const selected = startDate || endDate;
+                params.append("startDate", selected);   // ⬅️ ini kuncinya
+            }
 
                 try {
                     // Ambil hasil pencarian
