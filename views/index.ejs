@@ -2200,6 +2200,58 @@
 
                 // ambil status yang dipilih di modal edit
                 const status = ($('#edit_status_pelaksanaan').val() || '').trim();
+                const instansi = ($('#edit_nama_instansi').val() || '').trim();
+                const tanggal = ($('#edit_tgl_pelaksanaan').val() || '').trim();
+                const link = ($('#edit_link_dokumen').val() || '').trim();
+                const petugasInputs = $('#editPetugasCatGroup input[name="petugas_cat"], #editPetugasCatGroup input[name^="edit_petugas_"]');
+                const petugasFilled = petugasInputs.toArray().some(inp => (inp.value || '').trim() !== '');
+
+                // Reset error visual sebelumnya
+                form.find('.is-invalid').removeClass('is-invalid');
+
+                let invalidMessages = [];
+
+                // ✅ Validasi dasar
+                if (!instansi) {
+                    invalidMessages.push('• Nama Instansi wajib diisi.');
+                    $('#edit_nama_instansi').addClass('is-invalid');
+                }
+                if (!tanggal) {
+                    invalidMessages.push('• Tanggal Pelaksanaan wajib diisi.');
+                    $('#edit_tgl_pelaksanaan').addClass('is-invalid');
+                }
+                if (!status) {
+                    invalidMessages.push('• Status Pelaksanaan wajib dipilih.');
+                    $('#edit_status_pelaksanaan').addClass('is-invalid');
+                }
+                if (!petugasFilled) {
+                    invalidMessages.push('• Minimal 1 nama Petugas CAT harus diisi.');
+                    $('#editPetugasCatGroup input').addClass('is-invalid');
+                }
+
+                // ✅ Validasi link Google Drive (boleh kosong, tapi harus valid kalau diisi)
+                const isGDrive = /^https?:\/\/(drive|docs)\.google\.com\//.test(link);
+                if (link && !isGDrive) {
+                    invalidMessages.push('• Link Dokumen harus berupa URL berbagi Google Drive yang valid.');
+                    $('#edit_link_dokumen').addClass('is-invalid');
+                }
+
+                // 🚨 Kasus khusus: status = "Selesai" tapi link kosong
+                if (status === 'Selesai' && !link) {
+                    invalidMessages.push('• Untuk menyimpan status <b>Selesai</b>, kolom <b>Link Dokumen</b> wajib diisi.');
+                    $('#edit_link_dokumen').addClass('is-invalid');
+                }
+
+                // 🚫 Jika ada error, tampilkan SweetAlert dan hentikan submit
+                if (invalidMessages.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Form belum lengkap',
+                        html: `<div style="text-align:left">${invalidMessages.join('<br>')}</div>`,
+                        confirmButtonColor: '#fbc02d'
+                    });
+                    return;
+                }
 
                 // ambil semua field jumlah & nilai dari modal edit
                 const jmlUPKP = Number($("input[name='jumlah_peserta_0']").val() || 0);
@@ -2241,7 +2293,7 @@
                             icon: 'error',
                             title: 'Belum bisa diselesaikan',
                             html: `<p>Untuk mengubah status menjadi <b>Selesai</b>, lengkapi dulu kolom berikut:</p>
-                   <div>${msgs.join('<br>')}</div>`
+                               <div>${msgs.join('<br>')}</div>`
                         });
                         return; // stop submit
                     }
@@ -2270,11 +2322,19 @@
                     }
                 });
             });
+
+            // 🔄 Reset form edit saat modal ditutup agar validasi merah hilang
+            $('#editDataModal').on('hidden.bs.modal', function () {
+                const form = $('#formEditData');
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback, .text-danger').hide();
+                form.find('input, select, textarea').css({
+                    borderColor: '',
+                    backgroundColor: ''
+                });
+            });
         });
     </script>
-
-
-
     <script>
         $(document).off('submit', '#formInputBaru').on('submit', '#formInputBaru', async function (e) {
             e.preventDefault();
