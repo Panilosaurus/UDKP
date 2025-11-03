@@ -669,7 +669,7 @@
                                                                                                 <button type="button"
                                                                                                     class="btn btn-success btn-sm mt-2 w-100 fw-semibold btn-input-nilai"
                                                                                                     data-group-id="<%= group.rows[0].group_id %>">
-                                                                                                    Edit Nilai
+                                                                                                    Input Nilai
                                                                                                 </button>
                                                                                                 <% }%>
                                                                                             </div>
@@ -3050,9 +3050,28 @@
                 sel.style.display = "";
             });
 
-            // 🔹 Tidak boleh hapus/edit/input nilai
-            document.querySelectorAll(".btn-edit, .btn-delete, .btn-input-nilai")
-                .forEach(el => { el.style.display = "none"; });
+            // 🔹 Atur visibilitas tombol berdasarkan status
+            document.querySelectorAll("tr[data-group-id]").forEach(tr => {
+                const statusSelect = tr.querySelector(".status-inline");
+                const status = (statusSelect?.value || "").trim();
+
+                const btnEdit = tr.querySelector(".btn-edit");
+                const btnDelete = tr.querySelector(".btn-delete");
+                const btnNilai = tr.querySelector(".btn-input-nilai");
+
+                if (status === "Selesai") {
+                    // Jika selesai → sembunyikan tombol edit/hapus/nilai
+                    if (btnEdit) btnEdit.style.display = "none";
+                    if (btnDelete) btnDelete.style.display = "none";
+                    if (btnNilai) btnNilai.style.display = "none";
+                } else {
+                    // Kalau belum selesai → tampilkan semua tombol aksi
+                    if (btnEdit) btnEdit.style.display = "";
+                    if (btnDelete) btnDelete.style.display = "";
+                    if (btnNilai) btnNilai.style.display = "";
+                }
+            });
+
         }
 
         // === ROLE: ADMIN ===
