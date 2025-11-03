@@ -11,6 +11,9 @@
                     data-tidak="<%= Number(row.jumlah_tidak_lulus_pg || 0) %>">
 
                     <% if (rIndex===0) { %>
+                        <!-- DEBUG ROLE: <%= role %> -->
+                        <% } %>
+                    <% if (rIndex===0) { %>
                         <td rowspan="<%= group.rows.length %>" class="text-center align-middle">
                             <%= gIndex + 1 %>
                         </td>
@@ -47,22 +50,38 @@
 
                                 <!-- Status -->
                                 <td rowspan="<%= group.rows.length %>" class="align-middle text-center">
-                                    <select class="form-control form-control-sm status-inline text-center fw-semibold"
-                                        data-group-id="<%= group.rows[0].group_id %>"
-                                        data-old="<%= group.status || '' %>" style="min-width: 160px;">
-                                        <option value="Persiapan Administrasi"
-                                            <%=group.status==="Persiapan Administrasi" ? "selected" : "" %>>
-                                            Persiapan Administrasi
-                                        </option>
-                                        <option value="Menunggu Pelaksanaan" <%=group.status==="Menunggu Pelaksanaan"
-                                            ? "selected" : "" %>>
-                                            Menunggu Pelaksanaan
-                                        </option>
-                                        <option value="Selesai" <%=group.status==="Selesai" ? "selected" : "" %>>
-                                            Selesai
-                                        </option>
-                                    </select>
+                                    <% // pastikan role selalu lowercase 
+                                    const currentRole=(typeof role !=='undefined' && role) ? role.toLowerCase() : '' ; // viewer=semua disable, petugas=hanya jika status 'Selesai' 
+                                    const shouldDisable=(currentRole==='viewer') || (currentRole==='petugas' && group.status==='Selesai' ); %>
+                                        <select class="form-control form-control-sm status-inline text-start fw-semibold"
+                                            data-group-id="<%= group.rows[0].group_id %>" data-old="<%= group.status || '' %>"
+                                            data-disabled="<%= shouldDisable ? 'true' : 'false' %>"
+                                            style="min-width:160px;<%= shouldDisable ? 'background-color:#e9ecef;cursor:not-allowed;' : '' %>"
+                                            title="<%= shouldDisable ? 'Tidak dapat diubah' : '' %>">
+                                
+                                            <option value="Persiapan Administrasi" <%=group.status==="Persiapan Administrasi" ? "selected" : "" %>>
+                                                Persiapan Administrasi
+                                            </option>
+                                
+                                            <option value="Menunggu Pelaksanaan" <%=group.status==="Menunggu Pelaksanaan" ? "selected" : "" %>>
+                                                Menunggu Pelaksanaan
+                                            </option>
+                                
+                                            <option value="Selesai" <%=group.status==="Selesai" ? "selected" : "" %>>
+                                                Selesai
+                                            </option>
+                                        </select>
+                                
+                                        <script>
+                                        
+                                            document.addEventListener("DOMContentLoaded", () => {
+                                                document.querySelectorAll('select[data-disabled="true"]').forEach(sel => {
+                                                    sel.disabled = true;
+                                                });
+                                            });
+                                        </script>
                                 </td>
+
 
                                 <!-- Dokumen -->
                                 <td rowspan="<%= group.rows.length %>" class="align-middle text-center">

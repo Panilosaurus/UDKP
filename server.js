@@ -58,20 +58,14 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  res.locals.nama = (req.session?.user?.nama) || "Guest";
-  res.locals.role = (req.session?.user?.role) || null;   // <-- tambahkan
-  res.locals.status = (req.session?.user?.status) || null;   // <-- opsional
+  res.locals.nama = req.session?.user?.nama || "Guest";
+  res.locals.role = req.session?.user?.role || null; // untuk kontrol akses menu
+  res.locals.status = req.session?.user?.status || null; // opsional kalau kamu butuh status di UI
   next();
 });
 
-// Simpan nama user agar bisa diakses di semua halaman EJS
-app.use((req, res, next) => {
-  res.locals.nama =
-    (req.session && req.session.user && req.session.user.nama) || "Guest";
-  next();
-});
 
-// ✅ Middleware untuk autentikasi & otorisasi (ramah AJAX)
+// Middleware untuk autentikasi & otorisasi (ramah AJAX)
 function requireLogin(req, res, next) {
   if (req.session?.user) return next();
 
@@ -127,8 +121,6 @@ function requireRole(...roles) {
   };
 }
 
-// ✅ Akhir tambahan middleware
-
 // Middleware untuk static files
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -155,7 +147,7 @@ app.get("/", requireLogin, async (req, res) => {
   try {
     const search = req.query.q ? `%${req.query.q}%` : "%";
 
-    // ✅ Ambil data utama dengan JOIN instansi
+    // Ambil data utama dengan JOIN instansi
     const [results] = await db.promise().query(
       `
       SELECT 
@@ -183,7 +175,7 @@ app.get("/", requireLogin, async (req, res) => {
       [search, search, search]
     );
 
-    // ✅ grupkan berdasarkan group_id
+    // grupkan berdasarkan group_id
     const grouped = {};
     results.forEach((row) => {
       const key = row.group_id || `${row.instansi}-${row.tanggal_pelaksanaan}`;
@@ -194,7 +186,7 @@ app.get("/", requireLogin, async (req, res) => {
     // Normalizer
     const norm = (s) => (s || "").trim().toUpperCase().replace(/\s+/g, " ");
 
-    // ✅ Hitung per grup (bukan per baris)
+    // Hitung per grup (bukan per baris)
     let countUpkp = 0,
       countUd1 = 0,
       countUd2 = 0;
@@ -220,7 +212,7 @@ app.get("/", requireLogin, async (req, res) => {
       if (hasUD2) countUd2++;
     });
 
-    // ✅ ubah jadi array
+    // ubah jadi array
     const groupedArray = Object.entries(grouped).map(([key, rows]) => ({
       group_id: key,
       instansi: rows[0].instansi,
@@ -231,7 +223,7 @@ app.get("/", requireLogin, async (req, res) => {
       rows,
     }));
 
-    // ✅ pagination setelah grup
+    // pagination setelah grup
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const totalGroups = groupedArray.length;
@@ -243,7 +235,7 @@ app.get("/", requireLogin, async (req, res) => {
       page * limit
     );
 
-    // ✅ Hitung total per instansi (gunakan JOIN)
+    // Hitung total per instansi (gunakan JOIN)
     const [rekapInstansi] = await db.promise().query(`
       SELECT 
         i.nama_instansi AS instansi,
@@ -256,7 +248,7 @@ app.get("/", requireLogin, async (req, res) => {
       ORDER BY i.nama_instansi ASC
     `);
 
-    // ✅ Ambil nilai tertinggi dan terendah dari semua jenis ujian
+    // Ambil nilai tertinggi dan terendah dari semua jenis ujian
     const [nilaiMinMax] = await db.promise().query(`
       SELECT
         GREATEST(
@@ -270,7 +262,7 @@ app.get("/", requireLogin, async (req, res) => {
       FROM tabel
     `);
 
-    // ✅ Render ke halaman index.ejs
+    // Render ke halaman index.ejs
     res.render("index", {
       groupedData: paginatedGroups,
       nama: req.session.user ? req.session.user.nama : "Guest",
@@ -403,7 +395,7 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    // ✅ simpan lengkap, termasuk role & status
+    // simpan lengkap, termasuk role & status
     req.session.user = {
       id: user.id_akun,
       username: user.username,
@@ -477,10 +469,23 @@ app.post("/tambah", upload.none(), async (req, res) => {
     "REMED UD TK. II",
   ];
 
+  // 🔹 Validasi minimal 1 petugas
+  const petugasRaw = Array.isArray(petugas_cat)
+    ? petugas_cat.map((p) => p.trim()).filter(Boolean)
+    : petugas_cat
+    ? [petugas_cat.trim()]
+    : [];
+
+  if (petugasRaw.length < 1) {
+    return res.json({
+      status: "warning",
+      title: "Minimal 1 Petugas CAT",
+      html: "<p>Isi setidaknya <b>1 nama Petugas CAT</b> sebelum menyimpan.</p>",
+    });
+  }
+
   // Gabungkan petugas menjadi satu string
-  const petugasString = Array.isArray(petugas_cat)
-    ? petugas_cat.join(", ")
-    : petugas_cat;
+  const petugasString = petugasRaw.join(", ");
 
   // Gunakan group_id lama jika ada, atau buat baru
   const finalGroupId =
@@ -488,7 +493,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
       ? group_id.trim()
       : Math.random().toString(36).substring(2, 10);
 
-  // ✅ Kolom disesuaikan ke struktur baru (id_instansi)
+  // Kolom disesuaikan ke struktur baru (id_instansi)
   const sql = `
     INSERT INTO tabel (
       id_instansi, group_id, jenis_ujian, jumlah_peserta,
@@ -507,7 +512,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
     // Hanya push jika ada nilai jumlah peserta
     if (jumlahPeserta) {
       inserts.push([
-        parseInt(nama_instansi), // ✅ gunakan id_instansi (bukan nama)
+        parseInt(nama_instansi), // gunakan id_instansi (bukan nama)
         finalGroupId,
         ujian,
         jumlahPeserta,
@@ -519,7 +524,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
     }
   }
 
-  // ⚠️ Jika semua kosong
+  // Jika semua kosong
   if (inserts.length === 0) {
     return res.json({
       status: "warning",
@@ -528,7 +533,7 @@ app.post("/tambah", upload.none(), async (req, res) => {
     });
   }
 
-  // ✅ Jalankan penyimpanan
+  // Jalankan penyimpanan
   try {
     for (const values of inserts) {
       await db.promise().query(sql, values);
@@ -549,10 +554,6 @@ app.post("/tambah", upload.none(), async (req, res) => {
 });
 
 
-
-
-
-// Route Inspect
 // ===== Route Inspect Grup =====
 app.get("/inspect/:ids", (req, res) => {
   const ids = req.params.ids.split(",").map((id) => Number(id.trim()));
@@ -609,7 +610,7 @@ app.get("/search", async (req, res) => {
     const { q = "", startDate, endDate } = req.query;
     const noFilter = !q && !startDate && !endDate;
 
-    // ✅ Gunakan JOIN ke tabel instansi
+    // Gunakan JOIN ke tabel instansi
     let query = `
       SELECT 
         t.id,
@@ -636,7 +637,7 @@ app.get("/search", async (req, res) => {
       const where = [];
 
       if (q) {
-        // ✅ Pencarian berlaku pada nama_instansi (bukan kolom instansi lagi)
+        // Pencarian berlaku pada nama_instansi (bukan kolom instansi lagi)
         where.push(`(
           i.nama_instansi LIKE ? OR
           t.jenis_ujian LIKE ? OR
@@ -663,7 +664,7 @@ app.get("/search", async (req, res) => {
         );
       }
 
-      // ✅ Filter tanggal: awal saja atau range
+      // Filter tanggal: awal saja atau range
       if (startDate && !endDate) {
         where.push(
           `MONTH(t.tanggal_pelaksanaan) = MONTH(?) AND YEAR(t.tanggal_pelaksanaan) = YEAR(?)`
@@ -681,7 +682,7 @@ app.get("/search", async (req, res) => {
 
     const [results] = await db.promise().query(query, params);
 
-    // ✅ Grouping tetap sama
+    // Grouping tetap sama
     const groupedMap = {};
     for (const row of results) {
       const key =
@@ -704,7 +705,7 @@ app.get("/search", async (req, res) => {
 
     const groupedData = Object.values(groupedMap);
 
-    // ✅ Render partial EJS ke HTML dan kirim via JSON
+    // Render partial EJS ke HTML dan kirim via JSON
     res.render(
       "partials/tableBodyFlat",
       { groupedData, role: req.session.user?.role || null },
@@ -729,13 +730,13 @@ app.get("/search", async (req, res) => {
 });
 
 
-// ✅ pastikan ini app.post, bukan pp.post
+// pastikan ini app.post, bukan pp.post
 app.post("/update/:id", upload.none(), async (req, res) => {
   try {
     console.log("📩 BODY DITERIMA:", req.body);
 
     const {
-      nama_instansi, // sekarang berisi ID instansi dari select
+      nama_instansi,
       tgl_pelaksanaan,
       status_pelaksanaan,
       link_dokumen,
@@ -870,7 +871,7 @@ app.post("/update/:id", upload.none(), async (req, res) => {
       "REMED UD TK. II",
     ];
     const toNumOrNull = (v) => (v === undefined || v === "" ? null : Number(v));
-    const id_instansi = parseInt(nama_instansi); // ✅ gunakan id_instansi
+    const id_instansi = parseInt(nama_instansi); 
 
     for (let i = 0; i < jenisList.length; i++) {
       const jenis = jenisList[i];
@@ -1045,14 +1046,6 @@ app.post('/update-nilai/:groupId', upload.none(), async (req, res) => {
     (v === undefined || v === '' || v === null) ? null : Number(v);
 
   try {
-    // Ambil semua pasangan field yang dikirim:
-    // nama fieldnya berbentuk:
-    //   nilai_tertinggi_<id>
-    //   nilai_terendah_<id>
-    //   jumlah_lulus_<id>
-    //   jumlah_tidak_lulus_<id>
-    //
-    // Kumpulkan per-ID
     const perId = {}; // { [id]: { tertinggi, terendah, lulus, gagal } }
     for (const [key, val] of Object.entries(req.body)) {
       const m1 = key.match(/^nilai_tertinggi_(\d+)$/);
@@ -1119,10 +1112,6 @@ app.post('/update-nilai/:groupId', upload.none(), async (req, res) => {
     });
   }
 });
-
-
-// Pastikan parser JSON sudah aktif sekali di atas semua route:
-// app.use(express.json());
 
 app.post('/update-status/:groupId', async (req, res) => {
   try {
@@ -1335,7 +1324,7 @@ app.get("/akun", requireLogin, requireRole("admin"), async (req, res) => {
       role: (u.role || "viewer").toLowerCase(),
       status: (u.status || "nonaktif").toLowerCase(),
     }));
-    res.render("akun", { users });
+    res.render("akun", { users, currentUser: req.session.user });
   } catch (err) {
     console.error("GET /akun error:", err);
     res.status(500).send("Gagal memuat halaman akun");
@@ -1470,9 +1459,7 @@ app.put("/akun/:id", requireLogin, requireRole("admin"), async (req, res) => {
   }
 });
 
-// =======================================================
-// 📜 Endpoint: Riwayat Login (JSON untuk admin)
-// =======================================================
+// Endpoint: Riwayat Login (JSON untuk admin)
 app.get("/akun/logs", requireLogin, requireRole("admin"), async (req, res) => {
   try {
     const { q = "", success = "", page = "1", limit = "20" } = req.query;
@@ -1514,7 +1501,7 @@ app.get("/akun/logs", requireLogin, requireRole("admin"), async (req, res) => {
   }
 });
 
-// 📄 Riwayat login (untuk modal di /akun)
+// Riwayat login (untuk modal di /akun)
 app.get("/akun/login-log", requireRole("admin"), async (req, res) => {
   try {
     const q = (req.query.q || "").trim();
