@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `akun` (
   `role` enum('admin','petugas','viewer') DEFAULT 'viewer',
   `status` enum('aktif','nonaktif') DEFAULT 'aktif',
   PRIMARY KEY (`id_akun`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Dumping data for table udkp.akun: ~5 rows (approximately)
 INSERT INTO `akun` (`id_akun`, `username`, `password`, `foto`, `nama_depan`, `nama_belakang`, `role`, `status`) VALUES
@@ -38,7 +38,8 @@ INSERT INTO `akun` (`id_akun`, `username`, `password`, `foto`, `nama_depan`, `na
 	(3, 'bima', '$2b$10$uXNkwy5yumkPI.ZZ6EYSP.odYdiVQ64r/JZVcK/sXraQrODn927oW', NULL, 'Bij', 'Nug', 'admin', 'aktif'),
 	(4, 'yudi', '$2b$10$6ZcsFqZYvYercH3N/ZV32eA4RZPezIE2OjBeiwfhkNWBJts4DleuO', NULL, 'Muhammad', 'Wahyudi', 'admin', 'aktif'),
 	(5, 'Rafli', '$2b$10$J29Jne76MPA08IXGBlPRO.K2cfFl3ZaINMw8L6xNlDzSGnKOIvuLq', NULL, 'Ahmad', 'Rafli', 'viewer', 'aktif'),
-	(6, 'biji', '$2b$10$DxNyAXItxgICezPyU/RXZubuQrQofAJDEKRcl/H0lJKlb9CBJb9Ci', NULL, 'bima', 'aji', 'petugas', NULL);
+	(6, 'biji', '$2b$10$DxNyAXItxgICezPyU/RXZubuQrQofAJDEKRcl/H0lJKlb9CBJb9Ci', NULL, 'bima', 'aji', 'petugas', NULL),
+	(7, 'AdminVIII', '$2b$10$iUe6yCXvVEX/6eOaFbAGue1/cLJ8whn8WsN.QJ7aiZbV/HZVK00fW', NULL, 'Kanreg', 'VIII', 'admin', 'aktif');
 
 -- Dumping structure for table udkp.instansi
 CREATE TABLE IF NOT EXISTS `instansi` (
@@ -111,7 +112,7 @@ CREATE TABLE IF NOT EXISTS `login_log` (
   KEY `user_id` (`user_id`,`created_at`),
   KEY `username` (`username`,`created_at`),
   KEY `success` (`success`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Dumping data for table udkp.login_log: ~55 rows (approximately)
 INSERT INTO `login_log` (`id`, `user_id`, `username`, `ip`, `user_agent`, `success`, `reason`, `created_at`) VALUES
@@ -182,7 +183,9 @@ INSERT INTO `login_log` (`id`, `user_id`, `username`, `ip`, `user_agent`, `succe
 	(65, 3, 'bima', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 04:56:00'),
 	(66, 5, 'rafli', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 04:58:39'),
 	(67, 3, 'bima', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 05:06:28'),
-	(68, 3, 'bima', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 05:07:37');
+	(68, 3, 'bima', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 05:07:37'),
+	(69, 3, 'bima', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 13:07:29'),
+	(70, 7, 'AdminVIII', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 1, 'OK', '2025-11-06 13:09:14');
 
 -- Dumping structure for table udkp.tabel
 CREATE TABLE IF NOT EXISTS `tabel` (
