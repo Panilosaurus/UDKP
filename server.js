@@ -2,7 +2,7 @@ const express = require("express");
 const mysql = require("mysql2");
 const path = require("path");
 const ejs = require("ejs");
-console.log("✅ EJS module loaded:", typeof ejs.renderFile);
+console.log("EJS module loaded:", typeof ejs.renderFile);
 
 const app = express();
 const port = 3000;
@@ -19,7 +19,7 @@ const db = mysql.createConnection({
   dateStrings: true,
 });
 
-// 🟩 Tambahan: pastikan tabel login_log ada
+// Tambahan: pastikan tabel login_log ada
 async function ensureLoginLogTable() {
   try {
     await db.promise().query(`
@@ -37,13 +37,13 @@ async function ensureLoginLogTable() {
         INDEX (success, created_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-    console.log("✅ login_log table ready");
+    console.log("login_log table ready");
   } catch (e) {
-    console.error("❌ ensureLoginLogTable error:", e);
+    console.error("ensureLoginLogTable error:", e);
   }
 }
 ensureLoginLogTable();
-// 🟩 Akhir tambahan
+// Akhir tambahan
 
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
@@ -1222,7 +1222,7 @@ app.post('/update-status', async (req, res) => {
     await db.promise().query('UPDATE tabel SET status=? WHERE group_id=?', [status, group_id]);
     res.json({ success: true });
   } catch (e) {
-    console.error('❌ update-status:', e);
+    console.error('update-status:', e);
     res.status(500).json({ success: false, message: 'Kesalahan server.' });
   }
 });
